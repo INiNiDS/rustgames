@@ -1,11 +1,14 @@
 use std::sync::Arc;
+use glam::Vec2;
 use wgpu::{Device, Queue, StoreOp, Surface, SurfaceConfiguration};
 use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::graphics::camera::Camera;
 use crate::graphics::sprite_renderer::SpriteRenderer;
 use crate::graphics::texture::Texture;
+use crate::text::{Font, TextSpeed, TextStyle};
 use crate::text::text::TextSystem;
+use crate::text::typewriter::TypewriterInstance;
 
 pub struct Renderer {
     pub surface: Surface<'static>,
@@ -15,6 +18,8 @@ pub struct Renderer {
     pub camera: Camera,
     sprite_renderer: SpriteRenderer,
     text_system: TextSystem,
+    text_position: Vec2,
+    typewriter_instance: TypewriterInstance
 }
 
 impl Renderer {
@@ -69,6 +74,8 @@ impl Renderer {
             camera,
             sprite_renderer,
             text_system,
+            text_position: Vec2::ZERO,
+            typewriter_instance: TypewriterInstance::new(),
         }
     }
 
@@ -98,9 +105,12 @@ impl Renderer {
                 label: Some("Render Encoder"),
             }
         );
-
-        self.text_system.queue_text(&self.device, &self.queue, "Hello, World!", 40.0, 40.0, 50.0, [1.0, 1.0, 1.0, 1.0]);
-        {
+        if !self.typewriter_instance.is_empty() {
+            for typewriter in self.typewriter_instance.get_typewriter_effects() {
+                self.text_system.queue_text(&self.device, &self.queue, typewriter, self.text_position.x, self.text_position.y);
+            }
+        }
+         {
             let mut render_pass = encoder.begin_render_pass(
                 &wgpu::RenderPassDescriptor {
                     label: Some("Render Pass"),
@@ -122,10 +132,24 @@ impl Renderer {
                 });
 
             self.sprite_renderer.render(&mut render_pass, &self.device, &texture);
-            
-            self.text_system.draw(&mut render_pass);
+
         }
         self.queue.submit(std::iter::once(encoder.finish()));
         output.present();
     }
+
+    pub fn set_font(&mut self, font: Font) {
+        self.text_system.set_font(&self.device, self.config.clone(), font);
+    }
+
+    pub fn set_text_style(&mut self, style: TextStyle) {
+        self.text_system.set_style(style);
+    }
+
+    pub fn set_text(&mut self, text: &str, x: f32, y: f32, speed: TextSpeed) -> usize {
+        self.text_position = Vec2::new(x, y);
+        self.typewriter_instance.add_typewriter_effect(text, speed)
+    }
+    
+    
 }

@@ -9,8 +9,11 @@ pub struct Sprite {
     pub position: Vec2,
     pub size: Vec2,
     pub rotation: f32,
+    pub scale: Vec2,
     pub color: Color,
-    pub anchor: Vec2
+    pub anchor: Vec2,
+    pub flip_x: bool,
+    pub flip_y: bool,
 }
 
 impl Sprite {
@@ -22,9 +25,64 @@ impl Sprite {
             position: Vec2::ZERO,
             size: Vec2::new(w, h),
             rotation: 0.0,
+            scale: Vec2::ONE,
             color: Color::WHITE,
             anchor: Vec2::new(0.5, 0.5),
+            flip_x: false,
+            flip_y: false,
         }
+    }
+    
+    pub fn with_position(mut self, x: f32, y: f32) -> Self {
+        self.position = Vec2::new(x, y);
+        self
+    }
+    
+    pub fn set_position(&mut self, x: f32, y: f32) {
+        self.position = Vec2::new(x, y);
+    }
+    
+    pub fn with_rotation(mut self, angle: f32) -> Self {
+        self.rotation = angle;
+        self
+    }
+    
+    pub fn set_rotation(&mut self, angle: f32) {
+        self.rotation = angle;
+    }
+    
+    pub fn with_scale(mut self, x: f32, y: f32) -> Self {
+        self.scale = Vec2::new(x, y);
+        self
+    }
+    
+    pub fn set_scale(&mut self, x: f32, y: f32) {
+        self.scale = Vec2::new(x, y);
+    }
+    
+    pub fn with_uniform_scale(mut self, scale: f32) -> Self {
+        self.scale = Vec2::splat(scale);
+        self
+    }
+    
+    pub fn with_color(mut self, color: Color) -> Self {
+        self.color = color;
+        self
+    }
+    
+    pub fn set_color(&mut self, color: Color) {
+        self.color = color;
+    }
+    
+    pub fn with_anchor(mut self, x: f32, y: f32) -> Self {
+        self.anchor = Vec2::new(x, y);
+        self
+    }
+    
+    pub fn with_flip(mut self, flip_x: bool, flip_y: bool) -> Self {
+        self.flip_x = flip_x;
+        self.flip_y = flip_y;
+        self
     }
 }
 
