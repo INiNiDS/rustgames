@@ -118,25 +118,35 @@ impl Game for StressDemo {
             std::process::exit(0);
         }
         
-        // Render sprites (using existing API - one at a time for now)
-        // In a production instanced renderer, this would be a single draw call
+        // INSTANCED RENDERING: Render ALL entities with a single draw call
+        // Create SpriteInstance for each entity with animation UV coordinates
+        use rustgames::graphics::SpriteInstance;
+        use glam::Vec4;
+        
         let texture_controller = engine.get_texture_controller();
         
-        // For demonstration, we'll render a subset to avoid overwhelming the current renderer
-        let render_count = self.entity_count.min(100);
-        for i in 0..render_count {
-            texture_controller.use_texture(
-                "stress_sprite",
-                Vec2::new(20.0, 20.0),
-                self.positions[i],
+        for i in 0..self.entity_count {
+            // Get current UV coordinates from the animation
+            let uv = self.animations[i].current_uv();
+            
+            // Create sprite instance with animated UV
+            let instance = SpriteInstance::new(
+                self.positions[i],           // Position
+                Vec2::new(20.0, 20.0),      // Size
+                0.0,                         // Rotation
+                uv,                          // Animated UV coordinates from sprite sheet
+                Vec4::ONE,                   // White color (no tint)
             );
+            
+            // Add instance to the batch (all will be rendered in one draw call)
+            texture_controller.add_instance("stress_sprite", instance);
         }
         
         // Update window title
         if self.time >= 0.1 {
             self.time = 0.0;
             let title = format!(
-                "Stress Test | Entities: {} | FPS: {:.0} | Frame: {:.1}ms | Min: {:.0} | Max: {:.0}",
+                "Stress Test | Entities: {} (ALL RENDERED) | FPS: {:.0} | Frame: {:.1}ms | Min: {:.0} | Max: {:.0}",
                 self.entity_count,
                 self.fps_counter.fps(),
                 self.fps_counter.frame_time_ms(),

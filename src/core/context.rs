@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration};
 use crate::controllers::text_controller::TextController;
@@ -6,7 +5,7 @@ use crate::controllers::texture_controller::TextureController;
 use crate::controllers::typewriter_controller::TypewriterController;
 use crate::core::CameraController;
 use crate::core::time::Time;
-use crate::graphics::{AnimationController, SpriteInstance, VisualState};
+use crate::graphics::{AnimationController, VisualState};
 use crate::graphics::sprite_renderer::SpriteRenderer;
 
 pub struct Context<'a> {
@@ -27,5 +26,4 @@ pub struct RenderContext {
     pub queue: Arc<Queue>,
     pub config: SurfaceConfiguration,
     pub texture_controller: TextureController,
-    pub sprite_instance: SpriteInstance
 }
