@@ -83,4 +83,9 @@ impl TextureController {
             self.load_texture(&bytes, entry.path().to_str().unwrap());
         }
     }
+    
+    /// Get a texture by label.
+    pub fn get_texture(&self, label: &str) -> Option<&Texture> {
+        self.textures.get(label)
+    }
 }

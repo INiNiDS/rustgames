@@ -29,6 +29,22 @@ impl CameraController {
     pub fn shake(&mut self, duration: f32, intensity: f32) {
         self.camera.shake(duration, intensity);
     }
+    
+    pub fn add_trauma(&mut self, trauma: f32) {
+        self.camera.add_trauma(trauma);
+    }
+    
+    pub fn set_zoom_smooth(&mut self, zoom: f32, speed: f32) {
+        self.camera.set_zoom_smooth(zoom, speed);
+    }
+    
+    pub fn follow_smooth(&mut self, target: Vec3, speed: f32, damping: f32) {
+        self.camera.follow_smooth(target, speed, damping);
+    }
+    
+    pub fn configure_trauma_shake(&mut self, max_offset: f32, max_angle: f32, decay_rate: f32) {
+        self.camera.configure_trauma_shake(max_offset, max_angle, decay_rate);
+    }
 
     pub fn follow(&mut self, target: Vec3, speed: f32) {
         self.camera.follow(target, speed);

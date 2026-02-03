@@ -2,6 +2,7 @@ pub mod renderer;
 pub mod texture;
 pub mod sprite;
 pub mod sprite_renderer;
+pub mod instanced_sprite_renderer;
 pub mod camera;
 pub mod color;
 pub mod animation;
@@ -19,3 +20,4 @@ pub use animation::{Animation, Transition, Easing, AnimationController, Directio
 pub use effects::{VisualEffect, ParticleEffect, Particle, EffectManager};
 pub use instance::SpriteInstance;
 pub use sprite_animation::{SpriteAnimation, AnimationMode};
+pub use instanced_sprite_renderer::InstancedSpriteRenderer;

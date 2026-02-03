@@ -1,5 +1,6 @@
 use winit::event::{ElementState, MouseButton as WinitMouseButton, WindowEvent as WinitWindowEvent};
-use winit::keyboard::{KeyCode, PhysicalKey};
+pub use winit::keyboard::KeyCode;
+use winit::keyboard::PhysicalKey;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MouseButton {
@@ -49,16 +50,28 @@ pub trait EventHandler {
 
 pub struct EventQueue {
     events: Vec<Event>,
+    pressed_keys: std::collections::HashSet<KeyCode>,
 }
 
 impl EventQueue {
     pub fn new() -> Self {
         Self {
             events: Vec::new(),
+            pressed_keys: std::collections::HashSet::new(),
         }
     }
 
     pub fn push(&mut self, event: Event) {
+        // Track key states
+        match event {
+            Event::KeyPressed(key) => {
+                self.pressed_keys.insert(key);
+            }
+            Event::KeyReleased(key) => {
+                self.pressed_keys.remove(&key);
+            }
+            _ => {}
+        }
         self.events.push(event);
     }
 
@@ -72,6 +85,16 @@ impl EventQueue {
 
     pub fn clear(&mut self) {
         self.events.clear();
+    }
+    
+    /// Check if a key is currently pressed
+    pub fn is_key_pressed(&self, key: KeyCode) -> bool {
+        self.pressed_keys.contains(&key)
+    }
+    
+    /// Check if a key was just pressed this frame
+    pub fn was_key_just_pressed(&self, key: KeyCode) -> bool {
+        self.events.iter().any(|e| matches!(e, Event::KeyPressed(k) if *k == key))
     }
 }
 
