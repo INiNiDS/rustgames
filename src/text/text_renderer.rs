@@ -1,3 +1,5 @@
+use std::cmp::PartialEq;
+use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 use crate::graphics::color::Color;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,12 +45,12 @@ impl TextStyle {
             ..Default::default()
         }
     }
-    
+
     pub fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
-    
+
     pub fn with_alignment(mut self, alignment: TextAlignment) -> Self {
         self.alignment = alignment;
         self
@@ -62,10 +64,10 @@ impl TextWrapper {
         let mut lines = Vec::new();
         let mut current_line = String::new();
         let mut current_width = 0.0;
-        
+
         for word in text.split_whitespace() {
             let word_width = word.len() as f32 * char_width;
-            
+
             if current_width + word_width <= max_width {
                 if !current_line.is_empty() {
                     current_line.push(' ');
@@ -81,12 +83,77 @@ impl TextWrapper {
                 current_width = word_width;
             }
         }
-        
+
         if !current_line.is_empty() {
             lines.push(current_line);
         }
-        
+
         lines
+    }
+
+    pub fn wrap_rich_text(
+        segments: Vec<StyledSegment>,
+        max_width: f32,
+        font_size: f32,
+    ) -> Vec<Vec<StyledSegment>> {
+        let mut lines = Vec::new();
+        let mut current_line: Vec<StyledSegment> = Vec::new();
+        let mut current_width = 0.0;
+
+        for segment in segments {
+            let words: Vec<&str> = segment.text.split_inclusive(' ').collect();
+
+            for word in words {
+                let word_width = word.len() as f32 * font_size * 0.55;
+
+                if current_width + word_width > max_width && !current_line.is_empty() {
+                    lines.push(current_line);
+                    current_line = Vec::new();
+                    current_width = 0.0;
+                }
+
+                let word_text = word.to_string();
+                current_width += word_width;
+
+                if let Some(last_seg) = current_line.last_mut() {
+                    if last_seg.attrs.weight == segment.attrs.weight
+                        && last_seg.attrs.italic == segment.attrs.italic
+                        && last_seg.attrs.color == segment.attrs.color
+                    {
+                        last_seg.text.push_str(&word_text);
+                        continue;
+                    }
+                }
+
+                current_line.push(StyledSegment {
+                    text: word_text,
+                    attrs: segment.attrs.clone(),
+                });
+            }
+        }
+
+        if !current_line.is_empty() {
+            lines.push(current_line);
+        }
+
+        lines
+    }
+
+    pub fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
+        match align {
+            TextAlignment::Left => HorizontalAlign::Left,
+            TextAlignment::Center => HorizontalAlign::Center,
+            TextAlignment::Right => HorizontalAlign::Right,
+            TextAlignment::Justify => HorizontalAlign::Left, 
+        }
+    }
+
+    pub fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
+        match align {
+            VerticalAlignment::Top => VerticalAlign::Top,
+            VerticalAlignment::Middle => VerticalAlign::Center,
+            VerticalAlignment::Bottom => VerticalAlign::Bottom,
+        }
     }
 
     pub fn measure_text(text: &str, font_size: f32) -> (f32, f32) {
@@ -95,95 +162,92 @@ impl TextWrapper {
             .map(|line| line.len() as f32 * font_size * 0.6)
             .fold(0.0_f32, f32::max);
         let height = lines.len() as f32 * font_size * 1.2;
-        
+
         (max_width, height)
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FontWeight {
+    Normal,
+    Medium,
+    SemiBold,
+    Bold,
+}
+
 #[derive(Debug, Clone)]
-pub enum TextSegment {
-    Normal(String),
-    Bold(String),
-    Italic(String),
-    Colored { text: String, color: Color },
+pub struct TextAttributes {
+    pub weight: FontWeight,
+    pub italic: bool,
+    pub color: Option<Color>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StyledSegment {
+    pub text: String,
+    pub attrs: TextAttributes,
 }
 
 pub struct RichTextParser;
 
 impl RichTextParser {
-    pub fn parse(text: &str) -> Vec<TextSegment> {
+    pub fn parse(text: &str) -> Vec<StyledSegment> {
         let mut segments = Vec::new();
         let mut current_text = String::new();
+        let mut weight_stack = vec![FontWeight::Normal];
+        let mut italic_stack = vec![false];
+        let mut color_stack = vec![None];
+
         let mut chars = text.chars().peekable();
 
         while let Some(c) = chars.next() {
             if c == '[' {
                 let mut tag_content = String::new();
-                let mut closed_bracket = false;
-                let mut temp_chars = Vec::new();
+                let mut is_closing = false;
 
-                while let Some(&next_char) = chars.peek() {
-                    temp_chars.push(chars.next().unwrap());
-                    if next_char == ']' {
-                        closed_bracket = true;
-                        break;
-                    }
-                    tag_content.push(next_char);
+                if let Some(&'/') = chars.peek() {
+                    is_closing = true;
+                    chars.next();
                 }
 
-                let is_valid_tag = tag_content == "b" || 
-                                   tag_content == "i" || 
-                                   tag_content.starts_with("color=");
-
-                if closed_bracket && is_valid_tag {
-                    if !current_text.is_empty() {
-                        segments.push(TextSegment::Normal(current_text.clone()));
-                        current_text.clear();
+                while let Some(&next_char) = chars.peek() {
+                    if next_char == ']' {
+                        chars.next();
+                        break;
                     }
+                    tag_content.push(chars.next().unwrap());
+                }
 
-                    let tag_name = tag_content.split('=').next().unwrap_or(&tag_content);
-                    let closing_tag = format!("[/{}]", tag_name);
-                    let mut content = String::new();
-                    let mut found_closing = false;
+                if !current_text.is_empty() {
+                    segments.push(StyledSegment {
+                        text: current_text.clone(),
+                        attrs: TextAttributes {
+                            weight: *weight_stack.last().unwrap(),
+                            italic: *italic_stack.last().unwrap(),
+                            color: *color_stack.last().unwrap(),
+                        },
+                    });
+                    current_text.clear();
+                }
 
-                    while let Some(inner_c) = chars.next() {
-                        if inner_c == '[' {
-                            let mut potential_close = String::from("[");
-                            while let Some(&p) = chars.peek() {
-                                potential_close.push(chars.next().unwrap());
-                                if p == ']' { break; }
-                            }
-
-                            if potential_close == closing_tag {
-                                found_closing = true;
-                                break;
-                            } else {
-                                content.push_str(&potential_close);
-                            }
-                        } else {
-                            content.push(inner_c);
-                        }
-                    }
-
-                    if found_closing {
-                        match tag_name {
-                            "b" => segments.push(TextSegment::Bold(content)),
-                            "i" => segments.push(TextSegment::Italic(content)),
-                            _ if tag_content.starts_with("color=") => {
-                                let hex = &tag_content[6..];
-                                if let Some(color) = Color::from_hex(hex) {
-                                    segments.push(TextSegment::Colored { text: content, color });
-                                } else {
-                                    segments.push(TextSegment::Normal(content));
-                                }
-                            }
-                            _ => segments.push(TextSegment::Normal(content)),
-                        }
+                if is_closing {
+                    match tag_content.as_str() {
+                        "b" | "m" | "sb" => { if weight_stack.len() > 1 { weight_stack.pop(); } }
+                        "i" => { if italic_stack.len() > 1 { italic_stack.pop(); } }
+                        "color" => { if color_stack.len() > 1 { color_stack.pop(); } }
+                        _ => {}
                     }
                 } else {
-                    current_text.push('[');
-                    for char_from_temp in temp_chars {
-                        current_text.push(char_from_temp);
+                    match tag_content.as_str() {
+                        "b" => weight_stack.push(FontWeight::Bold),
+                        "m" => weight_stack.push(FontWeight::Medium),
+                        "sb" => weight_stack.push(FontWeight::SemiBold),
+                        "i" => italic_stack.push(true),
+                        _ if tag_content.starts_with("color=") => {
+                            let hex = &tag_content[6..];
+                            color_stack.push(Color::from_hex(hex));
+                        }
+                        _ => {}
                     }
                 }
             } else {
@@ -192,7 +256,14 @@ impl RichTextParser {
         }
 
         if !current_text.is_empty() {
-            segments.push(TextSegment::Normal(current_text));
+            segments.push(StyledSegment {
+                text: current_text,
+                attrs: TextAttributes {
+                    weight: *weight_stack.last().unwrap(),
+                    italic: *italic_stack.last().unwrap(),
+                    color: *color_stack.last().unwrap(),
+                },
+            });
         }
         segments
     }

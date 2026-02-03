@@ -5,5 +5,5 @@ pub mod text_renderer;
 
 pub use font::{Font};
 pub use typewriter::{TypewriterEffect, TextSpeed};
-pub use text_renderer::{TextAlignment, VerticalAlignment, TextStyle, TextWrapper, RichTextParser, TextSegment};
+pub use text_renderer::{TextAlignment, VerticalAlignment, TextStyle, TextWrapper, RichTextParser, StyledSegment, TextAttributes, FontWeight};
 pub use text::TextSystem;

@@ -6,7 +6,6 @@
 // Core types
 pub use crate::core::{
     Engine, Time, Context, RenderContext,
-    EngineError, Result,
 };
 
 // Graphics types

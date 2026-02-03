@@ -1,4 +1,4 @@
-use std::slice::Iter;
+use std::slice::{Iter, IterMut};
 
 #[derive(Debug, Clone, Copy)]
 pub enum TextSpeed {
@@ -21,6 +21,7 @@ impl TextSpeed {
     }
 }
 
+#[derive(Debug)]
 pub struct TypewriterEffect {
     text: String,
     visible_chars: usize,
@@ -28,11 +29,14 @@ pub struct TypewriterEffect {
     elapsed: f32,
     paused: bool,
     complete: bool,
-    id: usize
+    pub(crate) id: usize,
+    pub x: f32,
+    pub y: f32,
+    pause_timer: f32
 }
 
 impl TypewriterEffect {
-    pub fn new(text: impl Into<String>, speed: TextSpeed, id: usize) -> Self {
+    pub fn new(text: impl Into<String>, speed: TextSpeed, id: usize, x: f32, y: f32) -> Self {
         let text = text.into();
         let chars_per_second = speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
@@ -45,38 +49,46 @@ impl TypewriterEffect {
             elapsed: 0.0,
             paused: false,
             complete,
-            id
+            id,
+            x,
+            y,
+            pause_timer: 0.0
         }
     }
-    
+
     pub fn update(&mut self, delta_time: f32) {
-        if self.complete || self.paused {
+        if self.complete { return; }
+
+        if self.pause_timer > 0.0 {
+            self.pause_timer -= delta_time;
             return;
         }
-        
+
+        let seconds_per_char = 1.0 / self.chars_per_second;
         self.elapsed += delta_time;
-        
-        let total_chars = self.text.chars().count();
-        let target_chars = (self.elapsed * self.chars_per_second) as usize;
-        
-        self.visible_chars = target_chars.min(total_chars);
-        
-        if self.visible_chars >= total_chars {
-            self.complete = true;
-        }
-        
-        if self.visible_chars < total_chars {
-            let current_char = self.text.chars().nth(self.visible_chars);
-            if let Some(c) = current_char {
-                if matches!(c, '.' | '!' | '?' | ',') {
-                    self.paused = true;
+
+        while self.elapsed >= seconds_per_char {
+            self.elapsed -= seconds_per_char;
+            self.visible_chars += 1;
+
+            if let Some(c) = self.text.chars().nth(self.visible_chars - 1) {
+                match c {
+                    '.' | '!' | '?' => {
+                        self.pause_timer = 0.5;
+                        return;
+                    },
+                    ',' => {
+                        self.pause_timer = 0.2;
+                        return;
+                    },
+                    _ => {}
                 }
             }
-        }
-        
-        if self.paused {
-            std::thread::sleep(std::time::Duration::from_secs_f32(0.2));
-            self.paused = false;
+
+            if self.visible_chars >= self.text.chars().count() {
+                self.complete = true;
+                return;
+            }
         }
     }
     
@@ -140,6 +152,11 @@ impl TypewriterEffect {
             (self.visible_chars as f32) / (total as f32)
         }
     }
+
+    pub fn set_text(&mut self, text: impl Into<String>, new_speed: TextSpeed) {
+        self.text = text.into();
+        self.set_speed(new_speed);
+    }
 }
 pub struct TypewriterInstance {
     typewriter_effects: Vec<TypewriterEffect>,
@@ -153,10 +170,10 @@ impl TypewriterInstance {
             next_id: 0
         }
     }
-    
-    
-    pub fn add_typewriter_effect(&mut self, text: impl Into<String>, speed: TextSpeed) -> usize {
-        let effect = TypewriterEffect::new(text, speed, self.next_id);
+
+
+    pub fn add_typewriter_effect(&mut self, text: impl Into<String>, speed: TextSpeed, x: f32, y: f32) -> usize {
+        let effect = TypewriterEffect::new(text, speed, self.next_id, x, y);
         self.typewriter_effects.push(effect);
         self.next_id += 1;
         self.next_id - 1
@@ -169,14 +186,88 @@ impl TypewriterInstance {
     }
     
     pub fn remove_typewriter_effect(&mut self, id: usize) {
-        self.typewriter_effects.remove(id);
+        self.typewriter_effects.retain(|effect| effect.id != id);
     }
     
     pub fn is_empty(&self) -> bool {
         self.typewriter_effects.is_empty()
     }
     
-    pub fn get_typewriter_effects(&self) -> Iter<TypewriterEffect> {
+    pub fn get_typewriter_effects(&'_ self) -> Iter<'_, TypewriterEffect> {
         self.typewriter_effects.iter().clone()
+    }
+
+    pub fn get_typewriter_effects_mut(&mut self) -> IterMut<'_, TypewriterEffect> {
+        self.typewriter_effects.iter_mut()
+    }
+
+    pub fn get_effect(&self, id: usize) -> Option<&TypewriterEffect> {
+        self.typewriter_effects.iter().find(|e| e.id == id)
+    }
+
+    pub fn get_effect_mut(&mut self, id: usize) -> Option<&mut TypewriterEffect> {
+        self.typewriter_effects.iter_mut().find(|e| e.id == id)
+    }
+
+    pub fn skip_effect(&mut self, id: usize) {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.skip();
+        }
+    }
+
+    pub fn pause_effect(&mut self, id: usize) {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.pause();
+        }
+    }
+
+    pub fn resume_effect(&mut self, id: usize) {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.resume();
+        }
+    }
+
+    pub fn reset_effect(&mut self, id: usize) {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.reset();
+        }
+    }
+
+    pub fn set_effect_speed(&mut self, id: usize, speed: TextSpeed) {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.set_speed(speed);
+        }
+    }
+
+    pub fn get_text(&self, id: usize) -> Option<&str> {
+        self.get_effect(id).map(|e| e.full_text())
+    }
+
+    pub fn get_visible_text(&self, id: usize) -> Option<&str> {
+        self.get_effect(id).map(|e| e.visible_text())
+    }
+
+    pub fn get_position(&self, id: usize) -> Option<(f32, f32)> {
+        self.get_effect(id).map(|e| (e.x, e.y))
+    }
+
+    pub fn is_paused(&self, id: usize) -> bool {
+        self.get_effect(id).map_or(false, |e| e.is_paused())
+    }
+
+    pub fn is_complete(&self, id: usize) -> bool {
+        self.get_effect(id).map_or(false, |e| e.is_complete())
+    }
+
+    pub fn get_progress(&self, id: usize) -> f32 {
+        self.get_effect(id).map_or(0.0, |e| e.progress())
+    }
+
+    pub fn clear(&mut self) {
+        self.typewriter_effects.clear();
+    }
+
+    pub fn len(&self) -> usize {
+        self.typewriter_effects.len()
     }
 }

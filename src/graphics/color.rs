@@ -119,3 +119,9 @@ impl From<[f32; 4]> for Color {
         Self::rgba(r, g, b, a)
     }
 }
+
+impl PartialEq for Color {
+    fn eq(&self, other: &Self) -> bool {
+        self.r == other.r && self.g == other.g && self.b == other.b
+    }
+}

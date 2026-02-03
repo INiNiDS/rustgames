@@ -129,5 +129,17 @@ impl AnimationInstance {
         }
     }
 
+    pub fn stop(&mut self) {
+        self.paused = true;
+    }
+
+    pub fn set_delay(&mut self, delay: f32) {
+        self.delay = delay.max(0.0);
+        self.elapsed = 0.0;
+    }
+
+    pub fn add_delay(&mut self, delay: f32) {
+        self.delay += delay;
+    }
 }
 

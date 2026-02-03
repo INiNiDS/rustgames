@@ -1,6 +1,4 @@
 use crate::graphics::animation::direction::Direction;
-use crate::graphics::animation::easing;
-use crate::prelude::Easing;
 
 #[derive(Debug, Clone)]
 pub enum Animation {
@@ -37,10 +35,6 @@ impl AnimationGroupID {
 
     pub(crate) fn iter(&self) -> impl Iterator<Item = &usize> {
         self.ids.iter()
-    }
-
-    pub(crate) fn iter_mut(&mut self) -> impl Iterator<Item = &mut usize> {
-        self.ids.iter_mut()
     }
 
     pub(crate) fn get_id(&self, index: usize) -> Option<&usize> {

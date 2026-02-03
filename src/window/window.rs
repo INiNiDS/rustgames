@@ -43,7 +43,6 @@ pub struct Window {
 }
 
 impl Window {
-    /// Create a new window (note: actual creation happens via event loop)
     pub fn new(inner: Arc<WinitWindow>) -> Self {
         Self { inner }
     }

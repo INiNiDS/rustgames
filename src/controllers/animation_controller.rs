@@ -1,5 +1,6 @@
 use glam::Vec2;
 use crate::graphics::animation::animation::{AnimationGroupID};
+use crate::graphics::animation::visual::CustomCombinedMode;
 use crate::graphics::TimelineStep;
 use crate::prelude::{AnimEffect, Animation, AnimationInstance, Easing, VisualState};
 
@@ -94,13 +95,13 @@ impl AnimationController {
         self.animations.clear();
     }
 
-    pub fn evaluate(&self, base: VisualState, size: Vec2) -> VisualState {
+    pub fn evaluate(&self, base: VisualState, size: Vec2, custom_combined_mode: Option<CustomCombinedMode>) -> VisualState {
         let mut combined = AnimEffect::default();
         for anim in &self.animations {
             let effect = anim.effect(size);
             combined = combined.combine(effect);
         };
-        combined.apply_to(base)
+        combined.apply_to(base, custom_combined_mode)
     }
 
     pub fn start_sequence(
@@ -186,12 +187,20 @@ impl AnimationController {
         group.remove(index);
     }
 
-    pub fn is_group_playing(&self, group: &AnimationGroupID) -> bool {
+    pub fn is_group_playing_all(&self, group: &AnimationGroupID) -> bool {
         group.iter().all(|id| self.is_playing_id(*id))
     }
 
-    pub fn is_group_finished(&self, group: &AnimationGroupID) -> bool {
+    pub fn is_group_finished_all(&self, group: &AnimationGroupID) -> bool {
         group.iter().all(|id| !self.is_playing_id(*id))
+    }
+
+    pub fn is_group_playing_any(&self, group: &AnimationGroupID) -> bool {
+        group.iter().any(|id| self.is_playing_id(*id))
+    }
+
+    pub fn is_group_finished_any(&self, group: &AnimationGroupID) -> bool {
+        group.iter().any(|id| !self.is_playing_id(*id))
     }
 
     pub fn pause_group(&mut self, group: &AnimationGroupID) {
@@ -205,6 +214,58 @@ impl AnimationController {
             self.resume(*id);
         }
     }
+
+    pub fn stop_all(&mut self) {
+        for anim in self.animations.iter_mut() {
+            anim.stop()
+        }
+    }
+
+    pub fn stop_by_predicate(&mut self, predicate: fn(&Animation) -> bool) {
+        self.animations.retain(|anim| !predicate(&anim.animation))
+    }
+
+    pub fn replace(&mut self, id: usize, animation: Animation) -> bool {
+        if let Some(inst) = self.animations.iter_mut().find(|a| a.id == id) {
+            inst.animation = animation;
+            inst.elapsed = 0.0;
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn restart(&mut self, id: usize) {
+        self.seek_progress(id, 0.0);
+    }
+
+    pub fn restart_group(&mut self, group: &AnimationGroupID) {
+        for id in group.iter() {
+            self.seek_progress(*id, 0.0);
+        }
+    }
+
+    pub fn set_delay(&mut self, delay: f32, ids: Vec<usize>) {
+        let delay = delay.max(0.0);
+
+        for id in ids {
+            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
+                anim.set_delay(delay);
+            }
+        }
+    }
+
+    pub fn add_delay(&mut self, delay: f32, ids: Vec<usize>) {
+        let delay = delay.max(0.0);
+
+        for id in ids {
+            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
+                anim.add_delay(delay);
+            }
+        }
+    }
+
+    pub fn apply_animation(&mut self) {}
 
     fn spawn_instance(
         &mut self,

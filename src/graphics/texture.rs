@@ -1,4 +1,5 @@
 use anyhow::*;
+use glam::Vec2;
 use image::{ GenericImageView};
 use wgpu::{Device, Origin3d, Queue, Sampler, SamplerDescriptor, TexelCopyBufferLayout, TexelCopyTextureInfo, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView, TextureViewDescriptor};
 
@@ -6,6 +7,7 @@ pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: TextureView,
     pub sampler: Sampler,
+    pub size: Vec2
 }
 
 impl Texture {
@@ -61,7 +63,12 @@ impl Texture {
             mipmap_filter: wgpu::MipmapFilterMode::Nearest,
             ..Default::default()
         });
-        Ok(Self { texture, view, sampler })
+        Ok(Self {
+            texture,
+            view,
+            sampler,
+            size: Vec2::new(dimensions.0 as f32, dimensions.1 as f32),
+        })
     }
 
 }

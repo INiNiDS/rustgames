@@ -1,7 +1,6 @@
 use winit::event::{ElementState, MouseButton as WinitMouseButton, WindowEvent as WinitWindowEvent};
 use winit::keyboard::{KeyCode, PhysicalKey};
 
-/// Mouse button enum
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MouseButton {
     Left,
@@ -23,7 +22,6 @@ impl From<WinitMouseButton> for MouseButton {
     }
 }
 
-/// Engine event types
 #[derive(Debug, Clone)]
 pub enum Event {
     WindowResized(u32, u32),
@@ -37,7 +35,6 @@ pub enum Event {
     MouseWheel(f32),
 }
 
-/// Event handler trait for processing events
 pub trait EventHandler {
     fn on_key_pressed(&mut self, _key: KeyCode) {}
     fn on_key_released(&mut self, _key: KeyCode) {}
@@ -47,9 +44,9 @@ pub trait EventHandler {
     fn on_mouse_wheel(&mut self, _delta: f32) {}
     fn on_window_resized(&mut self, _width: u32, _height: u32) {}
     fn on_window_focused(&mut self, _focused: bool) {}
+    fn on_window_closed(&mut self) {}
 }
 
-/// Event queue for collecting and processing events
 pub struct EventQueue {
     events: Vec<Event>,
 }
@@ -60,23 +57,19 @@ impl EventQueue {
             events: Vec::new(),
         }
     }
-    
-    /// Add an event to the queue
+
     pub fn push(&mut self, event: Event) {
         self.events.push(event);
     }
-    
-    /// Get all events and clear the queue
+
     pub fn drain(&mut self) -> Vec<Event> {
         std::mem::take(&mut self.events)
     }
-    
-    /// Check if queue is empty
+
     pub fn is_empty(&self) -> bool {
         self.events.is_empty()
     }
-    
-    /// Clear all events
+
     pub fn clear(&mut self) {
         self.events.clear();
     }
@@ -88,7 +81,6 @@ impl Default for EventQueue {
     }
 }
 
-/// Convert winit events to engine events
 pub fn convert_window_event(event: &WinitWindowEvent) -> Option<Event> {
     match event {
         WinitWindowEvent::Resized(size) => {

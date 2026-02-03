@@ -1,25 +1,34 @@
+
+use std::fs;
+use std::path::PathBuf;
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
-use winit::window::Window;
+use winit::window::Window as WinitWindow;
+use crate::controllers::camera_controller::CameraController;
 use crate::core::time::Time;
 use crate::graphics::renderer::Renderer;
-use crate::text::{Font, TextSpeed, TypewriterEffect};
-
+use crate::window::{Event, EventHandler, EventQueue, Window};
 
 pub struct Engine {
-    window: Arc<Window>,
+    window: Window,
     renderer: Renderer,
     time: Time,
+    event_queue: EventQueue,
+    handler_keys: Vec<Box<dyn EventHandler>>,
 }
 
 impl Engine {
-    pub fn new(window: Arc<Window>) -> Self {
-        let render_future = Renderer::new(window.clone());
+    pub fn new(window: Arc<WinitWindow>) -> Self {
+        let wrapped = Window::new(window.clone());
+
+        let render_future = Renderer::new(window);
         let renderer = pollster::block_on(render_future);
         Self { 
-            window, 
+            window: wrapped,
             renderer, 
-            time: Time::new() 
+            time: Time::new(),
+            event_queue: EventQueue::new(),
+            handler_keys: Vec::new(),
         }
     }
 
@@ -29,12 +38,6 @@ impl Engine {
 
     pub fn draw(&mut self) {
         self.renderer.draw();
-    }
-    
-    pub fn update(&mut self) {
-        self.time.begin_frame();
-        self.time.update();
-        self.renderer.camera.update(self.delta_time());
     }
     
     pub fn delta_time(&self) -> f32 {
@@ -48,20 +51,63 @@ impl Engine {
     pub fn request_redraw(&self) {
         self.window.request_redraw();
     }
-    
-    pub fn set_font(&mut self, font: Font) {
-        self.renderer.set_font(font);
-    }
-    
-    pub fn set_text_style(&mut self, style: crate::text::TextStyle) {
-        self.renderer.set_text_style(style);
-    }
-    
-    pub fn set_text(&mut self, text: &str, x: f32, y: f32, speed: TextSpeed) {
-        self.renderer.set_text(&*text, x, y, speed);
+
+    pub fn add_handler<T: EventHandler + 'static>(&mut self, key: T) {
+        self.handler_keys.push(Box::new(key));
     }
     
     pub fn set_title(&self, title: &str) {
         self.window.set_title(title);
+    }
+
+    pub fn update(&mut self) {
+        self.time.begin_frame();
+        self.time.update();
+
+        let events: Vec<Event> = self.event_queue.drain().into_iter().collect();
+
+        for event in events {
+            self.handle_event(event);
+        }
+
+        let dt = self.delta_time();
+
+        self.renderer.get_typewriter_controller().update(dt);
+        self.renderer.get_camera_controller().update(dt);
+        self.renderer.get_animation_controller_mut().update(dt);
+    }
+
+    pub fn push_event(&mut self, event: Event) {
+        self.event_queue.push(event);
+    }
+
+    pub fn set_vsync(&mut self, enabled: bool) { self.renderer.set_vsync(enabled) }
+
+    fn handle_event(&mut self, event: Event) {
+        for handler in &mut self.handler_keys {
+            match event {
+                Event::KeyPressed(key) => handler.on_key_pressed(key),
+                Event::KeyReleased(key) => handler.on_key_released(key),
+                Event::MouseMoved(x, y) => handler.on_mouse_moved(x, y),
+                Event::MousePressed(button) => handler.on_mouse_pressed(button),
+                Event::MouseReleased(button) => handler.on_mouse_released(button),
+                Event::MouseWheel(delta) => handler.on_mouse_wheel(delta),
+                Event::WindowClosed => handler.on_window_closed(),
+                Event::WindowResized(w, h) => handler.on_window_resized(w, h),
+                Event::WindowFocused(f) => handler.on_window_focused(f),
+            }
+        }
+    }
+    
+    pub fn get_text_controller(&mut self) -> &mut crate::controllers::text_controller::TextController {
+        self.renderer.get_text_controller()
+    }
+
+    pub fn get_camera_controller(&mut self) -> &mut CameraController {
+        self.renderer.get_camera_controller()
+    }
+
+    pub fn get_typewriter_controller(&mut self) -> &mut crate::controllers::typewriter_controller::TypewriterController {
+        self.renderer.get_typewriter_controller()
     }
 }

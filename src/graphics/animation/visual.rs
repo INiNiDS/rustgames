@@ -21,6 +21,67 @@ impl Default for VisualState {
     }
 }
 
+pub enum CombinedMode {
+    Default,
+    Add,
+    Mul,
+    Override,
+}
+
+
+pub struct CustomCombinedMode {
+    opacity: CombinedMode,
+    rotation: CombinedMode,
+    scale: CombinedMode,
+    position: CombinedMode,
+}
+
+impl CustomCombinedMode {
+    pub fn new(opacity: CombinedMode, rotation: CombinedMode, scale: CombinedMode, position: CombinedMode) -> Self {
+        Self {
+            opacity, rotation, scale, position
+        }
+    }
+
+    pub fn with_opacity(opacity: CombinedMode) -> Self {
+        Self {
+            opacity,
+            ..Default::default()
+        }
+    }
+    pub fn with_rotation(rotation: CombinedMode) -> Self {
+        Self {
+            rotation,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_scale(scale: CombinedMode) -> Self {
+        Self {
+            scale,
+            ..Default::default()
+        }
+    }
+
+    pub fn with_position(position: CombinedMode) -> Self {
+        Self {
+            position,
+            ..Default::default()
+        }
+    }
+}
+
+impl Default for CustomCombinedMode {
+    fn default() -> Self {
+         Self {
+             opacity: CombinedMode::Mul,
+             rotation: CombinedMode::Add,
+             scale: CombinedMode::Mul,
+             position: CombinedMode::Add
+         }
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub struct AnimEffect {
     pub opacity_mul: f32,
@@ -66,13 +127,49 @@ impl AnimEffect {
         }
     }
 
-    pub fn apply_to(&self, state: VisualState) -> VisualState {
+    pub fn apply_to(&self, state: VisualState, combined_mode: Option<CustomCombinedMode>) -> VisualState {
+        if combined_mode.is_some() {
+            self.apply_to_config(state, combined_mode.unwrap())
+        } else {
+            self.apply_to_default(state)
+        }
+    }
+
+    pub fn apply_to_default(&self, state: VisualState) -> VisualState {
         VisualState {
             opacity: state.opacity * self.opacity_mul,
             position: state.position + self.offset_add,
             scale: state.scale * self.scale_mul,
             rotation: state.rotation + self.rotation_add,
             anchor: state.anchor,
+        }
+    }
+
+    pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
+        VisualState {
+            opacity: self.apply_val(state.opacity, self.opacity_mul, config.opacity),
+            position: self.apply_vec2(state.position, self.offset_add, config.position),
+            scale: self.apply_vec2(state.scale, self.scale_mul, config.scale),
+            rotation: self.apply_val(state.rotation, self.rotation_add, config.rotation),
+            anchor: state.anchor,
+        }
+    }
+
+    fn apply_val(&self, base: f32, delta: f32, mode: CombinedMode) -> f32 {
+        match mode {
+            CombinedMode::Default => base * delta,
+            CombinedMode::Add => base + delta,
+            CombinedMode::Mul => base * delta,
+            CombinedMode::Override => delta,
+        }
+    }
+
+    fn apply_vec2(&self, base: Vec2, delta: Vec2, mode: CombinedMode) -> Vec2 {
+        match mode {
+            CombinedMode::Default => base + delta,
+            CombinedMode::Add => base + delta,
+            CombinedMode::Mul => base * delta,
+            CombinedMode::Override => delta,
         }
     }
 }

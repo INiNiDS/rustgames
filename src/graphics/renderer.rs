@@ -1,25 +1,21 @@
-use std::sync::Arc;
-use glam::Vec2;
-use wgpu::{Device, Queue, StoreOp, Surface, SurfaceConfiguration};
-use winit::dpi::PhysicalSize;
-use winit::window::Window;
+use crate::controllers::text_controller::TextController;
+use crate::controllers::texture_controller::TextureController;
+use crate::controllers::typewriter_controller::TypewriterController;
+use crate::core::{CameraController, RenderContext};
 use crate::graphics::camera::Camera;
 use crate::graphics::sprite_renderer::SpriteRenderer;
-use crate::graphics::texture::Texture;
-use crate::text::{Font, TextSpeed, TextStyle};
+use crate::graphics::{AnimationController, VisualState};
+use crate::text::font::DEFAULT_NORMAL_FONT;
 use crate::text::text::TextSystem;
 use crate::text::typewriter::TypewriterInstance;
+use glam::Vec2;
+use std::sync::Arc;
+use wgpu::{PresentMode, StoreOp};
+use winit::dpi::PhysicalSize;
+use winit::window::Window;
 
 pub struct Renderer {
-    pub surface: Surface<'static>,
-    pub device: Device,
-    pub queue: Queue,
-    pub config: SurfaceConfiguration,
-    pub camera: Camera,
-    sprite_renderer: SpriteRenderer,
-    text_system: TextSystem,
-    text_position: Vec2,
-    typewriter_instance: TypewriterInstance
+    render_context: RenderContext,
 }
 
 impl Renderer {
@@ -27,6 +23,8 @@ impl Renderer {
         let instance = wgpu::Instance::default();
 
         let surface = instance.create_surface(window.clone()).unwrap();
+
+        let typewriter_controller = TypewriterController::new(TypewriterInstance::new());
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -53,61 +51,73 @@ impl Renderer {
 
         let size = window.inner_size();
 
-        let config = surface
+        let mut config = surface
             .get_default_config(&adapter, size.width, size.height)
             .expect("Surface isn't supported by the adapter.");
+
+        config.present_mode = PresentMode::Fifo;
 
         surface.configure(&device, &config);
 
         let size = window.inner_size();
         let camera = Camera::new(size.width, size.height);
 
+        let camera_controller = CameraController::new(camera);
+
         let sprite_renderer = SpriteRenderer::new(&device, &config);
 
-        let text_system = TextSystem::new(&device, &config);
+        let text_system = TextSystem::new(&device, &config, DEFAULT_NORMAL_FONT, None, None, None, None);
+
+        let text_controller = TextController::new(text_system);
+
+        let device_arc = Arc::new(device);
+        let queue_arc = Arc::new(queue);
 
         Self {
-            surface,
-            device,
-            queue,
-            config,
-            camera,
-            sprite_renderer,
-            text_system,
-            text_position: Vec2::ZERO,
-            typewriter_instance: TypewriterInstance::new(),
+            render_context: RenderContext {
+                texture_controller: TextureController::new(Arc::clone(&device_arc), Arc::clone(&queue_arc)),
+                camera_controller,
+                sprite_renderer,
+                text_controller,
+                typewriter_controller,
+                animation_controller: AnimationController::new(),
+                base: VisualState::default(),
+                max_height_text: config.height as f32,
+                max_width_text: config.width as f32,
+                surface,
+                device: device_arc,
+                queue: queue_arc,
+                config,
+            },
         }
     }
 
     pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
-            self.config.width = new_size.width;
-            self.config.height = new_size.height;
-            self.surface.configure(&self.device, &self.config);
+            self.render_context.config.width = new_size.width;
+            self.render_context.config.height = new_size.height;
+            self.render_context.surface.configure(&self.render_context.device, &self.render_context.config);
 
-            self.camera.resize(new_size.width, new_size.height);
-            self.text_system.resize(new_size.width, new_size.height, &self.queue);
+            self.render_context.camera_controller.resize(new_size.width, new_size.height);
+            self.render_context.text_controller.resize(new_size.width, new_size.height, &self.render_context.queue);
         }
     }
 
     pub fn draw(&mut self) {
-        self.sprite_renderer.update_camera(&self.queue, &self.camera);
-        let bytes = include_bytes!("../mistral.png");
-        let texture = Texture::from_bytes(&self.device, &self.queue, bytes, None).unwrap();
-
-        let output = self.surface.get_current_texture().unwrap();
+        self.render_context.sprite_renderer.update_camera(&self.render_context.queue, &self.render_context.camera_controller);
+        let output = self.render_context.surface.get_current_texture().unwrap();
         let view = output
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());
 
-        let mut encoder = self.device.create_command_encoder(
+        let mut encoder = self.render_context.device.create_command_encoder(
             &wgpu::CommandEncoderDescriptor {
                 label: Some("Render Encoder"),
             }
         );
-        if !self.typewriter_instance.is_empty() {
-            for typewriter in self.typewriter_instance.get_typewriter_effects() {
-                self.text_system.queue_text(&self.device, &self.queue, typewriter, self.text_position.x, self.text_position.y);
+        if !self.render_context.typewriter_controller.is_empty() {
+            for typewriter in self.render_context.typewriter_controller.effects() {
+                self.render_context.text_controller.queue_text(typewriter.visible_text(), typewriter.x, typewriter.y, Vec2::new(self.render_context.max_width_text, self.render_context.max_height_text));
             }
         }
          {
@@ -130,26 +140,49 @@ impl Renderer {
                     occlusion_query_set: None,
                     multiview_mask: None,
                 });
-
-            self.sprite_renderer.render(&mut render_pass, &self.device, &texture);
-
+             for (texture, position, size) in self.render_context.texture_controller.get_textures_in_use() {
+                 self.render_context.sprite_renderer.render(
+                     &mut render_pass,
+                     &self.render_context.device,
+                     &texture,
+                     position,
+                     size
+                 );
+             }
+             self.render_context.text_controller.draw(&self.render_context.device, &self.render_context.queue, &mut render_pass);
         }
-        self.queue.submit(std::iter::once(encoder.finish()));
+        self.render_context.queue.submit(std::iter::once(encoder.finish()));
         output.present();
     }
-
-    pub fn set_font(&mut self, font: Font) {
-        self.text_system.set_font(&self.device, self.config.clone(), font);
-    }
-
-    pub fn set_text_style(&mut self, style: TextStyle) {
-        self.text_system.set_style(style);
-    }
-
-    pub fn set_text(&mut self, text: &str, x: f32, y: f32, speed: TextSpeed) -> usize {
-        self.text_position = Vec2::new(x, y);
-        self.typewriter_instance.add_typewriter_effect(text, speed)
-    }
     
-    
+    pub fn set_vsync(&mut self, enabled: bool) {
+        self.render_context.config.present_mode = if enabled { PresentMode::Fifo } else { PresentMode::Immediate };
+
+        self.render_context.surface.configure(&self.render_context.device, &self.render_context.config);
+    }
+
+    pub fn get_camera_controller(&mut self) -> &mut CameraController {
+        &mut self.render_context.camera_controller
+    }
+
+
+    pub fn get_animation_controller_mut(&mut self) -> &mut AnimationController {
+        &mut self.render_context.animation_controller
+    }
+
+    pub fn get_animation_controller(&self) -> &AnimationController {
+        &self.render_context.animation_controller
+    }
+
+    pub fn get_texture_controller(&mut self) -> &mut TextureController {
+        &mut self.render_context.texture_controller
+    }
+
+    pub fn get_typewriter_controller(&mut self) -> &mut TypewriterController {
+        &mut self.render_context.typewriter_controller
+    }
+
+    pub fn get_text_controller(&mut self) -> &mut TextController {
+        &mut self.render_context.text_controller
+    }
 }

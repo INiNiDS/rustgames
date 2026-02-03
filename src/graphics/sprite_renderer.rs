@@ -1,7 +1,8 @@
+use glam::{Mat4, Vec2, Vec3};
 use crate::graphics::sprite::Vertex;
 use crate::graphics::texture::Texture;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::graphics::camera::Camera;
+use crate::core::CameraController;
 
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,
@@ -11,6 +12,7 @@ pub struct SpriteRenderer {
     texture_bind_group_layout: wgpu::BindGroupLayout,
     camera_bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
+    model_bind_group_layout: wgpu::BindGroupLayout,
 }
 
 impl SpriteRenderer {
@@ -18,13 +20,14 @@ impl SpriteRenderer {
         let shader = Self::create_shader(device);
         let texture_bind_group_layout = Self::create_texture_bind_group_layout(device);
         let camera_bind_group_layout = Self::create_camera_bind_group_layout(device);
+        let model_bind_group_layout = Self::create_model_bind_group_layout(device);
 
         let camera_buffer = Self::create_camera_buffer(device);
         let camera_bind_group =
             Self::create_camera_bind_group(device, &camera_bind_group_layout, &camera_buffer);
 
         let pipeline_layout =
-            Self::create_pipeline_layout(device, &texture_bind_group_layout, &camera_bind_group_layout);
+            Self::create_pipeline_layout(device, &texture_bind_group_layout, &camera_bind_group_layout, &model_bind_group_layout);
         let render_pipeline =
             Self::create_render_pipeline(device, config, &shader, &pipeline_layout);
 
@@ -38,10 +41,11 @@ impl SpriteRenderer {
             texture_bind_group_layout,
             camera_bind_group,
             camera_buffer,
+            model_bind_group_layout,
         }
     }
     
-    pub fn update_camera(&self, queue: &wgpu::Queue, camera: &Camera) {
+    pub fn update_camera(&self, queue: &wgpu::Queue, camera: &CameraController) {
         let matrix = camera.build_view_projection_matrix();
         queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[matrix]));
     }
@@ -51,12 +55,33 @@ impl SpriteRenderer {
         render_pass: &mut wgpu::RenderPass<'_>,
         device: &wgpu::Device,
         texture: &Texture,
+        position: Vec2,
+        size: Vec2,
     ) {
         let bind_group = self.create_texture_bind_group(device, texture);
+
+        let transform = Mat4::from_translation(Vec3::new(position.x, position.y, 0.0))
+            * Mat4::from_scale(Vec3::new(size.x, size.y, 1.0));
+
+        let model_buffer = device.create_buffer_init(&BufferInitDescriptor {
+            label: Some("Model Buffer"),
+            contents: bytemuck::cast_slice(&[transform]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let model_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("model_bind_group"),
+            layout: &self.model_bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: model_buffer.as_entire_binding(),
+            }],
+        });
 
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_bind_group(0, &bind_group, &[]);
         render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
+        render_pass.set_bind_group(2, &model_bind_group, &[]);
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
         render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
@@ -93,19 +118,17 @@ impl SpriteRenderer {
         })
     }
 
+    fn create_model_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
+        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("model_bind_group_layout"),
+            entries: Self::get_entries(),
+        })
+    }
+
     fn create_camera_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
         device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("camera_bind_group_layout"),
-            entries: &[wgpu::BindGroupLayoutEntry {
-                binding: 0,
-                visibility: wgpu::ShaderStages::VERTEX,
-                ty: wgpu::BindingType::Buffer {
-                    ty: wgpu::BufferBindingType::Uniform,
-                    has_dynamic_offset: false,
-                    min_binding_size: None,
-                },
-                count: None,
-            }],
+            entries: Self::get_entries(),
         })
     }
 
@@ -136,10 +159,11 @@ impl SpriteRenderer {
         device: &wgpu::Device,
         texture_layout: &wgpu::BindGroupLayout,
         camera_layout: &wgpu::BindGroupLayout,
+        model_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::PipelineLayout {
         device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: Some("Sprite Render Pipeline Layout"),
-            bind_group_layouts: &[texture_layout, camera_layout],
+            bind_group_layouts: &[texture_layout, camera_layout, model_layout],
             immediate_size: 0,
         })
     }
@@ -222,5 +246,18 @@ impl SpriteRenderer {
                 },
             ],
         })
+    }
+
+    fn get_entries() -> &'static [wgpu::BindGroupLayoutEntry] {
+        &[wgpu::BindGroupLayoutEntry {
+            binding: 0,
+            visibility: wgpu::ShaderStages::VERTEX,
+            ty: wgpu::BindingType::Buffer {
+                ty: wgpu::BufferBindingType::Uniform,
+                has_dynamic_offset: false,
+                min_binding_size: None,
+            },
+            count: None,
+        }]
     }
 }
