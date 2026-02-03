@@ -1,3 +1,53 @@
+//! Sprite Animation System
+//!
+//! This module provides a UV-based sprite animation system for efficient animated sprites.
+//! Instead of swapping textures, it updates UV coordinates to show different frames from
+//! a single sprite sheet.
+//!
+//! # Quick Example
+//!
+//! ```rust,no_run
+//! use rustgames::graphics::{SpriteAnimation, AnimationMode};
+//! use glam::Vec4;
+//!
+//! // Create animation from a 4×4 sprite sheet grid
+//! let mut animation = SpriteAnimation::from_grid(
+//!     4,                      // columns
+//!     4,                      // rows
+//!     12,                     // number of frames to use
+//!     10.0,                   // frames per second
+//!     AnimationMode::Loop,    // animation mode
+//! );
+//!
+//! // In your game loop:
+//! // 1. Update animation
+//! animation.update(delta_time);
+//!
+//! // 2. Get current UV coordinates
+//! let uv = animation.current_uv();  // Returns Vec4(x, y, width, height)
+//!
+//! // 3. Use UV in your SpriteInstance for rendering
+//! // let instance = SpriteInstance::new(position, size, rotation, uv, color);
+//! ```
+//!
+//! # Animation Modes
+//!
+//! - **Loop**: Cycles continuously (0→1→2→3→0→...)
+//! - **PlayOnce**: Plays once and stops (0→1→2→3 [STOP])
+//! - **PingPong**: Plays forward then backward (0→1→2→3→2→1→0→...)
+//!
+//! # Performance
+//!
+//! - Memory: 40 bytes + 16 bytes per frame
+//! - CPU: O(1) update, no allocations
+//! - GPU: No texture uploads, just UV coordinates
+//!
+//! # See Also
+//!
+//! - `examples/animation_demo.rs` - Interactive demonstration
+//! - `ANIMATION_GUIDE.md` - Complete usage guide
+//! - `HOW_ANIMATION_WORKS.md` - Technical deep-dive
+
 use glam::Vec4;
 
 /// Animation playback mode for sprite animations.
