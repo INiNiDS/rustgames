@@ -4,7 +4,7 @@ use crate::controllers::typewriter_controller::TypewriterController;
 use crate::core::{CameraController, RenderContext};
 use crate::graphics::camera::Camera;
 use crate::graphics::sprite_renderer::SpriteRenderer;
-use crate::graphics::{AnimationController, VisualState};
+use crate::graphics::{AnimationController, SpriteInstance, VisualState};
 use crate::text::font::DEFAULT_NORMAL_FONT;
 use crate::text::text::TextSystem;
 use crate::text::typewriter::TypewriterInstance;
@@ -104,7 +104,9 @@ impl Renderer {
     }
 
     pub fn draw(&mut self) {
+        // Update camera for this frame
         self.render_context.sprite_renderer.update_camera(&self.render_context.queue, &self.render_context.camera_controller);
+        
         let output = self.render_context.surface.get_current_texture().unwrap();
         let view = output
             .texture
@@ -115,12 +117,20 @@ impl Renderer {
                 label: Some("Render Encoder"),
             }
         );
+        
+        // Queue typewriter text if active
         if !self.render_context.typewriter_controller.is_empty() {
             for typewriter in self.render_context.typewriter_controller.effects() {
-                self.render_context.text_controller.queue_text(typewriter.visible_text(), typewriter.x, typewriter.y, Vec2::new(self.render_context.max_width_text, self.render_context.max_height_text));
+                self.render_context.text_controller.queue_text(
+                    typewriter.visible_text(), 
+                    typewriter.x, 
+                    typewriter.y, 
+                    Vec2::new(self.render_context.max_width_text, self.render_context.max_height_text)
+                );
             }
         }
-         {
+        
+        {
             let mut render_pass = encoder.begin_render_pass(
                 &wgpu::RenderPassDescriptor {
                     label: Some("Render Pass"),
@@ -140,19 +150,29 @@ impl Renderer {
                     occlusion_query_set: None,
                     multiview_mask: None,
                 });
-             for (texture, position, size) in self.render_context.texture_controller.get_textures_in_use() {
-                 self.render_context.sprite_renderer.render(
-                     &mut render_pass,
-                     &self.render_context.device,
-                     &texture,
-                     position,
-                     size
-                 );
-             }
-             self.render_context.text_controller.draw(&self.render_context.device, &self.render_context.queue, &mut render_pass);
+            
+            // INSTANCED RENDERING: Batch all sprites by texture and render with one draw call per texture
+            for (texture, instances) in self.render_context.texture_controller.get_batched_instances() {
+                if !instances.is_empty() {
+                    self.render_context.sprite_renderer.render(
+                        &mut render_pass,
+                        &self.render_context.device,
+                        &self.render_context.queue,
+                        texture,
+                        instances,
+                    );
+                }
+            }
+            
+            // Render text overlay
+            self.render_context.text_controller.draw(&self.render_context.device, &self.render_context.queue, &mut render_pass);
         }
+        
         self.render_context.queue.submit(std::iter::once(encoder.finish()));
         output.present();
+        
+        // Clear instances for next frame (important!)
+        self.render_context.texture_controller.clear_instances();
     }
     
     pub fn set_vsync(&mut self, enabled: bool) {

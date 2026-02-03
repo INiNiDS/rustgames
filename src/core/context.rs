@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use wgpu::{Device, Queue, Surface, SurfaceConfiguration};
 use crate::controllers::text_controller::TextController;
@@ -26,5 +25,5 @@ pub struct RenderContext {
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
     pub config: SurfaceConfiguration,
-    pub texture_controller: TextureController
+    pub texture_controller: TextureController,
 }

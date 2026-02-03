@@ -110,4 +110,12 @@ impl Engine {
     pub fn get_typewriter_controller(&mut self) -> &mut crate::controllers::typewriter_controller::TypewriterController {
         self.renderer.get_typewriter_controller()
     }
+    
+    pub fn get_event_queue(&self) -> &EventQueue {
+        &self.event_queue
+    }
+    
+    pub fn get_texture_controller(&mut self) -> &mut crate::controllers::texture_controller::TextureController {
+        self.renderer.get_texture_controller()
+    }
 }

@@ -5,7 +5,7 @@
 
 // Core types
 pub use crate::core::{
-    Engine, Time, Context, RenderContext,
+    Engine, Time, Context, RenderContext, Game, FpsCounter,
 };
 
 // Graphics types
@@ -18,7 +18,7 @@ pub use crate::graphics::{
 // Window types
 pub use crate::window::{
     Window, WindowConfig,
-    Event, EventHandler, EventQueue,
+    Event, EventHandler, EventQueue, KeyCode,
 };
 
 // Text types
