@@ -17,8 +17,8 @@ impl CoreGame for Game {
         engine.get_typewriter_controller().add_effect("Привет, я Луна! Как твои дела?", TextSpeed::Slow, 100.0, 800.0);
         self.score_text_id = engine.get_typewriter_controller().add_effect(&format!("[b]Очки[/b]: {}", self.score), TextSpeed::Instant, 50.0, 50.0);
 
-        engine.load_texture("mistral", include_bytes!("../src/mistral.png"));
-        engine.load_texture("background", include_bytes!("../src/OIP-475081084.jpg"));
+        engine.get_texture_controller().load_texture(include_bytes!("../src/mistral.png"), "mistral");
+        engine.get_texture_controller().load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
         engine.get_camera_controller().shake(10.0, 1.0);
     }
 

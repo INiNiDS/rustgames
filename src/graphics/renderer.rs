@@ -4,7 +4,7 @@ use crate::controllers::typewriter_controller::TypewriterController;
 use crate::core::{CameraController, RenderContext};
 use crate::graphics::camera::Camera;
 use crate::graphics::sprite_renderer::SpriteRenderer;
-use crate::graphics::{AnimationController, VisualState};
+use crate::graphics::{AnimationController, SpriteInstance, VisualState};
 use crate::text::font::DEFAULT_NORMAL_FONT;
 use crate::text::text::TextSystem;
 use crate::text::typewriter::TypewriterInstance;
@@ -144,9 +144,9 @@ impl Renderer {
                  self.render_context.sprite_renderer.render(
                      &mut render_pass,
                      &self.render_context.device,
+                     &self.render_context.queue,
                      &texture,
-                     position,
-                     size
+                     /* &[graphics::instance::SpriteInstance] */,
                  );
              }
              self.render_context.text_controller.draw(&self.render_context.device, &self.render_context.queue, &mut render_pass);

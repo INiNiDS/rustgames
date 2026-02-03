@@ -1,95 +1,140 @@
-use glam::{Mat4, Vec2, Vec3};
+use glam::Vec2;
 use crate::graphics::sprite::Vertex;
 use crate::graphics::texture::Texture;
+use crate::graphics::instance::SpriteInstance;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use crate::core::CameraController;
 
+/// Production-grade sprite renderer with hardware instancing.
+/// Renders thousands of sprites efficiently using a single draw call.
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     num_indices: u32,
+
+    // Instance buffer (dynamically resized)
+    instance_buffer: wgpu::Buffer,
+    instance_capacity: usize,
+
+    // Bind groups
     texture_bind_group_layout: wgpu::BindGroupLayout,
     camera_bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
-    model_bind_group_layout: wgpu::BindGroupLayout,
 }
 
 impl SpriteRenderer {
     pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
         let shader = Self::create_shader(device);
-        let texture_bind_group_layout = Self::create_texture_bind_group_layout(device);
         let camera_bind_group_layout = Self::create_camera_bind_group_layout(device);
-        let model_bind_group_layout = Self::create_model_bind_group_layout(device);
+        let texture_bind_group_layout = Self::create_texture_bind_group_layout(device);
 
         let camera_buffer = Self::create_camera_buffer(device);
         let camera_bind_group =
             Self::create_camera_bind_group(device, &camera_bind_group_layout, &camera_buffer);
 
         let pipeline_layout =
-            Self::create_pipeline_layout(device, &texture_bind_group_layout, &camera_bind_group_layout, &model_bind_group_layout);
+            Self::create_pipeline_layout(device, &camera_bind_group_layout, &texture_bind_group_layout);
         let render_pipeline =
             Self::create_render_pipeline(device, config, &shader, &pipeline_layout);
 
         let (vertex_buffer, index_buffer, num_indices) = Self::create_quad_buffers(device);
+
+        // Initial instance buffer with capacity for 1000 sprites
+        let initial_capacity = 1000;
+        let instance_buffer = Self::create_instance_buffer(device, initial_capacity);
 
         Self {
             render_pipeline,
             vertex_buffer,
             index_buffer,
             num_indices,
+            instance_buffer,
+            instance_capacity: initial_capacity,
             texture_bind_group_layout,
             camera_bind_group,
             camera_buffer,
-            model_bind_group_layout,
         }
     }
-    
+
+    /// Update camera uniform buffer.
     pub fn update_camera(&self, queue: &wgpu::Queue, camera: &CameraController) {
         let matrix = camera.build_view_projection_matrix();
         queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[matrix]));
     }
 
+    /// Render multiple instances with a single draw call.
+    ///
+    /// # Arguments
+    /// * `render_pass` - Active render pass
+    /// * `device` - WGPU device for buffer creation
+    /// * `queue` - WGPU queue for buffer updates
+    /// * `texture` - Texture to render
+    /// * `instances` - Slice of instance data
     pub fn render(
-        &self,
+        &mut self,
         render_pass: &mut wgpu::RenderPass<'_>,
         device: &wgpu::Device,
+        queue: &wgpu::Queue,
         texture: &Texture,
-        position: Vec2,
-        size: Vec2,
+        instances: &[SpriteInstance],
     ) {
+        if instances.is_empty() {
+            return;
+        }
+
+        // Resize instance buffer if needed
+        if instances.len() > self.instance_capacity {
+            self.resize_instance_buffer(device, instances.len());
+        }
+
+        // Write instance data to GPU
+        queue.write_buffer(
+            &self.instance_buffer,
+            0,
+            bytemuck::cast_slice(instances),
+        );
+
+        // Create texture bind group
         let bind_group = self.create_texture_bind_group(device, texture);
 
-        let transform = Mat4::from_translation(Vec3::new(position.x, position.y, 0.0))
-            * Mat4::from_scale(Vec3::new(size.x, size.y, 1.0));
-
-        let model_buffer = device.create_buffer_init(&BufferInitDescriptor {
-            label: Some("Model Buffer"),
-            contents: bytemuck::cast_slice(&[transform]),
-            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        });
-
-        let model_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("model_bind_group"),
-            layout: &self.model_bind_group_layout,
-            entries: &[wgpu::BindGroupEntry {
-                binding: 0,
-                resource: model_buffer.as_entire_binding(),
-            }],
-        });
-
+        // Set pipeline and bind groups
         render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_bind_group(0, &bind_group, &[]);
-        render_pass.set_bind_group(1, &self.camera_bind_group, &[]);
-        render_pass.set_bind_group(2, &model_bind_group, &[]);
+        render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
+        render_pass.set_bind_group(1, &bind_group, &[]);
+
+        // Set buffers
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
+        render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-        render_pass.draw_indexed(0..self.num_indices, 0, 0..1);
+
+        // Draw all instances
+        render_pass.draw_indexed(0..self.num_indices, 0, 0..instances.len() as u32);
+    }
+
+    /// Resize instance buffer to accommodate more instances.
+    fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
+        // Grow by 1.5x to reduce reallocations
+        let new_capacity = (new_capacity as f32 * 1.5) as usize;
+        self.instance_buffer = Self::create_instance_buffer(device, new_capacity);
+        self.instance_capacity = new_capacity;
+    }
+
+    /// Create instance buffer with given capacity.
+    fn create_instance_buffer(device: &wgpu::Device, capacity: usize) -> wgpu::Buffer {
+        let size = (capacity * std::mem::size_of::<SpriteInstance>()) as u64;
+
+        device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Instance Buffer"),
+            size,
+            usage: wgpu::BufferUsages::VERTEX | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        })
     }
 
     fn create_shader(device: &wgpu::Device) -> wgpu::ShaderModule {
         device.create_shader_module(wgpu::ShaderModuleDescriptor {
-            label: Some("Sprite Shader"),
+            label: Some("Instanced Sprite Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         })
     }
@@ -118,17 +163,19 @@ impl SpriteRenderer {
         })
     }
 
-    fn create_model_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
-        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-            label: Some("model_bind_group_layout"),
-            entries: Self::get_entries(),
-        })
-    }
-
     fn create_camera_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
         device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
             label: Some("camera_bind_group_layout"),
-            entries: Self::get_entries(),
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: None,
+                },
+                count: None,
+            }],
         })
     }
 
@@ -157,13 +204,12 @@ impl SpriteRenderer {
 
     fn create_pipeline_layout(
         device: &wgpu::Device,
-        texture_layout: &wgpu::BindGroupLayout,
         camera_layout: &wgpu::BindGroupLayout,
-        model_layout: &wgpu::BindGroupLayout,
+        texture_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::PipelineLayout {
         device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Sprite Render Pipeline Layout"),
-            bind_group_layouts: &[texture_layout, camera_layout, model_layout],
+            label: Some("Instanced Sprite Render Pipeline Layout"),
+            bind_group_layouts: &[camera_layout, texture_layout],
             immediate_size: 0,
         })
     }
@@ -175,13 +221,16 @@ impl SpriteRenderer {
         layout: &wgpu::PipelineLayout,
     ) -> wgpu::RenderPipeline {
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("Render Pipeline"),
+            label: Some("Instanced Render Pipeline"),
             layout: Some(layout),
             vertex: wgpu::VertexState {
                 module: shader,
                 entry_point: Some("vs_main"),
                 compilation_options: wgpu::PipelineCompilationOptions::default(),
-                buffers: &[Vertex::desc()],
+                buffers: &[
+                    Vertex::desc(),
+                    SpriteInstance::desc(),
+                ],
             },
             primitive: wgpu::PrimitiveState {
                 topology: wgpu::PrimitiveTopology::TriangleList,
@@ -233,7 +282,7 @@ impl SpriteRenderer {
 
     fn create_texture_bind_group(&self, device: &wgpu::Device, texture: &Texture) -> wgpu::BindGroup {
         device.create_bind_group(&wgpu::BindGroupDescriptor {
-            label: Some("diffuse_bind_group"),
+            label: Some("texture_bind_group"),
             layout: &self.texture_bind_group_layout,
             entries: &[
                 wgpu::BindGroupEntry {
@@ -247,17 +296,20 @@ impl SpriteRenderer {
             ],
         })
     }
+}
 
-    fn get_entries() -> &'static [wgpu::BindGroupLayoutEntry] {
-        &[wgpu::BindGroupLayoutEntry {
-            binding: 0,
-            visibility: wgpu::ShaderStages::VERTEX,
-            ty: wgpu::BindingType::Buffer {
-                ty: wgpu::BufferBindingType::Uniform,
-                has_dynamic_offset: false,
-                min_binding_size: None,
-            },
-            count: None,
-        }]
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_instance_buffer_capacity() {
+        // This is a conceptual test - actual GPU testing requires a device
+        let initial_capacity = 1000;
+        let instance_size = std::mem::size_of::<SpriteInstance>();
+
+        // Verify buffer size calculation
+        let buffer_size = initial_capacity * instance_size;
+        assert_eq!(buffer_size, initial_capacity * 96); // 96 bytes per instance
     }
 }
