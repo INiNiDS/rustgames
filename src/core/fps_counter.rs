@@ -1,4 +1,3 @@
-/// Simple FPS counter utility for performance monitoring
 use std::collections::VecDeque;
 
 pub struct FpsCounter {
@@ -15,8 +14,7 @@ impl FpsCounter {
             max_samples: 60,
         }
     }
-    
-    /// Update with delta time from current frame
+
     pub fn update(&mut self, delta_time: f32) {
         self.frame_times.push_back(delta_time);
         self.total_time += delta_time;
@@ -27,8 +25,7 @@ impl FpsCounter {
             }
         }
     }
-    
-    /// Get current FPS
+
     pub fn fps(&self) -> f32 {
         if self.frame_times.is_empty() || self.total_time == 0.0 {
             return 0.0;
@@ -36,8 +33,7 @@ impl FpsCounter {
         
         self.frame_times.len() as f32 / self.total_time
     }
-    
-    /// Get average frame time in milliseconds
+
     pub fn frame_time_ms(&self) -> f32 {
         if self.frame_times.is_empty() {
             return 0.0;
@@ -45,8 +41,7 @@ impl FpsCounter {
         
         (self.total_time / self.frame_times.len() as f32) * 1000.0
     }
-    
-    /// Get min FPS from samples
+
     pub fn min_fps(&self) -> f32 {
         self.frame_times
             .iter()
@@ -54,8 +49,7 @@ impl FpsCounter {
             .map(|&max_time| if max_time > 0.0 { 1.0 / max_time } else { 0.0 })
             .unwrap_or(0.0)
     }
-    
-    /// Get max FPS from samples
+
     pub fn max_fps(&self) -> f32 {
         self.frame_times
             .iter()
@@ -78,8 +72,7 @@ mod tests {
     #[test]
     fn test_fps_counter() {
         let mut counter = FpsCounter::new();
-        
-        // Simulate 60 FPS (16.67ms per frame)
+
         for _ in 0..60 {
             counter.update(1.0 / 60.0);
         }
@@ -91,8 +84,7 @@ mod tests {
     #[test]
     fn test_frame_time() {
         let mut counter = FpsCounter::new();
-        
-        // Simulate 60 FPS
+
         for _ in 0..60 {
             counter.update(1.0 / 60.0);
         }

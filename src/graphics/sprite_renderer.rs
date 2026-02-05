@@ -1,23 +1,18 @@
-use glam::Vec2;
+use crate::core::CameraController;
+use crate::graphics::instance::SpriteInstance;
 use crate::graphics::sprite::Vertex;
 use crate::graphics::texture::Texture;
-use crate::graphics::instance::SpriteInstance;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::core::CameraController;
 
-/// Production-grade sprite renderer with hardware instancing.
-/// Renders thousands of sprites efficiently using a single draw call.
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
     num_indices: u32,
 
-    // Instance buffer (dynamically resized)
     instance_buffer: wgpu::Buffer,
     instance_capacity: usize,
 
-    // Bind groups
     texture_bind_group_layout: wgpu::BindGroupLayout,
     camera_bind_group: wgpu::BindGroup,
     camera_buffer: wgpu::Buffer,
@@ -40,7 +35,6 @@ impl SpriteRenderer {
 
         let (vertex_buffer, index_buffer, num_indices) = Self::create_quad_buffers(device);
 
-        // Initial instance buffer with capacity for 1000 sprites
         let initial_capacity = 1000;
         let instance_buffer = Self::create_instance_buffer(device, initial_capacity);
 
@@ -57,20 +51,11 @@ impl SpriteRenderer {
         }
     }
 
-    /// Update camera uniform buffer.
     pub fn update_camera(&self, queue: &wgpu::Queue, camera: &CameraController) {
         let matrix = camera.build_view_projection_matrix();
         queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[matrix]));
     }
 
-    /// Render multiple instances with a single draw call.
-    ///
-    /// # Arguments
-    /// * `render_pass` - Active render pass
-    /// * `device` - WGPU device for buffer creation
-    /// * `queue` - WGPU queue for buffer updates
-    /// * `texture` - Texture to render
-    /// * `instances` - Slice of instance data
     pub fn render(
         &mut self,
         render_pass: &mut wgpu::RenderPass<'_>,
@@ -83,46 +68,37 @@ impl SpriteRenderer {
             return;
         }
 
-        // Resize instance buffer if needed
         if instances.len() > self.instance_capacity {
             self.resize_instance_buffer(device, instances.len());
         }
 
-        // Write instance data to GPU
         queue.write_buffer(
             &self.instance_buffer,
             0,
             bytemuck::cast_slice(instances),
         );
 
-        // Create texture bind group
         let bind_group = self.create_texture_bind_group(device, texture);
 
-        // Set pipeline and bind groups
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
         render_pass.set_bind_group(1, &bind_group, &[]);
 
-        // Set buffers
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
 
-        // Draw all instances
         render_pass.draw_indexed(0..self.num_indices, 0, 0..instances.len() as u32);
     }
 
-    /// Resize instance buffer to accommodate more instances.
     fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
-        // Grow by 1.5x to reduce reallocations
         let new_capacity = (new_capacity as f32 * 1.5) as usize;
         self.instance_buffer = Self::create_instance_buffer(device, new_capacity);
         self.instance_capacity = new_capacity;
     }
 
-    /// Create instance buffer with given capacity.
     fn create_instance_buffer(device: &wgpu::Device, capacity: usize) -> wgpu::Buffer {
-        let size = (capacity * std::mem::size_of::<SpriteInstance>()) as u64;
+        let size = (capacity * size_of::<SpriteInstance>()) as u64;
 
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Instance Buffer"),
@@ -304,12 +280,10 @@ mod tests {
 
     #[test]
     fn test_instance_buffer_capacity() {
-        // This is a conceptual test - actual GPU testing requires a device
         let initial_capacity = 1000;
-        let instance_size = std::mem::size_of::<SpriteInstance>();
+        let instance_size = size_of::<SpriteInstance>();
 
-        // Verify buffer size calculation
         let buffer_size = initial_capacity * instance_size;
-        assert_eq!(buffer_size, initial_capacity * 96); // 96 bytes per instance
+        assert_eq!(buffer_size, initial_capacity * 96);
     }
 }

@@ -11,7 +11,6 @@ pub struct TextureController {
     textures: HashMap<String, Texture>,
     device: Arc<Device>,
     queue: Arc<Queue>,
-    // Batch instances per texture for efficient instanced rendering
     instances_per_texture: HashMap<String, Vec<SpriteInstance>>,
 }
 
@@ -33,8 +32,6 @@ impl TextureController {
         self.textures.len() - 1
     }
 
-    /// Add a sprite instance to be rendered with the specified texture.
-    /// This is the new instanced rendering API.
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
         self.instances_per_texture
             .entry(texture_label.to_string())
@@ -42,15 +39,11 @@ impl TextureController {
             .push(instance);
     }
 
-    /// Legacy API: use_texture for backward compatibility
-    /// Converts to SpriteInstance internally
-    pub fn use_texture(&mut self, label: &str, size: Vec2, position: Vec2) {
-        let instance = SpriteInstance::simple(position, size);
+    pub fn use_texture(&mut self, label: &str, size: Vec2, position: Vec2, rotation: f32, opacity: f32) {
+        let instance = SpriteInstance::simple(position, size, rotation, opacity);
         self.add_instance(label, instance);
     }
 
-    /// Get all textures with their batched instances for rendering.
-    /// Returns (texture, instances_slice) pairs.
     pub fn get_batched_instances(&self) -> Vec<(&Texture, &[SpriteInstance])> {
         self.instances_per_texture
             .iter()
@@ -59,8 +52,7 @@ impl TextureController {
             })
             .collect()
     }
-    
-    /// Clear all queued instances (call after rendering frame)
+
     pub fn clear_instances(&mut self) {
         for instances in self.instances_per_texture.values_mut() {
             instances.clear();
@@ -95,8 +87,7 @@ impl TextureController {
             self.load_texture(&bytes, entry.path().to_str().unwrap());
         }
     }
-    
-    /// Get a texture by label.
+
     pub fn get_texture(&self, label: &str) -> Option<&Texture> {
         self.textures.get(label)
     }

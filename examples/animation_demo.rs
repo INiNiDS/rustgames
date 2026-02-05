@@ -1,15 +1,3 @@
-/// animation_demo.rs - Interactive demonstration of the sprite animation system
-/// 
-/// This example showcases all three animation modes and allows switching between them
-/// to understand how the sprite animation system works in practice.
-///
-/// ## What This Demo Shows:
-/// - How to create animations from sprite sheets
-/// - Loop, PlayOnce, and PingPong animation modes
-/// - Real-time mode switching
-/// - Animation state (frame number, finished status)
-/// - UV coordinate updates for sprite sheet rendering
-
 use rustgames::prelude::*;
 use rustgames::core::{app, FpsCounter};
 use rustgames::graphics::{SpriteAnimation, AnimationMode, SpriteInstance};
@@ -17,19 +5,15 @@ use rustgames::window::KeyCode;
 use glam::{Vec2, Vec4};
 
 struct AnimationDemo {
-    // Three different animations to demonstrate each mode
     loop_animation: SpriteAnimation,
     play_once_animation: SpriteAnimation,
     ping_pong_animation: SpriteAnimation,
-    
-    // Current active mode
+
     current_mode: AnimationModeDemo,
-    
-    // Display info
+
     fps_counter: FpsCounter,
     info_update_timer: f32,
-    
-    // Pause state
+
     is_paused: bool,
 }
 
@@ -77,41 +61,35 @@ impl Game for AnimationDemo {
         println!("  SPACE - Pause/Resume animation");
         println!("  ESC   - Exit");
         println!();
-        
-        // Load a texture that will be our sprite sheet
-        // The mistral.png is organized as a 2x2 grid (4 frames)
+
         engine.get_texture_controller().load_texture(
             include_bytes!("../src/mistral.png"),
             "animation_sheet"
         );
-        
-        // Set up camera
-        engine.get_camera_controller().set_zoom(200.0);
+
+        engine.get_camera_controller().set_zoom(300.0);
         
         println!("✓ Animation system initialized");
         println!("✓ Sprite sheet loaded (2x2 grid, 4 frames)");
         println!("✓ Starting in LOOP mode");
         println!();
         self.print_mode_info();
+
+        engine.get_audio_system().load_sound("perdej", "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3");
     }
 
     fn update(&mut self, engine: &mut Engine) {
         let delta = engine.delta_time();
-        
-        // Update FPS counter
+
         self.fps_counter.update(delta);
         self.info_update_timer += delta;
-        
-        // Update the active animation
+
         self.get_current_animation_mut().update(delta);
-        
-        // Handle keyboard input
+
         self.handle_input(engine);
-        
-        // Render the animated sprite
+
         self.render_sprite(engine);
-        
-        // Update window title with animation info
+
         if self.info_update_timer >= 0.1 {
             self.info_update_timer = 0.0;
             self.update_window_title(engine);
@@ -121,8 +99,6 @@ impl Game for AnimationDemo {
 
 impl AnimationDemo {
     fn new() -> Self {
-        // Create three animations, one for each mode
-        // Using a 2x2 grid sprite sheet with 4 frames at 8 FPS
         Self {
             loop_animation: SpriteAnimation::from_grid(2, 2, 4, 8.0, AnimationMode::Loop),
             play_once_animation: SpriteAnimation::from_grid(2, 2, 4, 8.0, AnimationMode::PlayOnce),
@@ -144,8 +120,7 @@ impl AnimationDemo {
     
     fn handle_input(&mut self, engine: &mut Engine) {
         let event_queue = engine.get_event_queue();
-        
-        // Switch animation modes
+
         if event_queue.was_key_just_pressed(KeyCode::Digit1) {
             self.switch_mode(AnimationModeDemo::Loop);
         }
@@ -155,15 +130,13 @@ impl AnimationDemo {
         if event_queue.was_key_just_pressed(KeyCode::Digit3) {
             self.switch_mode(AnimationModeDemo::PingPong);
         }
-        
-        // Reset animation
+
         if event_queue.was_key_just_pressed(KeyCode::KeyR) {
             let current_anim = self.get_current_animation_mut();
             current_anim.reset();
             println!("→ Animation reset to frame 0");
         }
-        
-        // Pause/Resume
+
         if event_queue.was_key_just_pressed(KeyCode::Space) {
             self.is_paused = !self.is_paused;
             if self.is_paused {
@@ -174,8 +147,7 @@ impl AnimationDemo {
                 println!("▶ Animation resumed");
             }
         }
-        
-        // Exit
+
         if event_queue.was_key_just_pressed(KeyCode::Escape) {
             println!();
             println!("Animation demo ended.");
@@ -201,21 +173,19 @@ impl AnimationDemo {
     }
     
     fn render_sprite(&mut self, engine: &mut Engine) {
-        // Get the current UV coordinates from the animation
-        // This is the key: UV coordinates change, but the texture stays the same!
-        let uv = self.get_current_animation_mut().current_uv();
-        
-        // Create a sprite instance with the animated UV coordinates
-        let instance = SpriteInstance::new(
-            Vec2::ZERO,              // Position (center of screen)
-            Vec2::new(150.0, 150.0), // Size
-            0.0,                     // Rotation
-            uv,                      // UV coordinates from animation!
-            Vec4::ONE,               // White color (no tint)
-        );
-        
-        // Add to rendering batch
         let texture_controller = engine.get_texture_controller();
+        let uv = self.get_current_animation_mut().current_uv();
+
+        let size = texture_controller.get_texture("animation_sheet").unwrap().size;
+
+        let instance = SpriteInstance::new(
+            Vec2::ZERO,
+            size,
+            0.0,
+            uv,
+            Vec4::ONE,
+        );
+
         texture_controller.add_instance("animation_sheet", instance);
     }
     
@@ -253,7 +223,17 @@ fn main() {
     println!();
     
     let game = AnimationDemo::new();
-    
-    app::run("Sprite Animation Demo", 800.0, 600.0, Box::new(game))
-        .expect("Failed to run animation demo");
+
+    let window_config = WindowConfig {
+        title: "Demo: animation".to_string(),
+        width: 2560,
+        height: 1440,
+        resizable: false,
+        fullscreen: true,
+        vsync: true,
+        background_color: Color::WHITE,
+    };
+
+    app::run(window_config, Box::new(game))
+        .expect("Failed to run animation test");
 }

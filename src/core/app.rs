@@ -1,19 +1,19 @@
+use crate::core::engine::Engine;
+use crate::core::Game;
 use crate::window::convert_window_event;
+use crate::window::WindowConfig;
 use std::error::Error;
 use std::sync::Arc;
 use winit::application::ApplicationHandler;
 use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
-use winit::window::{Fullscreen, Window, WindowAttributes, WindowId};
-use crate::core::engine::Engine;
-use crate::core::Game;
-use crate::window::WindowConfig;
+use winit::window::{Window, WindowAttributes, WindowId};
 
 pub struct App {
     engine: Option<Engine>,
     window_attributes: Option<WindowAttributes>,
-    window_config: WindowConfig,
     game: Box<dyn Game>,
+    window_config: WindowConfig
 }
 
 impl ApplicationHandler for App {
@@ -23,13 +23,13 @@ impl ApplicationHandler for App {
         match window_result {
             Ok(window) => {
                 let window = Arc::new(window);
-                if self.window_config.fullscreen {
-                    window.set_fullscreen(Some(Fullscreen::Borderless(None)));
-                }
 
                 let mut engine = Engine::new(window);
-                engine.set_vsync(self.window_config.vsync);
+
+                engine.set_window_config(self.window_config.clone());
+
                 self.engine = Some(engine);
+
                 self.game.init(&mut self.engine.as_mut().unwrap());
             }
             Err(e) => {
@@ -72,24 +72,19 @@ impl ApplicationHandler for App {
 
 }
 
-pub fn run(title: &str, width: f64, height: f64, game: Box<dyn Game>) -> Result<App, Box<dyn Error>> {
+pub fn run(window_config: WindowConfig, game: Box<dyn Game>) -> Result<App, Box<dyn Error>> {
     let event_loop = EventLoop::new()?;
     event_loop.set_control_flow(ControlFlow::Poll);
 
     let attributes = Window::default_attributes()
-        .with_title(title)
-        .with_inner_size(winit::dpi::PhysicalSize::new(width, height));
+        .with_title(window_config.title.clone())
+        .with_inner_size(winit::dpi::PhysicalSize::new(window_config.width, window_config.height));
 
     let mut app = App {
         engine: None,
         window_attributes: Some(attributes),
-        window_config: WindowConfig {
-            title: title.to_string(),
-            width: width as u32,
-            height: height as u32,
-            ..Default::default()
-        },
         game,
+        window_config
     };
 
     event_loop.run_app(&mut app)?;

@@ -4,6 +4,7 @@ pub mod graphics;
 pub mod text;
 pub mod window;
 mod controllers;
+mod audio;
 
 #[cfg(test)]
 mod tests {

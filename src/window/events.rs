@@ -62,7 +62,6 @@ impl EventQueue {
     }
 
     pub fn push(&mut self, event: Event) {
-        // Track key states
         match event {
             Event::KeyPressed(key) => {
                 self.pressed_keys.insert(key);
@@ -86,13 +85,11 @@ impl EventQueue {
     pub fn clear(&mut self) {
         self.events.clear();
     }
-    
-    /// Check if a key is currently pressed
+
     pub fn is_key_pressed(&self, key: KeyCode) -> bool {
         self.pressed_keys.contains(&key)
     }
-    
-    /// Check if a key was just pressed this frame
+
     pub fn was_key_just_pressed(&self, key: KeyCode) -> bool {
         self.events.iter().any(|e| matches!(e, Event::KeyPressed(k) if *k == key))
     }

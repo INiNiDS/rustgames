@@ -1,8 +1,8 @@
 use std::sync::Arc;
 use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
+use crate::graphics::Color;
 
-/// Configuration for window creation
 #[derive(Debug, Clone)]
 pub struct WindowConfig {
     pub title: String,
@@ -11,6 +11,7 @@ pub struct WindowConfig {
     pub resizable: bool,
     pub fullscreen: bool,
     pub vsync: bool,
+    pub background_color: Color,
 }
 
 impl Default for WindowConfig {
@@ -22,6 +23,7 @@ impl Default for WindowConfig {
             resizable: true,
             fullscreen: false,
             vsync: true,
+            background_color: Color::WHITE,
         }
     }
 }
@@ -37,7 +39,6 @@ impl WindowConfig {
     }
 }
 
-/// Wrapper around winit::Window with additional functionality
 pub struct Window {
     inner: Arc<WinitWindow>,
 }
@@ -47,34 +48,28 @@ impl Window {
         Self { inner }
     }
     
-    /// Get the inner winit window
     pub fn inner(&self) -> &Arc<WinitWindow> {
         &self.inner
     }
     
-    /// Set the window title
     pub fn set_title(&self, title: &str) {
         self.inner.set_title(title);
     }
     
-    /// Get the current window size
     pub fn size(&self) -> (u32, u32) {
         let size = self.inner.inner_size();
         (size.width, size.height)
     }
     
-    /// Set the window size
     pub fn set_size(&self, width: u32, height: u32) {
         let size = LogicalSize::new(width, height);
         let _ = self.inner.request_inner_size(size);
     }
     
-    /// Check if window is in fullscreen mode
     pub fn is_fullscreen(&self) -> bool {
         self.inner.fullscreen().is_some()
     }
     
-    /// Set fullscreen mode
     pub fn set_fullscreen(&self, enabled: bool) {
         if enabled {
             self.inner.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
@@ -83,18 +78,16 @@ impl Window {
         }
     }
     
-    /// Set cursor visibility
     pub fn set_cursor_visible(&self, visible: bool) {
         self.inner.set_cursor_visible(visible);
     }
     
-    /// Get the scale factor for HiDPI displays
     pub fn scale_factor(&self) -> f64 {
         self.inner.scale_factor()
     }
     
-    /// Request a redraw
     pub fn request_redraw(&self) {
         self.inner.request_redraw();
     }
+
 }

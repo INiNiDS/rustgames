@@ -1,16 +1,8 @@
-/// demo_stress.rs - Stress test with thousands of sprites
-/// 
-/// This example demonstrates:
-/// - Rendering many sprites (simulated for testing infrastructure)
-/// - FPS counter with entity count
-/// - Performance monitoring
-/// - Trauma-based camera shake under load
-
 use rustgames::prelude::*;
 use rustgames::core::{app, FpsCounter};
-use rustgames::graphics::{SpriteAnimation, AnimationMode};
+use rustgames::graphics::{SpriteAnimation, AnimationMode, SpriteInstance};
 use rustgames::window::KeyCode;
-use glam::Vec2;
+use glam::{Vec2, Vec4};
 use rand::Rng;
 
 struct StressDemo {
@@ -40,48 +32,43 @@ impl Game for StressDemo {
         println!("  DOWN  - Remove 1000 entities");
         println!("  ESC   - Exit");
         println!();
-        
-        // Load texture
+
         engine.get_texture_controller().load_texture(
             include_bytes!("../src/mistral.png"),
             "stress_sprite"
         );
-        
-        // Set up camera
+
         let camera = engine.get_camera_controller();
         camera.set_zoom(400.0);
-        
-        // Initialize entities
+
         self.spawn_entities(self.entity_count);
         
         println!("✓ Demo initialized with {} entities", self.entity_count);
+
+
+        engine.get_audio_system().load_sound("perdej", "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3");
     }
 
     fn update(&mut self, engine: &mut Engine) {
         let delta = engine.delta_time();
-        
-        // Update FPS counter
+
         self.fps_counter.update(delta);
         self.time += delta;
-        
-        // Auto-shake every 3 seconds
+
         self.shake_timer += delta;
         if self.shake_timer >= 3.0 {
             self.shake_timer = 0.0;
             engine.get_camera_controller().add_trauma(0.4);
         }
-        
-        // Update all animations
+
         for anim in &mut self.animations {
             anim.update(delta);
         }
-        
-        // Update positions (bouncing simulation)
+
         let bounds = 300.0;
         for i in 0..self.positions.len() {
             self.positions[i] += self.velocities[i] * delta;
-            
-            // Bounce off boundaries
+
             if self.positions[i].x.abs() > bounds {
                 self.velocities[i].x *= -1.0;
                 self.positions[i].x = self.positions[i].x.clamp(-bounds, bounds);
@@ -91,8 +78,7 @@ impl Game for StressDemo {
                 self.positions[i].y = self.positions[i].y.clamp(-bounds, bounds);
             }
         }
-        
-        // Handle controls
+
         let space_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Space);
         let up_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp);
         let down_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown);
@@ -100,6 +86,7 @@ impl Game for StressDemo {
         
         if space_pressed {
             engine.get_camera_controller().add_trauma(0.8);
+            let _ = engine.get_audio_system().play("perdej");
             println!("Manual shake triggered!");
         }
         
@@ -118,31 +105,22 @@ impl Game for StressDemo {
             std::process::exit(0);
         }
         
-        // INSTANCED RENDERING: Render ALL entities with a single draw call
-        // Create SpriteInstance for each entity with animation UV coordinates
-        use rustgames::graphics::SpriteInstance;
-        use glam::Vec4;
-        
         let texture_controller = engine.get_texture_controller();
         
         for i in 0..self.entity_count {
-            // Get current UV coordinates from the animation
             let uv = self.animations[i].current_uv();
             
-            // Create sprite instance with animated UV
             let instance = SpriteInstance::new(
-                self.positions[i],           // Position
-                Vec2::new(20.0, 20.0),      // Size
-                0.0,                         // Rotation
-                uv,                          // Animated UV coordinates from sprite sheet
-                Vec4::ONE,                   // White color (no tint)
+                self.positions[i],
+                Vec2::new(20.0, 20.0),
+                0.0, 
+                uv,
+                Vec4::ONE, 
             );
             
-            // Add instance to the batch (all will be rendered in one draw call)
             texture_controller.add_instance("stress_sprite", instance);
         }
         
-        // Update window title
         if self.time >= 0.1 {
             self.time = 0.0;
             let title = format!(
@@ -155,6 +133,7 @@ impl Game for StressDemo {
             );
             engine.set_title(&title);
         }
+
     }
 }
 
@@ -163,22 +142,19 @@ impl StressDemo {
         let mut rng = rand::rng();
         
         for _ in 0..count {
-            // Create animation
             let anim = SpriteAnimation::from_grid(
                 2, 2, 4,
-                5.0 + rng.random::<f32>() * 10.0, // Random FPS
+                5.0 + rng.random::<f32>() * 10.0,
                 AnimationMode::Loop
             );
             self.animations.push(anim);
             
-            // Random position
             let pos = Vec2::new(
                 (rng.random::<f32>() - 0.5) * 600.0,
                 (rng.random::<f32>() - 0.5) * 600.0,
             );
             self.positions.push(pos);
             
-            // Random velocity
             let vel = Vec2::new(
                 (rng.random::<f32>() - 0.5) * 100.0,
                 (rng.random::<f32>() - 0.5) * 100.0,
@@ -209,8 +185,6 @@ impl StressDemo {
         println!("Average frame time: {:.2}ms", self.fps_counter.frame_time_ms());
         println!("Min FPS: {:.1}", self.fps_counter.min_fps());
         println!("Max FPS: {:.1}", self.fps_counter.max_fps());
-        println!();
-        println!("Note: Full instanced rendering would significantly improve these numbers!");
     }
 }
 
@@ -229,7 +203,17 @@ fn main() {
     
     println!("Starting stress test demo with {} entities...", initial_entities);
     println!();
+
+    let window_config = WindowConfig {
+        title: "Demo: Stress Test".to_string(),
+        width: 2560,
+        height: 1440,
+        resizable: false,
+        fullscreen: true,
+        vsync: true,
+        background_color: Color::WHITE,
+    };
     
-    app::run("Demo: Stress Test", 1280.0, 720.0, Box::new(game))
+    app::run(window_config, Box::new(game))
         .expect("Failed to run stress test");
 }

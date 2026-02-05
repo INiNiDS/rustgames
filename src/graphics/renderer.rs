@@ -4,15 +4,16 @@ use crate::controllers::typewriter_controller::TypewriterController;
 use crate::core::{CameraController, RenderContext};
 use crate::graphics::camera::Camera;
 use crate::graphics::sprite_renderer::SpriteRenderer;
-use crate::graphics::{AnimationController, SpriteInstance, VisualState};
+use crate::graphics::{AnimationController, Color, VisualState};
 use crate::text::font::DEFAULT_NORMAL_FONT;
 use crate::text::text::TextSystem;
 use crate::text::typewriter::TypewriterInstance;
 use glam::Vec2;
 use std::sync::Arc;
 use wgpu::{PresentMode, StoreOp};
-use winit::dpi::PhysicalSize;
+use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::window::Window;
+use crate::window::WindowConfig;
 
 pub struct Renderer {
     render_context: RenderContext,
@@ -88,6 +89,8 @@ impl Renderer {
                 device: device_arc,
                 queue: queue_arc,
                 config,
+                background_color: Color::BLUE,
+                window
             },
         }
     }
@@ -104,7 +107,6 @@ impl Renderer {
     }
 
     pub fn draw(&mut self) {
-        // Update camera for this frame
         self.render_context.sprite_renderer.update_camera(&self.render_context.queue, &self.render_context.camera_controller);
         
         let output = self.render_context.surface.get_current_texture().unwrap();
@@ -118,7 +120,6 @@ impl Renderer {
             }
         );
         
-        // Queue typewriter text if active
         if !self.render_context.typewriter_controller.is_empty() {
             for typewriter in self.render_context.typewriter_controller.effects() {
                 self.render_context.text_controller.queue_text(
@@ -140,7 +141,7 @@ impl Renderer {
                             depth_slice: None,
                             resolve_target: None,
                             ops: wgpu::Operations {
-                                load: wgpu::LoadOp::Clear(wgpu::Color::BLUE),
+                                load: wgpu::LoadOp::Clear(self.render_context.background_color.to_wgpu_color()),
                                 store: StoreOp::Store,
                             },
                         })
@@ -151,7 +152,6 @@ impl Renderer {
                     multiview_mask: None,
                 });
             
-            // INSTANCED RENDERING: Batch all sprites by texture and render with one draw call per texture
             for (texture, instances) in self.render_context.texture_controller.get_batched_instances() {
                 if !instances.is_empty() {
                     self.render_context.sprite_renderer.render(
@@ -164,21 +164,13 @@ impl Renderer {
                 }
             }
             
-            // Render text overlay
             self.render_context.text_controller.draw(&self.render_context.device, &self.render_context.queue, &mut render_pass);
         }
         
         self.render_context.queue.submit(std::iter::once(encoder.finish()));
         output.present();
         
-        // Clear instances for next frame (important!)
         self.render_context.texture_controller.clear_instances();
-    }
-    
-    pub fn set_vsync(&mut self, enabled: bool) {
-        self.render_context.config.present_mode = if enabled { PresentMode::Fifo } else { PresentMode::Immediate };
-
-        self.render_context.surface.configure(&self.render_context.device, &self.render_context.config);
     }
 
     pub fn get_camera_controller(&mut self) -> &mut CameraController {
@@ -204,5 +196,26 @@ impl Renderer {
 
     pub fn get_text_controller(&mut self) -> &mut TextController {
         &mut self.render_context.text_controller
+    }
+
+    pub fn set_window_config(&mut self, config: WindowConfig) {
+        self.render_context.config.present_mode = if config.vsync { PresentMode::Fifo } else { PresentMode::Immediate };
+
+        self.render_context.surface.configure(&self.render_context.device, &self.render_context.config);
+
+        self.render_context.window.set_title(&config.title);
+
+        self.render_context.window.set_resizable(config.resizable);
+
+        self.render_context.background_color = config.background_color;
+
+        if config.fullscreen {
+            self.render_context.window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
+        } else {
+            self.render_context.window.set_fullscreen(None);
+        }
+
+        let new_size = LogicalSize::new(config.width, config.height);
+        let _ = self.render_context.window.request_inner_size(new_size);
     }
 }

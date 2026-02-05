@@ -1,13 +1,11 @@
-
-use std::fs;
-use std::path::PathBuf;
-use std::sync::Arc;
-use winit::dpi::PhysicalSize;
-use winit::window::Window as WinitWindow;
+use crate::audio::audio_system::AudioSystem;
 use crate::controllers::camera_controller::CameraController;
 use crate::core::time::Time;
 use crate::graphics::renderer::Renderer;
-use crate::window::{Event, EventHandler, EventQueue, Window};
+use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
+use std::sync::Arc;
+use winit::dpi::PhysicalSize;
+use winit::window::Window as WinitWindow;
 
 pub struct Engine {
     window: Window,
@@ -15,6 +13,7 @@ pub struct Engine {
     time: Time,
     event_queue: EventQueue,
     handler_keys: Vec<Box<dyn EventHandler>>,
+    audio_system: AudioSystem
 }
 
 impl Engine {
@@ -23,12 +22,13 @@ impl Engine {
 
         let render_future = Renderer::new(window);
         let renderer = pollster::block_on(render_future);
-        Self { 
+        Self {
             window: wrapped,
-            renderer, 
+            renderer,
             time: Time::new(),
             event_queue: EventQueue::new(),
             handler_keys: Vec::new(),
+            audio_system: AudioSystem::new()
         }
     }
 
@@ -39,15 +39,15 @@ impl Engine {
     pub fn draw(&mut self) {
         self.renderer.draw();
     }
-    
+
     pub fn delta_time(&self) -> f32 {
         self.time.delta_seconds()
     }
-    
+
     pub fn time(&self) -> &Time {
         &self.time
     }
-    
+
     pub fn request_redraw(&self) {
         self.window.request_redraw();
     }
@@ -55,7 +55,7 @@ impl Engine {
     pub fn add_handler<T: EventHandler + 'static>(&mut self, key: T) {
         self.handler_keys.push(Box::new(key));
     }
-    
+
     pub fn set_title(&self, title: &str) {
         self.window.set_title(title);
     }
@@ -81,7 +81,7 @@ impl Engine {
         self.event_queue.push(event);
     }
 
-    pub fn set_vsync(&mut self, enabled: bool) { self.renderer.set_vsync(enabled) }
+    pub fn set_window_config(&mut self, window_config: WindowConfig) { self.renderer.set_window_config(window_config) }
 
     fn handle_event(&mut self, event: Event) {
         for handler in &mut self.handler_keys {
@@ -98,7 +98,7 @@ impl Engine {
             }
         }
     }
-    
+
     pub fn get_text_controller(&mut self) -> &mut crate::controllers::text_controller::TextController {
         self.renderer.get_text_controller()
     }
@@ -110,12 +110,16 @@ impl Engine {
     pub fn get_typewriter_controller(&mut self) -> &mut crate::controllers::typewriter_controller::TypewriterController {
         self.renderer.get_typewriter_controller()
     }
-    
+
     pub fn get_event_queue(&self) -> &EventQueue {
         &self.event_queue
     }
-    
+
     pub fn get_texture_controller(&mut self) -> &mut crate::controllers::texture_controller::TextureController {
         self.renderer.get_texture_controller()
+    }
+
+    pub fn get_audio_system(&mut self) -> &mut AudioSystem {
+        &mut self.audio_system
     }
 }

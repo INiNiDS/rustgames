@@ -1,4 +1,4 @@
-use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration, TextureView};
+use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{
     BuiltInLineBreaker, FontId, HorizontalAlign, Layout, Section, Text, VerticalAlign,
@@ -34,11 +34,11 @@ impl TextSystem {
         };
 
         let fonts = vec![
-            load_font(normal_font, DEFAULT_NORMAL_FONT),     // Id 0
-            load_font(bold_font, DEFAULT_BOLD_FONT),         // Id 1
-            Font::load(italic_font).expect("Err").to_font_arc(), // Id 2
-            load_font(medium_font, DEFAULT_MEDIUM_FONT),     // Id 3
-            load_font(semibold_font, DEFAULT_SEMIBOLD_FONT), // Id 4
+            load_font(normal_font, DEFAULT_NORMAL_FONT), 
+            load_font(bold_font, DEFAULT_BOLD_FONT), 
+            Font::load(italic_font).expect("Err").to_font_arc(), 
+            load_font(medium_font, DEFAULT_MEDIUM_FONT),    
+            load_font(semibold_font, DEFAULT_SEMIBOLD_FONT),
         ];
 
         let brush = wgpu_text::BrushBuilder::using_fonts(fonts.clone())

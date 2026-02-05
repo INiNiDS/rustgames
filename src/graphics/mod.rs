@@ -9,7 +9,6 @@ pub mod effects;
 pub mod instance;
 pub mod sprite_animation;
 
-// Re-export commonly used types
 pub use color::Color;
 pub use sprite::{Sprite, Vertex};
 pub use camera::Camera;

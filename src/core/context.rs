@@ -5,7 +5,7 @@ use crate::controllers::texture_controller::TextureController;
 use crate::controllers::typewriter_controller::TypewriterController;
 use crate::core::CameraController;
 use crate::core::time::Time;
-use crate::graphics::{AnimationController, VisualState};
+use crate::graphics::{AnimationController, Color, VisualState};
 use crate::graphics::sprite_renderer::SpriteRenderer;
 
 pub struct Context<'a> {
@@ -24,6 +24,8 @@ pub struct RenderContext {
     pub surface: Surface<'static>,
     pub device: Arc<Device>,
     pub queue: Arc<Queue>,
+    pub window: Arc<winit::window::Window>,
     pub config: SurfaceConfiguration,
     pub texture_controller: TextureController,
+    pub background_color: Color,
 }

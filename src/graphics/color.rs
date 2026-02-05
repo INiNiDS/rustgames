@@ -94,6 +94,15 @@ impl Color {
             a: self.a + (other.a - self.a) * t,
         }
     }
+
+    pub fn to_wgpu_color(&self) -> wgpu::Color {
+        wgpu::Color {
+            r: self.r as f64,
+            g: self.g as f64,
+            b: self.b as f64,
+            a: self.a as f64,
+        }
+    }
 }
 
 impl From<(f32, f32, f32)> for Color {
