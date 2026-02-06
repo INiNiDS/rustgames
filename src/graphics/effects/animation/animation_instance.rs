@@ -3,7 +3,7 @@ use crate::prelude::{AnimEffect, Animation, Easing};
 
 /// A running animation with elapsed time, easing, delay, and playback speed.
 #[derive(Debug)]
-pub struct AnimationInstance {
+pub struct ActiveAnimation {
     pub id: usize,
     pub animation: Animation,
     pub elapsed: f32,
@@ -14,7 +14,8 @@ pub struct AnimationInstance {
 }
 
 
-impl AnimationInstance {
+impl ActiveAnimation {
+    #[must_use] 
     pub fn new(id: usize, animation: Animation, easing: Easing, delay: f32) -> Self {
         Self {
             id,
@@ -28,6 +29,7 @@ impl AnimationInstance {
     }
 
 
+    #[must_use] 
     pub fn duration(&self) -> f32 {
         match &self.animation {
             Animation::FadeIn { duration } => *duration,
@@ -41,6 +43,7 @@ impl AnimationInstance {
     }
 
 
+    #[must_use] 
     pub fn progress(&self) -> f32 {
         let duration = self.duration();
 
@@ -74,6 +77,7 @@ impl AnimationInstance {
     }
 
 
+    #[must_use] 
     pub fn is_finished(&self) -> bool {
         if self.playback >= 0.0 {
             self.elapsed >= self.duration()
@@ -84,10 +88,12 @@ impl AnimationInstance {
 
     
 
+    #[must_use] 
     pub fn eased_progress(&self) -> f32 {
         self.easing.apply(self.progress())
     }
     
+    #[must_use] 
     pub fn effect(&self, size: Vec2) -> AnimEffect {
         let t = self.eased_progress();
         match &self.animation {

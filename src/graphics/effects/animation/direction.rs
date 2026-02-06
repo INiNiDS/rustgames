@@ -8,6 +8,7 @@ pub enum Direction {
 }
 
 impl Direction {
+    #[must_use] 
     pub fn opposite(&self) -> Self {
         match self {
             Self::Left => Self::Right,
@@ -21,6 +22,7 @@ impl Direction {
         }
     }
 
+    #[must_use] 
     pub fn to_vector(&self) -> Vec2 {
         let v = match self {
             Self::Left => Vec2::new(-1.0, 0.0),

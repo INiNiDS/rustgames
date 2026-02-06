@@ -19,6 +19,7 @@ pub struct Camera {
 }
 
 impl Camera {
+    #[must_use] 
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             position: Vec3::ZERO,
@@ -102,33 +103,10 @@ impl Camera {
             self.zoom += zoom_diff * self.zoom_speed * delta_time;
         }
 
-        if let Some(target) = self.target_position {
-            let direction = target - self.position;
-
-            self.velocity += direction * self.follow_speed * delta_time;
-            self.velocity *= (-self.damping * delta_time).exp();
-            
-            self.position += self.velocity * delta_time;
-            self.apply_bounds();
-        }
+        self.update_position(delta_time);
     }
 
-    fn apply_bounds(&mut self) {
-        if let Some((min, max)) = self.bounds {
-            self.position.x = self.position.x.clamp(min.x, max.x);
-            self.position.y = self.position.y.clamp(min.y, max.y);
-        }
-    }
-
-    fn get_shake_offset(&self) -> Vec3 {
-        let mut offset = Vec3::ZERO;
-
-        let trauma_offset = self.trauma_shake.offset();
-        offset += Vec3::new(trauma_offset.x, trauma_offset.y, 0.0);
-        
-        offset
-    }
-
+    #[must_use] 
     pub fn build_view_projection_matrix(&self) -> Mat4 {
         let view = Mat4::from_translation(-self.position);
 
@@ -150,6 +128,7 @@ impl Camera {
         projection * shake_transform * view
     }
     
+    #[must_use] 
     pub fn screen_to_world(&self, screen_pos: Vec2, screen_size: Vec2) -> Vec2 {
         let ndc = Vec2::new(
             (screen_pos.x / screen_size.x) * 2.0 - 1.0,
@@ -160,6 +139,34 @@ impl Camera {
             ndc.x * self.aspect * self.zoom + self.position.x,
             ndc.y * self.zoom + self.position.y,
         )
+    }
+
+    fn apply_bounds(&mut self) {
+        if let Some((min, max)) = self.bounds {
+            self.position.x = self.position.x.clamp(min.x, max.x);
+            self.position.y = self.position.y.clamp(min.y, max.y);
+        }
+    }
+
+    fn get_shake_offset(&self) -> Vec3 {
+        let mut offset = Vec3::ZERO;
+
+        let trauma_offset = self.trauma_shake.offset();
+        offset += Vec3::new(trauma_offset.x, trauma_offset.y, 0.0);
+
+        offset
+    }
+
+    fn update_position(&mut self, delta_time: f32) {
+        if let Some(target) = self.target_position {
+            let direction = target - self.position;
+
+            self.velocity += direction * self.follow_speed * delta_time;
+            self.velocity *= (-self.damping * delta_time).exp();
+
+            self.position += self.velocity * delta_time;
+            self.apply_bounds();
+        }
     }
 }
 

@@ -1,14 +1,14 @@
 use rustgames::graphics::color::Color;
-use rustgames::graphics::effects::effects::{
-    EffectInstance, EffectManager, Particle, ParticleEffect, VisualEffect,
+use rustgames::graphics::effects::system::{
+    ActiveEffect, VfxSystem, Particle, EmitterConfig, VfxEffect,
 };
 use rustgames::graphics::effects::shake_effect::TraumaShake;
 use glam::Vec2;
 
 #[test]
 fn effect_manager_lifecycle() {
-    let mut mgr = EffectManager::new();
-    mgr.add_effect(VisualEffect::Flash { color: Color::WHITE, duration: 0.5 });
+    let mut mgr = VfxSystem::new();
+    mgr.push(VfxEffect::Flash { color: Color::WHITE, duration: 0.5 });
     assert_eq!(mgr.count(), 1);
     mgr.update(1.0);
     assert_eq!(mgr.count(), 0);
@@ -16,17 +16,17 @@ fn effect_manager_lifecycle() {
 
 #[test]
 fn effect_manager_clear() {
-    let mut mgr = EffectManager::new();
-    mgr.add_effect(VisualEffect::Vignette { intensity: 0.5 });
+    let mut mgr = VfxSystem::new();
+    mgr.push(VfxEffect::Vignette { intensity: 0.5 });
     mgr.clear();
     assert_eq!(mgr.count(), 0);
 }
 
 #[test]
 fn particle_preset_counts() {
-    assert_eq!(ParticleEffect::sparkles(Vec2::ZERO).particle_count, 20);
-    assert_eq!(ParticleEffect::explosion(Vec2::ZERO).particle_count, 50);
-    assert_eq!(ParticleEffect::rain(Vec2::ZERO).particle_count, 200);
+    assert_eq!(EmitterConfig::sparkles(Vec2::ZERO).count, 20);
+    assert_eq!(EmitterConfig::explosion(Vec2::ZERO).count, 50);
+    assert_eq!(EmitterConfig::rain(Vec2::ZERO).count, 200);
 }
 
 #[test]
@@ -46,15 +46,15 @@ fn particle_lifetime_expires() {
 
 #[test]
 fn flash_effect_duration() {
-    let inst = EffectInstance::new(VisualEffect::Flash { color: Color::RED, duration: 0.3 });
+    let inst = ActiveEffect::new(VfxEffect::Flash { color: Color::RED, duration: 0.3 });
     assert!((inst.duration() - 0.3).abs() < f32::EPSILON);
 }
 
 #[test]
 fn vignette_is_infinite_and_incomplete() {
-    let inst = EffectInstance::new(VisualEffect::Vignette { intensity: 0.5 });
+    let inst = ActiveEffect::new(VfxEffect::Vignette { intensity: 0.5 });
     assert!(inst.duration().is_infinite());
-    assert!(!inst.is_complete());
+    assert!(!inst.is_finished());
 }
 
 #[test]

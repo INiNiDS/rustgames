@@ -2,7 +2,7 @@ use crate::graphics::render::instance::SpriteInstance;
 use crate::graphics::sprite::{Vertex, QUAD_INDICES, QUAD_VERTICES};
 use crate::graphics::render::texture::Texture;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::controllers::CameraController;
+use crate::graphics::Camera;
 
 /// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
 /// and instance buffers, and camera/texture bind groups.
@@ -22,6 +22,7 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
+    #[must_use] 
     pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
         let shader = Self::create_shader(device);
         let camera_bind_group_layout = Self::create_camera_bind_group_layout(device);
@@ -54,7 +55,7 @@ impl SpriteRenderer {
         }
     }
 
-    pub fn update_camera(&self, queue: &wgpu::Queue, camera: &CameraController) {
+    pub fn update_camera(&self, queue: &wgpu::Queue, camera: &Camera) {
         let matrix = camera.build_view_projection_matrix();
         queue.write_buffer(&self.camera_buffer, 0, bytemuck::cast_slice(&[matrix]));
     }

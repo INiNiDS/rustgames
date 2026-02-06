@@ -49,10 +49,12 @@ pub struct Window {
 }
 
 impl Window {
+    #[must_use] 
     pub fn new(inner: Arc<WinitWindow>) -> Self {
         Self { inner }
     }
 
+    #[must_use] 
     pub fn inner(&self) -> &Arc<WinitWindow> {
         &self.inner
     }
@@ -61,6 +63,7 @@ impl Window {
         self.inner.set_title(title);
     }
 
+    #[must_use] 
     pub fn size(&self) -> (u32, u32) {
         let size = self.inner.inner_size();
         (size.width, size.height)
@@ -71,6 +74,7 @@ impl Window {
         let _ = self.inner.request_inner_size(size);
     }
 
+    #[must_use] 
     pub fn is_fullscreen(&self) -> bool {
         self.inner.fullscreen().is_some()
     }
@@ -87,6 +91,7 @@ impl Window {
         self.inner.set_cursor_visible(visible);
     }
 
+    #[must_use] 
     pub fn scale_factor(&self) -> f64 {
         self.inner.scale_factor()
     }

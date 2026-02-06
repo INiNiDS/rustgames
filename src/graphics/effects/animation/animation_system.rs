@@ -1,15 +1,16 @@
 use glam::Vec2;
 use crate::graphics::effects::{TimelineStep, CustomCombinedMode, AnimationGroupID};
-use crate::prelude::{AnimEffect, Animation, AnimationInstance, Easing, VisualState};
+use crate::prelude::{AnimEffect, Animation, ActiveAnimation, Easing, VisualState};
 
 /// Manages animation instances: starting, stopping, pausing, seeking, and
 /// evaluating combined effects on a `VisualState`.
-pub struct AnimationController {
-    animations: Vec<AnimationInstance>,
+pub struct AnimationSystem {
+    animations: Vec<ActiveAnimation>,
     next_id: usize,
 }
 
-impl AnimationController {
+impl AnimationSystem {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             animations: Vec::new(),
@@ -21,7 +22,7 @@ impl AnimationController {
         let id = self.next_id;
         self.next_id += 1;
 
-        self.animations.push(AnimationInstance::new(id, animation, easing, delay));
+        self.animations.push(ActiveAnimation::new(id, animation, easing, delay));
         id
     }
 
@@ -37,6 +38,7 @@ impl AnimationController {
         self.animations.retain(|anim| !anim.is_finished());
     }
 
+    #[must_use] 
     pub fn is_playing(&self) -> bool {
         !self.animations.is_empty()
     }
@@ -83,10 +85,12 @@ impl AnimationController {
         } else {false}
     }
 
+    #[must_use] 
     pub fn is_playing_id(&self, id: usize) -> bool {
         self.animations.iter().any(|a| a.id == id)
     }
 
+    #[must_use] 
     pub fn count(&self) -> usize {
         self.animations.len()
     }
@@ -95,6 +99,7 @@ impl AnimationController {
         self.animations.clear();
     }
 
+    #[must_use] 
     pub fn evaluate(&self, base: VisualState, size: Vec2, custom_combined_mode: Option<CustomCombinedMode>) -> VisualState {
         let mut combined = AnimEffect::default();
         for anim in &self.animations {
@@ -187,18 +192,22 @@ impl AnimationController {
         group.remove(index);
     }
 
+    #[must_use] 
     pub fn is_group_playing_all(&self, group: &AnimationGroupID) -> bool {
         group.iter().all(|id| self.is_playing_id(*id))
     }
 
+    #[must_use] 
     pub fn is_group_finished_all(&self, group: &AnimationGroupID) -> bool {
         group.iter().all(|id| !self.is_playing_id(*id))
     }
 
+    #[must_use] 
     pub fn is_group_playing_any(&self, group: &AnimationGroupID) -> bool {
         group.iter().any(|id| self.is_playing_id(*id))
     }
 
+    #[must_use] 
     pub fn is_group_finished_any(&self, group: &AnimationGroupID) -> bool {
         group.iter().any(|id| !self.is_playing_id(*id))
     }
@@ -216,13 +225,13 @@ impl AnimationController {
     }
 
     pub fn stop_all(&mut self) {
-        for anim in self.animations.iter_mut() {
-            anim.stop()
+        for anim in &mut self.animations {
+            anim.stop();
         }
     }
 
     pub fn stop_by_predicate(&mut self, predicate: fn(&Animation) -> bool) {
-        self.animations.retain(|anim| !predicate(&anim.animation))
+        self.animations.retain(|anim| !predicate(&anim.animation));
     }
 
     pub fn replace(&mut self, id: usize, animation: Animation) -> bool {
@@ -276,7 +285,7 @@ impl AnimationController {
         let id = self.next_id;
         self.next_id += 1;
 
-        let inst = AnimationInstance::new(id, anim, easing, delay);
+        let inst = ActiveAnimation::new(id, anim, easing, delay);
         let dur = inst.duration();
 
         self.animations.push(inst);
@@ -316,7 +325,7 @@ impl AnimationController {
 
 }
 
-impl Default for AnimationController {
+impl Default for AnimationSystem {
     fn default() -> Self {
         Self::new()
     }

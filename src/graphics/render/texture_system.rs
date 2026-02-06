@@ -9,14 +9,15 @@ use crate::graphics::SpriteInstance;
 
 /// Manages GPU textures and per-frame sprite instance batching. Supports
 /// loading from files, bytes, and directories.
-pub struct TextureController {
+pub struct TextureSystem {
     textures: HashMap<String, Texture>,
     device: Arc<Device>,
     queue: Arc<Queue>,
     instances_per_texture: HashMap<String, Vec<SpriteInstance>>,
 }
 
-impl TextureController {
+impl TextureSystem {
+    #[must_use] 
     pub fn new(device: Arc<Device>, queue: Arc<Queue>) -> Self {
         Self {
             textures: HashMap::new(),
@@ -46,6 +47,7 @@ impl TextureController {
         self.add_instance(label, instance);
     }
 
+    #[must_use] 
     pub fn get_batched_instances(&self) -> Vec<(&Texture, &[SpriteInstance])> {
         self.instances_per_texture
             .iter()
@@ -69,7 +71,7 @@ impl TextureController {
     pub fn load_texture_dir(&mut self, dir: &str) {
         let files: Vec<PathBuf> = fs::read_dir(dir)
             .unwrap()
-            .filter_map(|entry| entry.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|entry| entry.path().is_file())
             .map(|e| e.path())
             .collect();
@@ -82,7 +84,7 @@ impl TextureController {
     pub fn load_texture_dir_recursive(&mut self, dir: &str) {
         let files = walkdir::WalkDir::new(dir)
             .into_iter()
-            .filter_map(|entry| entry.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|entry| entry.path().is_file());
         for entry in files {
             let bytes = fs::read(entry.path()).unwrap();
@@ -90,6 +92,7 @@ impl TextureController {
         }
     }
 
+    #[must_use] 
     pub fn get_texture(&self, label: &str) -> Option<&Texture> {
         self.textures.get(label)
     }

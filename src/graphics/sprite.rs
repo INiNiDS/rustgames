@@ -1,8 +1,7 @@
-
-use std::sync::Arc;
-use glam::Vec2;
-use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
 use crate::graphics::color::Color;
+use glam::Vec2;
+use std::sync::Arc;
+use wgpu::{BufferAddress, VertexBufferLayout};
 
 /// A textured 2D sprite with position, size, rotation, colour tint, anchor
 /// point, and per-axis flip support.
@@ -19,6 +18,7 @@ pub struct Sprite {
 }
 
 impl Sprite {
+    #[must_use] 
     pub fn new(texture: Arc<wgpu::Texture>) -> Self {
         let w = texture.size().width as f32;
         let h = texture.size().height as f32;
@@ -35,6 +35,7 @@ impl Sprite {
         }
     }
     
+    #[must_use] 
     pub fn with_position(mut self, x: f32, y: f32) -> Self {
         self.position = Vec2::new(x, y);
         self
@@ -44,6 +45,7 @@ impl Sprite {
         self.position = Vec2::new(x, y);
     }
     
+    #[must_use] 
     pub fn with_rotation(mut self, angle: f32) -> Self {
         self.rotation = angle;
         self
@@ -53,6 +55,7 @@ impl Sprite {
         self.rotation = angle;
     }
     
+    #[must_use] 
     pub fn with_scale(mut self, x: f32, y: f32) -> Self {
         self.scale = Vec2::new(x, y);
         self
@@ -62,11 +65,13 @@ impl Sprite {
         self.scale = Vec2::new(x, y);
     }
     
+    #[must_use] 
     pub fn with_uniform_scale(mut self, scale: f32) -> Self {
         self.scale = Vec2::splat(scale);
         self
     }
     
+    #[must_use] 
     pub fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
@@ -76,11 +81,13 @@ impl Sprite {
         self.color = color;
     }
     
+    #[must_use] 
     pub fn with_anchor(mut self, x: f32, y: f32) -> Self {
         self.anchor = Vec2::new(x, y);
         self
     }
     
+    #[must_use] 
     pub fn with_flip(mut self, flip_x: bool, flip_y: bool) -> Self {
         self.flip_x = flip_x;
         self.flip_y = flip_y;
@@ -97,22 +104,14 @@ pub struct Vertex {
 
 
 impl Vertex {
+    const ATTRIBS: [wgpu::VertexAttribute; 2] =
+        wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2];
+
     pub fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
-            array_stride: size_of::<Vertex>() as BufferAddress,
+            array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: VertexFormat::Float32x3,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 3]>() as BufferAddress,
-                    shader_location: 1,
-                    format: VertexFormat::Float32x2,
-                },
-            ],
+            attributes: &Self::ATTRIBS,
         }
     }
 }

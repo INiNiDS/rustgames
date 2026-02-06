@@ -62,7 +62,7 @@ impl Game for AnimationDemo {
             "animation_sheet"
         );
 
-        engine.get_camera_controller().set_zoom(300.0);
+        engine.get_camera().set_zoom(300.0);
         
         println!("✓ Animation system initialized");
         println!("✓ Sprite sheet loaded (2x2 grid, 4 frames)");

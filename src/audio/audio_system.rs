@@ -3,6 +3,8 @@ use kira::sound::static_sound::{StaticSoundData, StaticSoundHandle};
 use kira::{AudioManager, Tween};
 use kira::AudioManagerSettings;
 use std::collections::HashMap;
+use std::fs::DirEntry;
+use std::io::Error;
 use std::sync::Arc;
 
 /// Manages audio playback using the Kira audio engine. Sounds are loaded as
@@ -20,6 +22,7 @@ impl Default for AudioSystem {
 }
 
 impl AudioSystem {
+    #[must_use] 
     pub fn new() -> Self {
         let manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default())
             .expect("Failed to initialize audio");
@@ -43,14 +46,7 @@ impl AudioSystem {
     pub fn load_sound_dir(&mut self, dir_path: &str) {
         let paths = std::fs::read_dir(dir_path).expect("Failed to read sound directory");
         for entry in paths {
-            let entry = entry.expect("Failed to read directory entry");
-            let path = entry.path();
-            if path.is_file()
-                && let Some(extension) = path.extension()
-                    && (extension == "wav" || extension == "ogg" || extension == "mp3") {
-                        let file_stem = path.file_stem().unwrap().to_str().unwrap();
-                        self.load_sound(file_stem, path.to_str().unwrap());
-                    }
+            self.check_and_load_file(entry);
         }
     }
 
@@ -63,7 +59,7 @@ impl AudioSystem {
 
     pub fn play(&mut self, name: &str) -> Arc<StaticSoundHandle> {
         let data = self.sound_assets.get(name)
-            .unwrap_or_else(|| panic!("Sound '{}' not loaded", name));
+            .unwrap_or_else(|| panic!("Sound '{name}' not loaded"));
 
         if let Some(handle) = self.active_sounds.get(name)
             && handle.state() == kira::sound::PlaybackState::Playing {
@@ -72,9 +68,7 @@ impl AudioSystem {
 
         let handle = self.manager.play(data.clone()).expect("Failed to play sound");
         let shared_handle = Arc::new(handle);
-
         self.active_sounds.insert(name.to_string(), Arc::clone(&shared_handle));
-
         shared_handle
     }
 
@@ -90,7 +84,6 @@ impl AudioSystem {
             };
 
             let mut handle_mut: StaticSoundHandle = Arc::try_unwrap(handle).expect("Failed to unwrap Arc");
-
             handle_mut.stop(tween);
         }
     }
@@ -104,5 +97,16 @@ impl AudioSystem {
 
     pub fn unload_sound(&mut self, name: &str) {
         self.sound_assets.remove(name);
+    }
+
+    fn check_and_load_file(&mut self, entry: Result<DirEntry, Error>) {
+        let entry = entry.expect("Failed to read directory entry");
+        let path = entry.path();
+        if path.is_file()
+            && let Some(extension) = path.extension()
+            && (extension == "wav" || extension == "ogg" || extension == "mp3") {
+            let file_stem = path.file_stem().unwrap().to_str().unwrap();
+            self.load_sound(file_stem, path.to_str().unwrap());
+        }
     }
 }

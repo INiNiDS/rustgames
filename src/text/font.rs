@@ -52,10 +52,12 @@ impl Font {
         }
     }
     
+    #[must_use] 
     pub fn to_font_arc(&self) -> FontArc {
         self.font_arc.clone()
     }
 
+    #[must_use] 
     pub fn default_font() -> Self {
         let data = std::fs::read(DEFAULT_NORMAL_FONT)
             .expect("Could not find the default font file at the specified path");

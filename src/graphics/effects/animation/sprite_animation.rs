@@ -30,6 +30,7 @@ pub struct SpriteAnimation {
 }
 
 impl SpriteAnimation {
+    #[must_use] 
     pub fn new(frames: Vec<Vec4>, fps: f32, mode: AnimationMode) -> Self {
         assert!(!frames.is_empty(), "Animation must have at least one frame");
         assert!(fps > 0.0, "FPS must be positive");
@@ -45,6 +46,8 @@ impl SpriteAnimation {
             finished: false,
         }
     }
+    
+    #[must_use] 
     pub fn from_grid(
         columns: usize,
         rows: usize,
@@ -129,14 +132,17 @@ impl SpriteAnimation {
         }
     }
 
+    #[must_use] 
     pub fn current_uv(&self) -> Vec4 {
         self.frames[self.current_frame]
     }
 
+    #[must_use] 
     pub fn current_frame_index(&self) -> usize {
         self.current_frame
     }
 
+    #[must_use] 
     pub fn is_finished(&self) -> bool {
         self.finished
     }
@@ -163,6 +169,7 @@ impl SpriteAnimation {
         }
     }
 
+    #[must_use] 
     pub fn frame_count(&self) -> usize {
         self.frames.len()
     }

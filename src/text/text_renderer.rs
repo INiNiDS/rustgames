@@ -41,6 +41,7 @@ impl Default for TextStyle {
 }
 
 impl TextStyle {
+    #[must_use] 
     pub fn new(size: f32) -> Self {
         Self {
             size,
@@ -48,11 +49,13 @@ impl TextStyle {
         }
     }
 
+    #[must_use] 
     pub fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
 
+    #[must_use] 
     pub fn with_alignment(mut self, alignment: TextAlignment) -> Self {
         self.alignment = alignment;
         self
@@ -63,6 +66,7 @@ impl TextStyle {
 pub struct TextWrapper;
 
 impl TextWrapper {
+    #[must_use] 
     pub fn wrap_text(text: &str, max_width: f32, char_width: f32) -> Vec<String> {
         let mut lines = Vec::new();
         let mut current_line = String::new();
@@ -94,6 +98,7 @@ impl TextWrapper {
         lines
     }
 
+    #[must_use] 
     pub fn wrap_rich_text(
         segments: Vec<StyledSegment>,
         max_width: f32,
@@ -141,6 +146,7 @@ impl TextWrapper {
         lines
     }
 
+    #[must_use] 
     pub fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
         match align {
             TextAlignment::Left => HorizontalAlign::Left,
@@ -150,6 +156,7 @@ impl TextWrapper {
         }
     }
 
+    #[must_use] 
     pub fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
         match align {
             VerticalAlignment::Top => VerticalAlign::Top,
@@ -255,6 +262,7 @@ impl ParseState {
 }
 
 impl RichTextParser {
+    #[must_use] 
     pub fn parse(text: &str) -> Vec<StyledSegment> {
         let mut state = ParseState::new();
         let mut chars = text.chars().peekable();

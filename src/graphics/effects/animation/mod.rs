@@ -4,13 +4,17 @@ pub mod visual;
 pub mod easing;
 pub mod timeline;
 pub mod transition;
+pub mod animation_system;
+pub mod sprite_animation;
 
-pub use animation_instance::AnimationInstance;
+pub use animation_system::AnimationSystem;
+pub use animation_instance::ActiveAnimation;
 pub use direction::Direction;
 pub use easing::Easing;
-pub use visual::{AnimEffect, VisualState, CustomCombinedMode};
+pub use visual::{AnimEffect, CustomCombinedMode, VisualState};
 pub use timeline::{TimelineBuilder, TimelineStep};
 pub use transition::Transition;
+pub use sprite_animation::*;
 
 /// A named animation that can be played through `AnimationController`.
 #[derive(Debug, Clone)]
@@ -31,18 +35,22 @@ pub struct AnimationGroupID {
 }
 
 impl AnimationGroupID {
+    #[must_use] 
     pub fn new(ids: Vec<usize>) -> AnimationGroupID {
         AnimationGroupID { ids }
     }
 
+    #[must_use] 
     pub fn empty() -> AnimationGroupID {
         AnimationGroupID { ids: vec![] }
     }
 
+    #[must_use] 
     pub fn is_empty(&self) -> bool {
         self.ids.is_empty()
     }
 
+    #[must_use] 
     pub fn len(&self) -> usize {
         self.ids.len()
     }

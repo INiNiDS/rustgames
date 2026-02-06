@@ -57,6 +57,7 @@ pub struct EventQueue {
 }
 
 impl EventQueue {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             events: Vec::new(),
@@ -81,6 +82,7 @@ impl EventQueue {
         std::mem::take(&mut self.events)
     }
 
+    #[must_use] 
     pub fn is_empty(&self) -> bool {
         self.events.is_empty()
     }
@@ -89,10 +91,12 @@ impl EventQueue {
         self.events.clear();
     }
 
+    #[must_use] 
     pub fn is_key_pressed(&self, key: KeyCode) -> bool {
         self.pressed_keys.contains(&key)
     }
 
+    #[must_use] 
     pub fn was_key_just_pressed(&self, key: KeyCode) -> bool {
         self.events.iter().any(|e| matches!(e, Event::KeyPressed(k) if *k == key))
     }
@@ -104,6 +108,7 @@ impl Default for EventQueue {
     }
 }
 
+#[must_use] 
 pub fn convert_window_event(event: &WinitWindowEvent) -> Option<Event> {
     match event {
         WinitWindowEvent::Resized(size) => {

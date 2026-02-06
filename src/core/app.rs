@@ -33,7 +33,7 @@ impl ApplicationHandler for App {
                 self.game.init(self.engine.as_mut().unwrap());
             }
             Err(e) => {
-                eprintln!("Failed to create window: {:?}", e);
+                eprintln!("Failed to create window: {e:?}");
             }
         }
     }
@@ -61,15 +61,23 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                self.game.update(engine);
-                engine.update();
-                engine.draw();
-                engine.request_redraw();
+                self.redraw()
             },
             _ => {},
         }
     }
 
+}
+
+impl App {
+    fn redraw(&mut self) {
+        if let Some(engine) = self.engine.as_mut() {
+            self.game.update(engine);
+            engine.update();
+            engine.draw();
+            engine.request_redraw();
+        }
+    }
 }
 
 /// Creates a window and enters the main event loop. Returns when the window

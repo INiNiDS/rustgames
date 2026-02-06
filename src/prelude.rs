@@ -10,11 +10,12 @@ pub use crate::graphics::{
     SpriteAnimation,
     SpriteInstance,
     AnimationMode,
-    EffectManager, Particle, ParticleEffect, VisualEffect,
-    AnimEffect, Animation, AnimationGroupID, AnimationInstance, Direction, Easing, TimelineBuilder, TimelineStep,
-    Transition, VisualState,
+    VfxSystem, Particle, EmitterConfig, VfxEffect,
+    AnimEffect, Animation, AnimationGroupID, ActiveAnimation, Direction, Easing, TimelineBuilder, TimelineStep,
+    Transition, VisualState, AnimationSystem,
     RenderSettings,
-    RendererAlpha,
+    TextureSystem,
+    VfxFrame
 };
 
 pub use crate::window::{
@@ -26,14 +27,6 @@ pub use crate::text::{
     Font,
     TypewriterEffect, TextSpeed,
     TextAlignment, VerticalAlignment, TextStyle,
-};
-
-pub use crate::controllers::{
-    CameraController,
-    TypewriterController,
-    AnimationController,
-    TextController,
-    TextureController,
 };
 
 pub use crate::audio::{

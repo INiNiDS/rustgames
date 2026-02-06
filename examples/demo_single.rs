@@ -8,7 +8,7 @@ use glam::Vec2;
 
 struct SingleDemo {
     frame_animation: SpriteAnimation,
-    anim_controller: AnimationController,
+    anim_controller: AnimationSystem,
     base_state: VisualState,
     fps_counter: FpsCounter,
     time: f32,
@@ -31,7 +31,7 @@ impl Game for SingleDemo {
 
         engine.get_texture_controller().load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
 
-        let camera = engine.get_camera_controller();
+        let camera = engine.get_camera();
         camera.set_zoom(1.0);
 
         self.base_state = VisualState {
@@ -66,7 +66,7 @@ impl Game for SingleDemo {
         self.anim_controller.update(delta);
 
         if engine.get_event_queue().was_key_just_pressed(KeyCode::Space) && self.shake_cooldown <= 0.0 {
-            engine.get_camera_controller().add_trauma(0.5);
+            engine.get_camera().add_trauma(0.5);
             println!("Camera shake triggered!");
             self.shake_cooldown = 0.5;
         }
@@ -145,7 +145,7 @@ fn main() {
 
     let game = SingleDemo {
         frame_animation: animation,
-        anim_controller: AnimationController::new(),
+        anim_controller: AnimationSystem::new(),
         base_state: VisualState::default(),
         fps_counter: FpsCounter::new(),
         time: 0.0,

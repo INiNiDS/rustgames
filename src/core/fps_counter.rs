@@ -9,6 +9,7 @@ pub struct FpsCounter {
 }
 
 impl FpsCounter {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             frame_times: VecDeque::with_capacity(60),
@@ -28,6 +29,7 @@ impl FpsCounter {
         }
     }
 
+    #[must_use] 
     pub fn fps(&self) -> f32 {
         if self.frame_times.is_empty() || self.total_time == 0.0 {
             return 0.0;
@@ -36,6 +38,7 @@ impl FpsCounter {
         self.frame_times.len() as f32 / self.total_time
     }
 
+    #[must_use] 
     pub fn frame_time_ms(&self) -> f32 {
         if self.frame_times.is_empty() {
             return 0.0;
@@ -44,20 +47,20 @@ impl FpsCounter {
         (self.total_time / self.frame_times.len() as f32) * 1000.0
     }
 
+    #[must_use] 
     pub fn min_fps(&self) -> f32 {
         self.frame_times
             .iter()
             .max_by(|a, b| a.partial_cmp(b).unwrap())
-            .map(|&max_time| if max_time > 0.0 { 1.0 / max_time } else { 0.0 })
-            .unwrap_or(0.0)
+            .map_or(0.0, |&max_time| if max_time > 0.0 { 1.0 / max_time } else { 0.0 })
     }
 
+    #[must_use] 
     pub fn max_fps(&self) -> f32 {
         self.frame_times
             .iter()
             .min_by(|a, b| a.partial_cmp(b).unwrap())
-            .map(|&min_time| if min_time > 0.0 { 1.0 / min_time } else { 0.0 })
-            .unwrap_or(0.0)
+            .map_or(0.0, |&min_time| if min_time > 0.0 { 1.0 / min_time } else { 0.0 })
     }
 }
 

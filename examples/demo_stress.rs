@@ -36,7 +36,7 @@ impl Game for StressDemo {
             "stress_sprite"
         );
 
-        let camera = engine.get_camera_controller();
+        let camera = engine.get_camera();
         camera.set_zoom(1.0);
 
         self.spawn_entities(self.entity_count);
@@ -56,7 +56,7 @@ impl Game for StressDemo {
         self.shake_timer += delta;
         if self.shake_timer >= 3.0 {
             self.shake_timer = 0.0;
-            engine.get_camera_controller().add_trauma(0.4);
+            engine.get_camera().add_trauma(0.4);
         }
 
         for anim in &mut self.animations {
@@ -83,7 +83,7 @@ impl Game for StressDemo {
         let escape_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Escape);
         
         if space_pressed {
-            engine.get_camera_controller().add_trauma(0.8);
+            engine.get_camera().add_trauma(0.8);
             let _ = engine.get_audio_system().play("perdej");
             println!("Manual shake triggered!");
         }

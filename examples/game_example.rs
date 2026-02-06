@@ -1,11 +1,12 @@
 use glam::Vec2;
 use rustgames::core::app;
+use rustgames::graphics::VfxRenderer;
 use rustgames::prelude::*;
 
 struct EffectsDemo {
-    renderer_alpha: RendererAlpha,
+    renderer_alpha: VfxRenderer,
     fps_counter: FpsCounter,
-    anim_controller: AnimationController,
+    anim_controller: AnimationSystem,
     base_state: VisualState,
     time: f32,
     texture_size: Vec2,
@@ -33,7 +34,7 @@ impl Game for EffectsDemo {
             .get_texture_controller()
             .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
 
-        engine.get_camera_controller().set_zoom(1.0);
+        engine.get_camera().set_zoom(1.0);
 
         let entrance = TimelineBuilder::new()
             .parallel(vec![
@@ -71,9 +72,9 @@ impl Game for EffectsDemo {
             .get_event_queue()
             .was_key_just_pressed(KeyCode::Digit1)
         {
-            self.renderer_alpha.add_effect(VisualEffect::Flash {
+            self.renderer_alpha.add_effect(VfxEffect::Flash {
                 color: Color::WHITE,
-                duration: 0.3,
+                duration: 0.5,
             });
             println!("Flash!");
         }
@@ -82,11 +83,7 @@ impl Game for EffectsDemo {
             .get_event_queue()
             .was_key_just_pressed(KeyCode::Digit2)
         {
-            self.renderer_alpha.add_effect(VisualEffect::ScreenShake {
-                intensity: 15.0,
-                duration: 0.4,
-            });
-            engine.get_camera_controller().add_trauma(0.6);
+            engine.get_camera().add_trauma(0.6);
             println!("Shake!");
         }
 
@@ -95,7 +92,7 @@ impl Game for EffectsDemo {
             .was_key_just_pressed(KeyCode::Digit3)
         {
             self.renderer_alpha
-                .add_effect(VisualEffect::Particles(ParticleEffect::sparkles(
+                .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(
                     Vec2::ZERO,
                 )));
             println!("Sparkles!");
@@ -110,7 +107,7 @@ impl Game for EffectsDemo {
                 println!("Overlay removed");
             } else {
                 self.renderer_alpha
-                    .add_effect(VisualEffect::ColorOverlay {
+                    .add_effect(VfxEffect::Overlay {
                         color: Color::BLUE,
                         alpha: 0.25,
                     });
@@ -123,7 +120,7 @@ impl Game for EffectsDemo {
             .was_key_just_pressed(KeyCode::Digit5)
         {
             self.renderer_alpha
-                .add_effect(VisualEffect::Particles(ParticleEffect::explosion(
+                .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(
                     Vec2::ZERO,
                 )));
             println!("Explosion!");
@@ -185,20 +182,17 @@ impl Game for EffectsDemo {
             .anim_controller
             .evaluate(self.base_state, sprite_size, None);
 
-        let shake_offset = self.renderer_alpha.screen_shake_offset();
-        let final_pos = visual.position + shake_offset;
-
         tc.use_texture(
             "sprite",
             sprite_size * visual.scale,
-            final_pos,
+            visual.position,
             visual.rotation,
             visual.opacity,
         );
 
-        let frame = self.renderer_alpha.build_effect_frame();
+        let frame = self.renderer_alpha.build_frame();
 
-        for particle_inst in &frame.particle_instances {
+        for particle_inst in &frame.particle {
             tc.add_instance("sprite", *particle_inst);
         }
 
@@ -216,9 +210,9 @@ impl Game for EffectsDemo {
 
 fn main() {
     let game = EffectsDemo {
-        renderer_alpha: RendererAlpha::new(),
+        renderer_alpha: VfxRenderer::new(),
         fps_counter: FpsCounter::new(),
-        anim_controller: AnimationController::new(),
+        anim_controller: AnimationSystem::new(),
         base_state: VisualState::default(),
         time: 0.0,
         texture_size: Vec2::new(128.0, 128.0),

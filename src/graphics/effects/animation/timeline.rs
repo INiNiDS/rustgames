@@ -1,6 +1,5 @@
-use crate::controllers::AnimationController;
 use crate::graphics::effects::{Animation, Easing};
-use crate::graphics::effects::animation::AnimationGroupID;
+use crate::graphics::effects::animation::{AnimationGroupID, AnimationSystem};
 
 /// Fluent API for constructing a sequence of `TimelineStep` values.
 #[derive(Debug, Default, Clone)]
@@ -9,30 +8,35 @@ pub struct TimelineBuilder {
 }
 
 impl TimelineBuilder {
+    #[must_use] 
     pub fn new() -> TimelineBuilder {
         Self { steps: Vec::new() }
     }
 
+    #[must_use] 
     pub fn single(mut self, animation: Animation, easing: Easing) -> TimelineBuilder {
         self.steps.push(TimelineStep::Single(animation, easing));
         self
     }
 
+    #[must_use] 
     pub fn parallel(mut self, step: Vec<(Animation, Easing)>) -> TimelineBuilder {
         self.steps.push(TimelineStep::Parallel(step));
         self
     }
 
+    #[must_use] 
     pub fn gap(mut self, seconds: f32) -> Self {
         self.steps.push(TimelineStep::Gap(seconds.max(0.0)));
         self
     }
 
+    #[must_use] 
     pub fn build(self) -> Vec<TimelineStep> {
         self.steps
     }
 
-    pub fn start(self, controller: &mut AnimationController) -> AnimationGroupID {
+    pub fn start(self, controller: &mut AnimationSystem) -> AnimationGroupID {
         controller.start_timeline(self.steps)
     }
 }

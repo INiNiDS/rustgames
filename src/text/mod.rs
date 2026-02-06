@@ -2,6 +2,7 @@ pub mod font;
 pub mod typewriter;
 pub mod text_renderer;
 
+use std::slice::Iter;
 pub use font::{Font};
 pub use typewriter::{TypewriterEffect, TextSpeed};
 pub use text_renderer::{TextAlignment, VerticalAlignment, TextStyle, TextWrapper, RichTextParser, StyledSegment, TextAttributes, FontWeight};
@@ -10,6 +11,7 @@ use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{
     BuiltInLineBreaker, FontId, HorizontalAlign, Layout, Section, Text, VerticalAlign,
 };
+use self::typewriter::TypewriterInstance;
 use self::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT
 };
@@ -19,9 +21,11 @@ pub struct TextSystem {
     style: TextStyle,
     fonts: Vec<FontArc>,
     queued_sections: Vec<QueuedSection>,
+    typewriter_instance: TypewriterInstance
 }
 
 impl TextSystem {
+    #[must_use] 
     pub fn new(
         device: &Device,
         config: &SurfaceConfiguration,
@@ -52,6 +56,7 @@ impl TextSystem {
             style: Default::default(),
             fonts,
             queued_sections: Vec::new(),
+            typewriter_instance: TypewriterInstance::new(),
         }
     }
 
@@ -164,6 +169,83 @@ impl TextSystem {
         self.brush.draw(rpass);
     }
 
+    pub fn set_style(&mut self, style: TextStyle) {
+        self.style = style;
+    }
+
+    pub fn set_font_by_id(&mut self, device: &Device, config: &SurfaceConfiguration, font: Font, id: usize) {
+        if id < self.fonts.len() {
+            self.fonts[id] = font.to_font_arc();
+            self.rebuild_brush(device, config);
+        }
+    }
+
+    pub fn add_text(&mut self, text: impl Into<String>, speed: TextSpeed, x: f32, y: f32) -> usize {
+        self.typewriter_instance.add_typewriter_effect(text, speed, x, y)
+    }
+
+    pub fn remove_text(&mut self, id: usize) {
+        self.typewriter_instance.remove_typewriter_effect(id);
+    }
+
+    pub fn update(&mut self, delta_time: f32) {
+        self.typewriter_instance.update(delta_time);
+    }
+
+    pub fn skip(&mut self, id: usize) {
+        self.typewriter_instance.skip_effect(id);
+    }
+
+    pub fn pause(&mut self, id: usize) {
+        self.typewriter_instance.pause_effect(id);
+    }
+
+    pub fn resume(&mut self, id: usize) {
+        self.typewriter_instance.resume_effect(id);
+    }
+
+    pub fn set_speed(&mut self, id: usize, speed: TextSpeed) {
+        self.typewriter_instance.set_effect_speed(id, speed);
+    }
+
+
+    #[must_use]
+    pub fn get_visible_text(&self, id: usize) -> Option<&str> {
+        self.typewriter_instance.get_effect(id).map(TypewriterEffect::visible_text)
+    }
+
+    #[must_use]
+    pub fn is_complete(&self, id: usize) -> bool {
+        self.typewriter_instance.get_effect(id).is_some_and(TypewriterEffect::is_complete)
+    }
+
+    #[must_use]
+    pub fn get_progress(&self, id: usize) -> f32 {
+        self.typewriter_instance.get_effect(id).map_or(0.0, TypewriterEffect::progress)
+    }
+
+    pub fn effects(&self) -> Iter<'_, TypewriterEffect> {
+        self.typewriter_instance.get_typewriter_effects()
+    }
+
+    pub fn effects_mut(&mut self) -> std::slice::IterMut<'_, TypewriterEffect> {
+        self.typewriter_instance.get_typewriter_effects_mut()
+    }
+
+    #[must_use]
+    pub fn effect(&self, id: usize) -> Option<&TypewriterEffect> {
+        self.typewriter_instance.get_effect(id)
+    }
+
+    pub fn effect_mut(&mut self, id: usize) -> Option<&mut TypewriterEffect> {
+        self.typewriter_instance.get_effect_mut(id)
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.typewriter_instance.is_empty()
+    }
+
     fn map_h_alignment(&self, align: TextAlignment) -> HorizontalAlign {
         match align {
             TextAlignment::Left => HorizontalAlign::Left,
@@ -178,17 +260,6 @@ impl TextSystem {
             VerticalAlignment::Top => VerticalAlign::Top,
             VerticalAlignment::Middle => VerticalAlign::Center,
             VerticalAlignment::Bottom => VerticalAlign::Bottom,
-        }
-    }
-
-    pub fn set_style(&mut self, style: TextStyle) {
-        self.style = style;
-    }
-
-    pub fn set_font_by_id(&mut self, device: &Device, config: &SurfaceConfiguration, font: Font, id: usize) {
-        if id < self.fonts.len() {
-            self.fonts[id] = font.to_font_arc();
-            self.rebuild_brush(device, config);
         }
     }
 }

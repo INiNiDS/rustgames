@@ -11,6 +11,7 @@ pub enum TextSpeed {
 }
 
 impl TextSpeed {
+    #[must_use] 
     pub fn chars_per_second(&self) -> f32 {
         match self {
             TextSpeed::Slow => 20.0,
@@ -95,18 +96,19 @@ impl TypewriterEffect {
         }
     }
     
+    #[must_use] 
     pub fn visible_text(&self) -> &str {
         if self.complete {
             &self.text
         } else {
             let byte_index = self.text.char_indices()
                 .nth(self.visible_chars)
-                .map(|(i, _)| i)
-                .unwrap_or(self.text.len());
+                .map_or(self.text.len(), |(i, _)| i);
             &self.text[..byte_index]
         }
     }
     
+    #[must_use] 
     pub fn is_complete(&self) -> bool {
         self.complete
     }
@@ -132,6 +134,7 @@ impl TypewriterEffect {
         self.paused = false;
     }
     
+    #[must_use] 
     pub fn is_paused(&self) -> bool {
         self.paused
     }
@@ -143,10 +146,12 @@ impl TypewriterEffect {
         }
     }
     
+    #[must_use] 
     pub fn full_text(&self) -> &str {
         &self.text
     }
     
+    #[must_use] 
     pub fn progress(&self) -> f32 {
         let total = self.text.chars().count();
         if total == 0 {
@@ -174,6 +179,7 @@ impl Default for TypewriterInstance {
 }
 
 impl TypewriterInstance {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             typewriter_effects: Vec::new(),
@@ -190,7 +196,7 @@ impl TypewriterInstance {
     }
     
     pub fn update(&mut self, delta_time: f32) {
-        for effect in self.typewriter_effects.iter_mut() {
+        for effect in &mut self.typewriter_effects {
             effect.update(delta_time);
         }
     }
@@ -199,6 +205,7 @@ impl TypewriterInstance {
         self.typewriter_effects.retain(|effect| effect.id != id);
     }
     
+    #[must_use] 
     pub fn is_empty(&self) -> bool {
         self.typewriter_effects.is_empty()
     }
@@ -211,6 +218,7 @@ impl TypewriterInstance {
         self.typewriter_effects.iter_mut()
     }
 
+    #[must_use] 
     pub fn get_effect(&self, id: usize) -> Option<&TypewriterEffect> {
         self.typewriter_effects.iter().find(|e| e.id == id)
     }
@@ -249,34 +257,41 @@ impl TypewriterInstance {
         }
     }
 
+    #[must_use] 
     pub fn get_text(&self, id: usize) -> Option<&str> {
-        self.get_effect(id).map(|e| e.full_text())
+        self.get_effect(id).map(TypewriterEffect::full_text)
     }
 
+    #[must_use] 
     pub fn get_visible_text(&self, id: usize) -> Option<&str> {
-        self.get_effect(id).map(|e| e.visible_text())
+        self.get_effect(id).map(TypewriterEffect::visible_text)
     }
 
+    #[must_use] 
     pub fn get_position(&self, id: usize) -> Option<(f32, f32)> {
         self.get_effect(id).map(|e| (e.x, e.y))
     }
 
+    #[must_use] 
     pub fn is_paused(&self, id: usize) -> bool {
-        self.get_effect(id).is_some_and(|e| e.is_paused())
+        self.get_effect(id).is_some_and(TypewriterEffect::is_paused)
     }
 
+    #[must_use] 
     pub fn is_complete(&self, id: usize) -> bool {
-        self.get_effect(id).is_some_and(|e| e.is_complete())
+        self.get_effect(id).is_some_and(TypewriterEffect::is_complete)
     }
 
+    #[must_use] 
     pub fn get_progress(&self, id: usize) -> f32 {
-        self.get_effect(id).map_or(0.0, |e| e.progress())
+        self.get_effect(id).map_or(0.0, TypewriterEffect::progress)
     }
 
     pub fn clear(&mut self) {
         self.typewriter_effects.clear();
     }
 
+    #[must_use] 
     pub fn len(&self) -> usize {
         self.typewriter_effects.len()
     }

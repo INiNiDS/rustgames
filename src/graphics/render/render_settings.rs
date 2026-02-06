@@ -1,33 +1,13 @@
+use crate::graphics::effects::{AnimationSystem, VisualState};
+use crate::graphics::render::TextureSystem;
+use crate::graphics::{Camera, Color, SpriteRenderer, VfxSystem};
+use crate::prelude::WindowConfig;
+use crate::text::font::DEFAULT_NORMAL_FONT;
+use crate::text::TextSystem;
 use std::sync::Arc;
 use wgpu::{Device, PresentMode, Queue, Surface, SurfaceConfiguration};
 use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::window::Window;
-use crate::controllers::{AnimationController, CameraController, TextController, TextureController, TypewriterController};
-use crate::graphics::effects::VisualState;
-use crate::graphics::{Camera, Color, SpriteRenderer};
-use crate::prelude::WindowConfig;
-use crate::text::font::DEFAULT_NORMAL_FONT;
-use crate::text::TextSystem;
-use crate::text::typewriter::TypewriterInstance;
-// pub struct RenderSettings {
-//     background_color: Color,
-//     base: VisualState,
-//     sprite_renderer: SpriteRenderer,
-//     max_width_text: f32,
-//     max_height_text: f32,
-//     surface: Surface<'static>,
-//     device: Arc<Device>,
-//     queue: Arc<Queue>,
-//     window: Arc<winit::window::Window>,
-//     config: SurfaceConfiguration,
-//     camera_controller: CameraController,
-//     text_controller: TextController,
-//     typewriter_controller: TypewriterController,
-//     animation_controller: AnimationController,
-//     texture_controller: TextureController,
-// }
-
-
 
 /// Aggregates all GPU resources and controllers needed for rendering a frame.
 pub struct RenderSettings {
@@ -39,13 +19,13 @@ pub struct RenderSettings {
     pub(crate) surface: Surface<'static>,
     pub(crate) device: Arc<Device>,
     pub(crate) queue: Arc<Queue>,
-    pub(crate) window: Arc<winit::window::Window>,
+    pub(crate) window: Arc<Window>,
     pub(crate) config: SurfaceConfiguration,
-    pub(crate) camera_controller: CameraController,
-    pub(crate) text_controller: TextController,
-    pub(crate) typewriter_controller: TypewriterController,
-    pub(crate) animation_controller: AnimationController,
-    pub(crate) texture_controller: TextureController,
+    pub(crate) camera: Camera,
+    pub(crate) text_system: TextSystem,
+    pub(crate) animation_system: AnimationSystem,
+    pub(crate) texture_controller: TextureSystem,
+    pub(crate) vfx_system: VfxSystem
 }
 
 impl RenderSettings {
@@ -86,7 +66,7 @@ impl RenderSettings {
 
         let device_arc = Arc::new(device);
         let queue_arc = Arc::new(queue);
-        let (camera_controller, text_controller, sprite_renderer, typewriter_controller) =
+        let (camera, text_system, sprite_renderer) =
             Self::configure_inner_modules(size, &device_arc, &config);
 
         Self {
@@ -100,32 +80,32 @@ impl RenderSettings {
             queue: queue_arc.clone(),
             window,
             config,
-            camera_controller,
-            text_controller,
-            typewriter_controller,
-            animation_controller: AnimationController::new(),
-            texture_controller: TextureController::new(device_arc, queue_arc),
+            camera,
+            text_system,
+            animation_system: AnimationSystem::new(),
+            texture_controller: TextureSystem::new(device_arc, queue_arc),
+            vfx_system: VfxSystem::new(),
         }
     }
 
-    pub fn get_camera_controller(&self) -> &CameraController {
-        &self.camera_controller
-    }
-
-    pub fn get_texture_controller(&self) -> &TextureController {
+    pub fn get_texture_controller(&self) -> &TextureSystem {
         &self.texture_controller
     }
 
-    pub fn get_typewriter_controller(&self) -> &TypewriterController {
-        &self.typewriter_controller
+    pub fn get_animation_system(&self) -> &AnimationSystem {
+        &self.animation_system
     }
 
-    pub fn get_animation_controller(&self) -> &AnimationController {
-        &self.animation_controller
+    pub fn get_camera(&self) -> &Camera {
+        &self.camera
     }
 
-    pub fn get_text_controller(&self) -> &TextController {
-        &self.text_controller
+    pub fn get_text_system(&self) -> &TextSystem {
+        &self.text_system
+    }
+
+    pub fn get_vfx_system(&self) -> &VfxSystem {
+        &self.vfx_system
     }
 
     pub fn get_background_color(&self) -> &Color {
@@ -160,7 +140,7 @@ impl RenderSettings {
         &self.queue
     }
 
-    pub fn get_window(&self) -> &Arc<winit::window::Window> {
+    pub fn get_window(&self) -> &Arc<Window> {
         &self.window
     }
 
@@ -168,26 +148,25 @@ impl RenderSettings {
         &self.config
     }
 
-    pub fn get_text_controller_mut(&mut self) -> &mut TextController {
-        &mut self.text_controller
+    pub fn get_text_system_mut(&mut self) -> &mut TextSystem {
+        &mut self.text_system
     }
 
-    pub fn get_camera_controller_mut(&mut self) -> &mut CameraController {
-        &mut self.camera_controller
+    pub fn get_camera_mut(&mut self) -> &mut Camera {
+        &mut self.camera
     }
 
-    pub fn get_texture_controller_mut(&mut self) -> &mut TextureController {
+    pub fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
         &mut self.texture_controller
     }
 
-    pub fn get_animation_controller_mut(&mut self) -> &mut AnimationController {
-        &mut self.animation_controller
+    pub fn get_vfx_system_mut(&mut self) -> &mut VfxSystem {
+        &mut self.vfx_system
     }
 
-    pub fn get_typewriter_controller_mut(&mut self) -> &mut TypewriterController {
-        &mut self.typewriter_controller
+    pub fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
+        &mut self.animation_system
     }
-
     pub fn set_window_config(&mut self, config: WindowConfig) {
         self.config.present_mode = if config.vsync { PresentMode::Fifo } else { PresentMode::Immediate };
 
@@ -210,13 +189,10 @@ impl RenderSettings {
     }
 
 
-    fn configure_inner_modules(size: PhysicalSize<u32>, device: &Device, config: &SurfaceConfiguration) -> (CameraController, TextController, SpriteRenderer, TypewriterController) {
-        let typewriter_controller = TypewriterController::new(TypewriterInstance::new());
+    fn configure_inner_modules(size: PhysicalSize<u32>, device: &Device, config: &SurfaceConfiguration) -> (Camera, TextSystem, SpriteRenderer) {
         let camera = Camera::new(size.width, size.height);
-        let camera_controller = CameraController::new(camera);
         let sprite_renderer = SpriteRenderer::new(device, config);
         let text_system = TextSystem::new(device, config, DEFAULT_NORMAL_FONT, None, None, None, None);
-        let text_controller = TextController::new(text_system);
-        (camera_controller, text_controller, sprite_renderer, typewriter_controller)
+        (camera, text_system, sprite_renderer)
     }
 }

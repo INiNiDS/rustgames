@@ -17,6 +17,7 @@ pub struct Time {
 }
 
 impl Time {
+    #[must_use] 
     pub fn new() -> Self {
         let now = Instant::now();
         Self {
@@ -48,18 +49,22 @@ impl Time {
         self.frame_start = Instant::now();
     }
 
+    #[must_use] 
     pub fn delta_seconds(&self) -> f32 {
         self.delta.as_secs_f32()
     }
 
+    #[must_use] 
     pub fn total_seconds(&self) -> f32 {
         self.start_time.elapsed().as_secs_f32()
     }
 
+    #[must_use] 
     pub fn frame_count(&self) -> u64 {
         self.frame_count
     }
 
+    #[must_use] 
     pub fn fps(&self) -> f32 {
         if self.delta.as_secs_f32() > 0.0 {
             1.0 / self.delta.as_secs_f32()
@@ -80,7 +85,7 @@ impl Time {
     pub fn limit_fps(&self) {
         let frame_time = self.frame_start.elapsed();
         if frame_time < self.target_frame_time {
-            std::thread::sleep(self.target_frame_time - frame_time);
+            std::thread::sleep(self.target_frame_time.checked_sub(frame_time).unwrap());
         }
     }
 
@@ -88,6 +93,7 @@ impl Time {
         self.target_frame_time = Duration::from_secs_f32(1.0 / fps);
     }
 
+    #[must_use] 
     pub fn is_lag_spike(&self) -> bool {
         self.delta.as_secs_f32() > (1.0 / TARGET_FPS) * 2.0
     }

@@ -1,11 +1,10 @@
 use crate::graphics::render::render_settings::RenderSettings;
 use crate::graphics::{SpriteInstance, Texture};
-use glam::Vec2;
 use std::sync::Arc;
 use wgpu::StoreOp;
 use winit::dpi::PhysicalSize;
 
-/// The main renderer. Initialises the WGPU device and surface, performs
+/// The main renderer. Initialize the WGPU device and surface, performs
 /// per-frame drawing of sprites and text.
 pub struct Renderer;
 
@@ -21,15 +20,15 @@ impl Renderer {
             let device = render_settings.get_device();
             render_settings.surface.configure(device, render_settings.get_config());
 
-            render_settings.get_camera_controller_mut().resize(new_size.width, new_size.height);
+            render_settings.get_camera_mut().resize(new_size.width, new_size.height);
 
             let queue = Arc::clone(render_settings.get_queue());
-            render_settings.get_text_controller_mut().resize(new_size.width, new_size.height, &queue);
+            render_settings.get_text_system_mut().resize(new_size.width, new_size.height, &queue);
         }
     }
 
     pub fn draw(render_settings: &mut RenderSettings) {
-        render_settings.get_sprite_renderer().update_camera(&render_settings.queue, render_settings.get_camera_controller());
+        render_settings.get_sprite_renderer().update_camera(&render_settings.queue, render_settings.get_camera());
 
         let output = render_settings.surface.get_current_texture().expect("Failed to acquire next surface texture");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
@@ -48,7 +47,7 @@ impl Renderer {
     }
 
     fn queue_typewriter_text(render_settings: &mut RenderSettings) {
-        if render_settings.get_typewriter_controller_mut().is_empty() {
+        if render_settings.get_text_system().is_empty() {
             return;
         }
 
@@ -56,14 +55,14 @@ impl Renderer {
         let max_h = render_settings.get_max_height_text();
 
         let typewriter_texts: Vec<_> = render_settings
-            .get_typewriter_controller_mut()
+            .get_text_system()
             .effects()
             .map(|tw| (tw.visible_text().to_string(), tw.x, tw.y))
             .collect();
 
         for (text, x, y) in typewriter_texts {
-            render_settings.get_text_controller_mut().queue_text(
-                &text, x, y, Vec2::new(max_w, max_h)
+            render_settings.get_text_system_mut().queue_text(
+                &text, x, y, max_w, max_h
             );
         }
     }
@@ -77,7 +76,7 @@ impl Renderer {
         let queue = &render_settings.queue;
         let sprite_renderer = &mut render_settings.sprite_renderer;
         let texture_controller = &render_settings.texture_controller;
-        let text_controller = &mut render_settings.text_controller;
+        let text_controller = &mut render_settings.text_system;
         let background_color = render_settings.background_color.to_wgpu_color();
 
         let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {

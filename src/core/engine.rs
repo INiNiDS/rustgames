@@ -1,13 +1,13 @@
 use crate::audio::audio_system::AudioSystem;
-use crate::controllers::camera_controller::CameraController;
 use crate::core::time::Time;
 use crate::graphics::render::renderer::Renderer;
 use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
-use crate::controllers::{TextureController, TypewriterController};
+use crate::graphics::{Camera, TextureSystem};
 use crate::graphics::render::render_settings::RenderSettings;
+use crate::text::TextSystem;
 
 /// Central engine managing the window, renderer, input events, audio, and
 /// per-frame timing. Provides accessor methods for every subsystem controller.
@@ -21,6 +21,7 @@ pub struct Engine {
 }
 
 impl Engine {
+    #[must_use] 
     pub fn new(window: Arc<WinitWindow>) -> Self {
         let wrapped = Window::new(window.clone());
 
@@ -73,14 +74,15 @@ impl Engine {
             self.handle_event(event);
         }
 
-        self.update_controllers();
+        self.update_systems();
     }
 
-    fn update_controllers(&mut self) {
+    fn update_systems(&mut self) {
         let dt = self.delta_time();
-        self.render_settings.get_typewriter_controller_mut().update(dt);
-        self.render_settings.get_camera_controller_mut().update(dt);
-        self.render_settings.get_animation_controller_mut().update(dt);
+        self.render_settings.get_text_system_mut().update(dt);
+        self.render_settings.get_camera_mut().update(dt);
+        self.render_settings.get_animation_system_mut().update(dt);
+        self.render_settings.get_vfx_system_mut().update(dt);
     }
 
     pub fn push_event(&mut self, event: Event) {
@@ -105,23 +107,19 @@ impl Engine {
         }
     }
 
-    pub fn get_text_controller(&mut self) -> &mut crate::controllers::text_controller::TextController {
-        self.render_settings.get_text_controller_mut()
+    pub fn get_text_system(&mut self) -> &mut TextSystem {
+        self.render_settings.get_text_system_mut()
     }
 
-    pub fn get_camera_controller(&mut self) -> &mut CameraController {
-        self.render_settings.get_camera_controller_mut()
-    }
-
-    pub fn get_typewriter_controller(&mut self) -> &mut TypewriterController {
-        self.render_settings.get_typewriter_controller_mut()
+    pub fn get_camera(&mut self) -> &mut Camera {
+        self.render_settings.get_camera_mut()
     }
 
     pub fn get_event_queue(&self) -> &EventQueue {
         &self.event_queue
     }
 
-    pub fn get_texture_controller(&mut self) -> &mut TextureController {
+    pub fn get_texture_controller(&mut self) -> &mut TextureSystem {
         self.render_settings.get_texture_controller_mut()
     }
 

@@ -40,3 +40,7 @@ desktop.ini
 # Local configuration
 .env
 .env.local
+
+# CodeQL database and results
+codeql-db
+results.sarif

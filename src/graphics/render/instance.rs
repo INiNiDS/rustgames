@@ -14,6 +14,7 @@ pub struct SpriteInstance {
 }
 
 impl SpriteInstance {
+    #[must_use] 
     pub fn new(
         position: Vec2,
         size: Vec2,
@@ -34,6 +35,7 @@ impl SpriteInstance {
         }
     }
     
+    #[must_use] 
     pub fn simple(position: Vec2, size: Vec2, rotation: f32, opacity: f32) -> Self {
         let mut color = Color::WHITE;
         color.a = opacity;
@@ -46,6 +48,7 @@ impl SpriteInstance {
         )
     }
     
+    #[must_use] 
     pub fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
             array_stride: std::mem::size_of::<SpriteInstance>() as BufferAddress,

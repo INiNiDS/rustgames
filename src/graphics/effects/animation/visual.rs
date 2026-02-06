@@ -42,18 +42,21 @@ pub struct CustomCombinedMode {
 }
 
 impl CustomCombinedMode {
+    #[must_use] 
     pub fn new(opacity: CombinedMode, rotation: CombinedMode, scale: CombinedMode, position: CombinedMode) -> Self {
         Self {
             opacity, rotation, scale, position
         }
     }
 
+    #[must_use] 
     pub fn with_opacity(opacity: CombinedMode) -> Self {
         Self {
             opacity,
             ..Default::default()
         }
     }
+    #[must_use] 
     pub fn with_rotation(rotation: CombinedMode) -> Self {
         Self {
             rotation,
@@ -61,6 +64,7 @@ impl CustomCombinedMode {
         }
     }
 
+    #[must_use] 
     pub fn with_scale(scale: CombinedMode) -> Self {
         Self {
             scale,
@@ -68,6 +72,7 @@ impl CustomCombinedMode {
         }
     }
 
+    #[must_use] 
     pub fn with_position(position: CombinedMode) -> Self {
         Self {
             position,
@@ -108,22 +113,27 @@ impl Default for AnimEffect {
 }
 
 impl AnimEffect {
+    #[must_use] 
     pub fn with_opacity(opacity: f32) -> Self {
         Self { opacity_mul: opacity, ..Default::default() }
     }
 
+    #[must_use] 
     pub fn with_offset(offset: Vec2) -> Self {
         Self { offset_add: offset, ..Default::default() }
     }
 
+    #[must_use] 
     pub fn with_scale(scale: Vec2) -> Self {
         Self { scale_mul: scale, ..Default::default() }
     }
 
+    #[must_use] 
     pub fn with_rotation(rotation: f32) -> Self {
         Self { rotation_add: rotation, ..Default::default() }
     }
 
+    #[must_use] 
     pub fn combine(self, other: AnimEffect) -> Self {
         Self {
             opacity_mul: self.opacity_mul * other.opacity_mul,
@@ -133,6 +143,7 @@ impl AnimEffect {
         }
     }
 
+    #[must_use] 
     pub fn apply_to(&self, state: VisualState, combined_mode: Option<CustomCombinedMode>) -> VisualState {
         match combined_mode {
             Some(config) => self.apply_to_config(state, config),
@@ -140,6 +151,7 @@ impl AnimEffect {
         }
     }
 
+    #[must_use] 
     pub fn apply_to_default(&self, state: VisualState) -> VisualState {
         VisualState {
             opacity: state.opacity * self.opacity_mul,
@@ -150,6 +162,7 @@ impl AnimEffect {
         }
     }
 
+    #[must_use] 
     pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
             opacity: self.apply_val(state.opacity, self.opacity_mul, config.opacity),
