@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 
+/// Rolling-window FPS counter. Maintains the last 60 frame times and computes
+/// average, minimum, and maximum FPS.
 pub struct FpsCounter {
     frame_times: VecDeque<f32>,
     total_time: f32,

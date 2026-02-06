@@ -2,6 +2,7 @@ use std::cmp::PartialEq;
 use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 use crate::graphics::color::Color;
 
+/// Horizontal text alignment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TextAlignment {
     Left,
@@ -17,6 +18,7 @@ pub enum VerticalAlignment {
     Bottom,
 }
 
+/// Controls size, colour, alignment, and line spacing of rendered text.
 #[derive(Debug, Clone)]
 pub struct TextStyle {
     pub size: f32,
@@ -57,6 +59,7 @@ impl TextStyle {
     }
 }
 
+/// Utilities for word-wrapping plain and rich text and measuring text bounds.
 pub struct TextWrapper;
 
 impl TextWrapper {
@@ -188,6 +191,7 @@ pub struct StyledSegment {
     pub attrs: TextAttributes,
 }
 
+/// Parses markup tags (`[b]`, `[i]`, `[color=#hex]`) into styled segments.
 pub struct RichTextParser;
 
 impl RichTextParser {

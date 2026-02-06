@@ -4,6 +4,8 @@ use crate::graphics::render::texture::Texture;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 use crate::controllers::CameraController;
 
+/// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
+/// and instance buffers, and camera/texture bind groups.
 #[derive(Clone)]
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,

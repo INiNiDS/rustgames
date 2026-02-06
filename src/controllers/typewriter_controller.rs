@@ -2,6 +2,8 @@ use std::slice::Iter;
 use crate::text::{TextSpeed, TypewriterEffect};
 use crate::text::typewriter::TypewriterInstance;
 
+/// Controls typewriter text-reveal effects with per-effect speed, pausing, and
+/// completion tracking.
 pub struct TypewriterController {
     typewriter_instance: TypewriterInstance
 }

@@ -2,6 +2,9 @@ use glam::{Mat4, Vec2, Vec4};
 use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
 use crate::graphics::Color;
 
+/// GPU-side representation of a sprite instance for instanced rendering.
+///
+/// 96 bytes: 4×4 model matrix, UV rectangle, and colour tint.
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct SpriteInstance {

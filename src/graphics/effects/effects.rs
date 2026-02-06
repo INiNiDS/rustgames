@@ -2,6 +2,8 @@ use glam::Vec2;
 use rand::Rng;
 use crate::graphics::color::Color;
 
+/// A visual effect that can be submitted to the `EffectManager` or
+/// `RendererAlpha`.
 #[derive(Debug, Clone)]
 pub enum VisualEffect {
     Flash { color: Color, duration: f32 },
@@ -11,6 +13,8 @@ pub enum VisualEffect {
     ColorOverlay { color: Color, alpha: f32 },
 }
 
+/// Configuration for a particle effect. Use the named constructors such as
+/// `sparkles`, `explosion`, `snow`, `rain`, or `smoke` for common presets.
 #[derive(Debug, Clone)]
 pub struct ParticleEffect {
     pub position: Vec2,
@@ -103,6 +107,8 @@ impl ParticleEffect {
     }
 }
 
+/// A single particle with position, velocity, remaining lifetime, colour, and
+/// size. Updated each frame by its owning `EffectInstance`.
 #[derive(Debug, Clone)]
 pub struct Particle {
     pub position: Vec2,
@@ -213,6 +219,8 @@ impl EffectInstance {
     }
 }
 
+/// Manages active `EffectInstance` values, advancing and pruning them each
+/// frame.
 pub struct EffectManager {
     effects: Vec<EffectInstance>,
 }

@@ -1,5 +1,7 @@
 use glam::Vec2;
 
+/// The visual state of a renderable element: opacity, position, scale,
+/// rotation, and anchor point.
 #[derive(Debug, Clone, Copy)]
 pub struct VisualState {
     pub opacity: f32,
@@ -21,6 +23,8 @@ impl Default for VisualState {
     }
 }
 
+/// Determines how an `AnimEffect` field is combined with the base
+/// `VisualState` value.
 pub enum CombinedMode {
     Default,
     Add,
@@ -29,6 +33,7 @@ pub enum CombinedMode {
 }
 
 
+/// Per-field combination modes for applying `AnimEffect` to a `VisualState`.
 pub struct CustomCombinedMode {
     opacity: CombinedMode,
     rotation: CombinedMode,
@@ -82,6 +87,7 @@ impl Default for CustomCombinedMode {
     }
 }
 
+/// A delta applied to a `VisualState` by an animation frame.
 #[derive(Debug, Clone, Copy)]
 pub struct AnimEffect {
     pub opacity_mul: f32,

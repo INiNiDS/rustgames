@@ -1,5 +1,6 @@
 use glam::Vec2;
 
+/// Cardinal and diagonal directions for slide animations and transitions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Left, Right, Top, Bottom,

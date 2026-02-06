@@ -1,6 +1,8 @@
 use glam::{Mat4, Vec2, Vec3};
 use crate::graphics::effects::TraumaShake;
 
+/// A 2D orthographic camera with panning, smooth zoom, target following,
+/// bounds clamping, and trauma-based screen shake.
 pub struct Camera {
     pub position: Vec3,
     pub zoom: f32,
@@ -167,7 +169,7 @@ mod tests {
     
     #[test]
     fn test_trauma_shake_decay() {
-        let mut shake = TraumaShake::new(10.0, 0.1);
+        let mut shake = TraumaShake::new(10.0, 1.0);
         shake.add_trauma(1.0);
         
         assert_eq!(shake.trauma(), 1.0);

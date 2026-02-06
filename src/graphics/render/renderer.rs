@@ -14,6 +14,8 @@ use winit::dpi::PhysicalSize;
 use winit::window::Window;
 use crate::graphics::render::render_settings::RenderSettings;
 
+/// The main renderer. Initialises the WGPU device and surface, performs
+/// per-frame drawing of sprites and text.
 pub struct Renderer;
 
 impl Renderer {

@@ -7,6 +7,8 @@ use glam::Vec2;
 use crate::graphics::Texture;
 use crate::graphics::SpriteInstance;
 
+/// Manages GPU textures and per-frame sprite instance batching. Supports
+/// loading from files, bytes, and directories.
 pub struct TextureController {
     textures: HashMap<String, Texture>,
     device: Arc<Device>,

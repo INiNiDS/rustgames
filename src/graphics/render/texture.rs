@@ -3,6 +3,8 @@ use glam::Vec2;
 use image::{ GenericImageView};
 use wgpu::{Device, Origin3d, Queue, Sampler, SamplerDescriptor, TexelCopyBufferLayout, TexelCopyTextureInfo, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView, TextureViewDescriptor};
 
+/// A GPU-resident texture loaded from image bytes. Holds a `TextureView`,
+/// `Sampler`, and pixel dimensions.
 pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: TextureView,

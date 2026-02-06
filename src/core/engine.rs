@@ -9,6 +9,8 @@ use winit::window::Window as WinitWindow;
 use crate::controllers::{TextureController, TypewriterController};
 use crate::graphics::render::render_settings::RenderSettings;
 
+/// Central engine managing the window, renderer, input events, audio, and
+/// per-frame timing. Provides accessor methods for every subsystem controller.
 pub struct Engine {
     window: Window,
     render_settings: RenderSettings,

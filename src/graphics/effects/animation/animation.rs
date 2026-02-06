@@ -1,5 +1,6 @@
 use crate::graphics::effects::animation::direction::Direction;
 
+/// A named animation that can be played through `AnimationController`.
 #[derive(Debug, Clone)]
 pub enum Animation {
     FadeIn { duration: f32 },
@@ -11,6 +12,7 @@ pub enum Animation {
     Shake { intensity: f32, duration: f32 },
 }
 
+/// A group of animation IDs returned from sequence/parallel/timeline starts.
 #[derive(Debug, Clone)]
 pub struct AnimationGroupID {
     ids: Vec<usize>,
@@ -46,6 +48,7 @@ impl AnimationGroupID {
     }
 }
 
+/// A scene transition style.
 #[derive(Debug, Clone)]
 pub enum Transition {
     Instant,

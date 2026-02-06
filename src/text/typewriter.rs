@@ -1,5 +1,6 @@
 use std::slice::{Iter, IterMut};
 
+/// The speed at which a `TypewriterEffect` reveals characters.
 #[derive(Debug, Clone, Copy)]
 pub enum TextSpeed {
     Slow,       
@@ -21,6 +22,8 @@ impl TextSpeed {
     }
 }
 
+/// A character-by-character text reveal with configurable speed and automatic
+/// punctuation pauses.
 #[derive(Debug)]
 pub struct TypewriterEffect {
     text: String,
@@ -158,6 +161,7 @@ impl TypewriterEffect {
         self.set_speed(new_speed);
     }
 }
+/// Manages a collection of `TypewriterEffect` instances by ID.
 pub struct TypewriterInstance {
     typewriter_effects: Vec<TypewriterEffect>,
     next_id: usize,

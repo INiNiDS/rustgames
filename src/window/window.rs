@@ -3,6 +3,7 @@ use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
 use crate::graphics::Color;
 
+/// Configuration used to create and customise the application window.
 #[derive(Debug, Clone)]
 pub struct WindowConfig {
     pub title: String,
@@ -39,6 +40,7 @@ impl WindowConfig {
     }
 }
 
+/// Thin wrapper around `winit::Window` exposing common operations.
 pub struct Window {
     inner: Arc<WinitWindow>,
 }

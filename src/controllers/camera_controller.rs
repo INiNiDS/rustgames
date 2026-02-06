@@ -1,6 +1,8 @@
 use crate::prelude::Camera;
 use glam::{Mat4, Vec2, Vec3};
 
+/// High-level controller wrapping `Camera` with convenience methods for
+/// movement, zoom, shake, following, and bounds.
 pub struct CameraController {
     camera: Camera
 }
