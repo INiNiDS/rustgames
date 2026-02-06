@@ -134,10 +134,9 @@ impl AnimEffect {
     }
 
     pub fn apply_to(&self, state: VisualState, combined_mode: Option<CustomCombinedMode>) -> VisualState {
-        if combined_mode.is_some() {
-            self.apply_to_config(state, combined_mode.unwrap())
-        } else {
-            self.apply_to_default(state)
+        match combined_mode {
+            Some(config) => self.apply_to_config(state, config),
+            None => self.apply_to_default(state),
         }
     }
 

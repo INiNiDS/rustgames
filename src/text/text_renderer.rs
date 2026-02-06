@@ -191,84 +191,103 @@ pub struct StyledSegment {
     pub attrs: TextAttributes,
 }
 
-/// Parses markup tags (`[b]`, `[i]`, `[color=#hex]`) into styled segments.
 pub struct RichTextParser;
+
+struct ParseState {
+    segments: Vec<StyledSegment>,
+    current_text: String,
+    weight_stack: Vec<FontWeight>,
+    italic_stack: Vec<bool>,
+    color_stack: Vec<Option<Color>>,
+}
+
+impl ParseState {
+    fn new() -> Self {
+        Self {
+            segments: Vec::new(),
+            current_text: String::new(),
+            weight_stack: vec![FontWeight::Normal],
+            italic_stack: vec![false],
+            color_stack: vec![None],
+        }
+    }
+
+    fn flush_segment(&mut self) {
+        if self.current_text.is_empty() {
+            return;
+        }
+        self.segments.push(StyledSegment {
+            text: std::mem::take(&mut self.current_text),
+            attrs: TextAttributes {
+                weight: *self.weight_stack.last().unwrap(),
+                italic: *self.italic_stack.last().unwrap(),
+                color: *self.color_stack.last().unwrap(),
+            },
+        });
+    }
+
+    fn apply_open_tag(&mut self, tag: &str) {
+        match tag {
+            "b" => self.weight_stack.push(FontWeight::Bold),
+            "m" => self.weight_stack.push(FontWeight::Medium),
+            "sb" => self.weight_stack.push(FontWeight::SemiBold),
+            "i" => self.italic_stack.push(true),
+            _ if tag.starts_with("color=") => {
+                self.color_stack.push(Color::from_hex(&tag[6..]));
+            }
+            _ => {}
+        }
+    }
+
+    fn apply_close_tag(&mut self, tag: &str) {
+        match tag {
+            "b" | "m" | "sb" => {
+                if self.weight_stack.len() > 1 { self.weight_stack.pop(); }
+            }
+            "i" => {
+                if self.italic_stack.len() > 1 { self.italic_stack.pop(); }
+            }
+            "color" => {
+                if self.color_stack.len() > 1 { self.color_stack.pop(); }
+            }
+            _ => {}
+        }
+    }
+}
 
 impl RichTextParser {
     pub fn parse(text: &str) -> Vec<StyledSegment> {
-        let mut segments = Vec::new();
-        let mut current_text = String::new();
-        let mut weight_stack = vec![FontWeight::Normal];
-        let mut italic_stack = vec![false];
-        let mut color_stack = vec![None];
-
+        let mut state = ParseState::new();
         let mut chars = text.chars().peekable();
 
         while let Some(c) = chars.next() {
-            if c == '[' {
-                let mut tag_content = String::new();
-                let mut is_closing = false;
+            if c != '[' {
+                state.current_text.push(c);
+                continue;
+            }
 
-                if let Some(&'/') = chars.peek() {
-                    is_closing = true;
+            let is_closing = chars.peek() == Some(&'/');
+            if is_closing { chars.next(); }
+
+            let mut tag_content = String::new();
+            while let Some(&next_char) = chars.peek() {
+                if next_char == ']' {
                     chars.next();
+                    break;
                 }
+                tag_content.push(chars.next().unwrap());
+            }
 
-                while let Some(&next_char) = chars.peek() {
-                    if next_char == ']' {
-                        chars.next();
-                        break;
-                    }
-                    tag_content.push(chars.next().unwrap());
-                }
+            state.flush_segment();
 
-                if !current_text.is_empty() {
-                    segments.push(StyledSegment {
-                        text: current_text.clone(),
-                        attrs: TextAttributes {
-                            weight: *weight_stack.last().unwrap(),
-                            italic: *italic_stack.last().unwrap(),
-                            color: *color_stack.last().unwrap(),
-                        },
-                    });
-                    current_text.clear();
-                }
-
-                if is_closing {
-                    match tag_content.as_str() {
-                        "b" | "m" | "sb" => { if weight_stack.len() > 1 { weight_stack.pop(); } }
-                        "i" => { if italic_stack.len() > 1 { italic_stack.pop(); } }
-                        "color" => { if color_stack.len() > 1 { color_stack.pop(); } }
-                        _ => {}
-                    }
-                } else {
-                    match tag_content.as_str() {
-                        "b" => weight_stack.push(FontWeight::Bold),
-                        "m" => weight_stack.push(FontWeight::Medium),
-                        "sb" => weight_stack.push(FontWeight::SemiBold),
-                        "i" => italic_stack.push(true),
-                        _ if tag_content.starts_with("color=") => {
-                            let hex = &tag_content[6..];
-                            color_stack.push(Color::from_hex(hex));
-                        }
-                        _ => {}
-                    }
-                }
+            if is_closing {
+                state.apply_close_tag(&tag_content);
             } else {
-                current_text.push(c);
+                state.apply_open_tag(&tag_content);
             }
         }
 
-        if !current_text.is_empty() {
-            segments.push(StyledSegment {
-                text: current_text,
-                attrs: TextAttributes {
-                    weight: *weight_stack.last().unwrap(),
-                    italic: *italic_stack.last().unwrap(),
-                    color: *color_stack.last().unwrap(),
-                },
-            });
-        }
-        segments
+        state.flush_segment();
+        state.segments
     }
 }

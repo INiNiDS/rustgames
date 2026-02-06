@@ -168,6 +168,7 @@ impl EffectInstance {
     
     fn spawn_particles(&mut self, effect: &ParticleEffect) {
         let mut rng = rand::rng();
+        self.particles.reserve(effect.particle_count as usize);
         
         for _ in 0..effect.particle_count {
             let velocity = Vec2::new(
