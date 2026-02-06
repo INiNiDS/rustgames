@@ -3,8 +3,8 @@ pub mod core;
 pub mod graphics;
 pub mod text;
 pub mod window;
-mod controllers;
-mod audio;
+pub mod controllers;
+pub mod audio;
 
 #[cfg(test)]
 mod tests {

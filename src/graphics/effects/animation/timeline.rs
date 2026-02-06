@@ -1,5 +1,6 @@
-use crate::graphics::{Animation, AnimationController, Easing};
-use crate::graphics::animation::AnimationGroupID;
+use crate::controllers::AnimationController;
+use crate::graphics::effects::{Animation, Easing};
+use crate::graphics::effects::animation::AnimationGroupID;
 
 #[derive(Debug, Default, Clone)]
 pub struct TimelineBuilder {

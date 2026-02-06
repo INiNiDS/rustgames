@@ -2,13 +2,18 @@
 #![allow(unused_imports)]
 
 pub use crate::core::{
-    Engine, Time, Context, RenderContext, Game, FpsCounter,
+    Engine, Time, Game, FpsCounter
 };
 
 pub use crate::graphics::{
     Color, Sprite, Camera, Texture, Renderer,
-    Animation, Transition, Easing, Direction, AnimationInstance, VisualState, AnimEffect, TimelineStep, AnimationGroupID, TimelineBuilder,
-    VisualEffect, ParticleEffect, EffectManager,
+    SpriteAnimation,
+    SpriteInstance,
+    AnimationMode,
+    EffectManager, Particle, ParticleEffect, VisualEffect,
+    AnimEffect, Animation, AnimationGroupID, AnimationInstance, Direction, Easing, TimelineBuilder, TimelineStep,
+    Transition, VisualState,
+    RenderSettings
 };
 
 pub use crate::window::{

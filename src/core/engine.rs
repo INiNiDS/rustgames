@@ -1,15 +1,17 @@
 use crate::audio::audio_system::AudioSystem;
 use crate::controllers::camera_controller::CameraController;
 use crate::core::time::Time;
-use crate::graphics::renderer::Renderer;
+use crate::graphics::render::renderer::Renderer;
 use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
+use crate::controllers::{TextureController, TypewriterController};
+use crate::graphics::render::render_settings::RenderSettings;
 
 pub struct Engine {
     window: Window,
-    renderer: Renderer,
+    render_settings: RenderSettings,
     time: Time,
     event_queue: EventQueue,
     handler_keys: Vec<Box<dyn EventHandler>>,
@@ -20,11 +22,11 @@ impl Engine {
     pub fn new(window: Arc<WinitWindow>) -> Self {
         let wrapped = Window::new(window.clone());
 
-        let render_future = Renderer::new(window);
-        let renderer = pollster::block_on(render_future);
+        let render_settings_future = Renderer::set(window);
+        let render_settings = pollster::block_on(render_settings_future);
         Self {
             window: wrapped,
-            renderer,
+            render_settings,
             time: Time::new(),
             event_queue: EventQueue::new(),
             handler_keys: Vec::new(),
@@ -33,11 +35,11 @@ impl Engine {
     }
 
     pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
-        self.renderer.resize(new_size);
+        Renderer::resize(&mut self.render_settings, new_size);
     }
 
     pub fn draw(&mut self) {
-        self.renderer.draw();
+        Renderer::draw(&mut self.render_settings);
     }
 
     pub fn delta_time(&self) -> f32 {
@@ -72,16 +74,16 @@ impl Engine {
 
         let dt = self.delta_time();
 
-        self.renderer.get_typewriter_controller().update(dt);
-        self.renderer.get_camera_controller().update(dt);
-        self.renderer.get_animation_controller_mut().update(dt);
+        self.render_settings.get_typewriter_controller_mut().update(dt);
+        self.render_settings.get_camera_controller_mut().update(dt);
+        self.render_settings.get_animation_controller_mut().update(dt);
     }
 
     pub fn push_event(&mut self, event: Event) {
         self.event_queue.push(event);
     }
 
-    pub fn set_window_config(&mut self, window_config: WindowConfig) { self.renderer.set_window_config(window_config) }
+    pub fn set_window_config(&mut self, window_config: WindowConfig) { self.render_settings.set_window_config(window_config) }
 
     fn handle_event(&mut self, event: Event) {
         for handler in &mut self.handler_keys {
@@ -100,23 +102,23 @@ impl Engine {
     }
 
     pub fn get_text_controller(&mut self) -> &mut crate::controllers::text_controller::TextController {
-        self.renderer.get_text_controller()
+        self.render_settings.get_text_controller_mut()
     }
 
     pub fn get_camera_controller(&mut self) -> &mut CameraController {
-        self.renderer.get_camera_controller()
+        self.render_settings.get_camera_controller_mut()
     }
 
-    pub fn get_typewriter_controller(&mut self) -> &mut crate::controllers::typewriter_controller::TypewriterController {
-        self.renderer.get_typewriter_controller()
+    pub fn get_typewriter_controller(&mut self) -> &mut TypewriterController {
+        self.render_settings.get_typewriter_controller_mut()
     }
 
     pub fn get_event_queue(&self) -> &EventQueue {
         &self.event_queue
     }
 
-    pub fn get_texture_controller(&mut self) -> &mut crate::controllers::texture_controller::TextureController {
-        self.renderer.get_texture_controller()
+    pub fn get_texture_controller(&mut self) -> &mut TextureController {
+        self.render_settings.get_texture_controller_mut()
     }
 
     pub fn get_audio_system(&mut self) -> &mut AudioSystem {

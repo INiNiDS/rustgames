@@ -1,19 +1,14 @@
 use rustgames::prelude::*;
-use rustgames::core::{app, FpsCounter};
-use rustgames::graphics::{SpriteAnimation, AnimationMode, SpriteInstance};
-use rustgames::window::KeyCode;
+use rustgames::core::app;
 use glam::{Vec2, Vec4};
 
 struct AnimationDemo {
     loop_animation: SpriteAnimation,
     play_once_animation: SpriteAnimation,
     ping_pong_animation: SpriteAnimation,
-
     current_mode: AnimationModeDemo,
-
     fps_counter: FpsCounter,
     info_update_timer: f32,
-
     is_paused: bool,
 }
 

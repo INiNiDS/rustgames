@@ -1,7 +1,5 @@
 use glam::Vec2;
-use crate::graphics::animation::animation::{AnimationGroupID};
-use crate::graphics::animation::visual::CustomCombinedMode;
-use crate::graphics::TimelineStep;
+use crate::graphics::effects::{TimelineStep, CustomCombinedMode, AnimationGroupID};
 use crate::prelude::{AnimEffect, Animation, AnimationInstance, Easing, VisualState};
 
 pub struct AnimationController {

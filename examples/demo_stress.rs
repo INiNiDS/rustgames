@@ -1,7 +1,5 @@
 use rustgames::prelude::*;
-use rustgames::core::{app, FpsCounter};
-use rustgames::graphics::{SpriteAnimation, AnimationMode, SpriteInstance};
-use rustgames::window::KeyCode;
+use rustgames::core::app;
 use glam::{Vec2, Vec4};
 use rand::Rng;
 
@@ -39,7 +37,7 @@ impl Game for StressDemo {
         );
 
         let camera = engine.get_camera_controller();
-        camera.set_zoom(400.0);
+        camera.set_zoom(1.0);
 
         self.spawn_entities(self.entity_count);
         

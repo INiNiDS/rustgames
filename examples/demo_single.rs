@@ -1,12 +1,9 @@
-
+use rustgames::core::app;
 use rustgames::prelude::*;
-use rustgames::core::{app, FpsCounter};
-use rustgames::graphics::{SpriteAnimation, AnimationMode};
-use rustgames::graphics::animation::{
-    Animation, AnimationController, VisualState, TimelineBuilder,
+use rustgames::graphics::effects::{
+    Animation, VisualState, TimelineBuilder,
     Easing, Direction
 };
-use rustgames::window::KeyCode;
 use glam::Vec2;
 
 struct SingleDemo {

@@ -1,4 +1,4 @@
-use crate::graphics::animation::direction::Direction;
+use crate::graphics::effects::animation::direction::Direction;
 
 #[derive(Debug, Clone)]
 pub enum Animation {

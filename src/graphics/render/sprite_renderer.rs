@@ -1,9 +1,10 @@
-use crate::core::CameraController;
-use crate::graphics::instance::SpriteInstance;
-use crate::graphics::sprite::Vertex;
-use crate::graphics::texture::Texture;
+use crate::graphics::render::instance::SpriteInstance;
+use crate::graphics::sprite::{Vertex, QUAD_INDICES, QUAD_VERTICES};
+use crate::graphics::render::texture::Texture;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
+use crate::controllers::CameraController;
 
+#[derive(Clone)]
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
@@ -241,17 +242,17 @@ impl SpriteRenderer {
     fn create_quad_buffers(device: &wgpu::Device) -> (wgpu::Buffer, wgpu::Buffer, u32) {
         let vertex_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Vertex Buffer"),
-            contents: bytemuck::cast_slice(super::sprite::QUAD_VERTICES),
+            contents: bytemuck::cast_slice(QUAD_VERTICES),
             usage: wgpu::BufferUsages::VERTEX,
         });
 
         let index_buffer = device.create_buffer_init(&BufferInitDescriptor {
             label: Some("Index Buffer"),
-            contents: bytemuck::cast_slice(super::sprite::QUAD_INDICES),
+            contents: bytemuck::cast_slice(QUAD_INDICES),
             usage: wgpu::BufferUsages::INDEX,
         });
 
-        let num_indices = super::sprite::QUAD_INDICES.len() as u32;
+        let num_indices = QUAD_INDICES.len() as u32;
 
         (vertex_buffer, index_buffer, num_indices)
     }
