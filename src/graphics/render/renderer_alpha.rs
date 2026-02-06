@@ -97,58 +97,11 @@ impl RendererAlpha {
         self.effect_manager.add_effect(effect);
     }
 
-    fn apply_effect_state(&mut self, effect: &VisualEffect) {
-        match effect {
-            VisualEffect::Flash { color, duration } => {
-                self.flash_state = FlashState {
-                    active: true,
-                    color: *color,
-                    remaining: *duration,
-                    duration: *duration,
-                };
-            }
-            VisualEffect::ColorOverlay { color, alpha } => {
-                self.overlay_state = OverlayState {
-                    active: true,
-                    color: *color,
-                    alpha: *alpha,
-                };
-            }
-            _ => {}
-        }
-    }
-
     /// Advances all active effects by `delta_time` seconds.
     pub fn update(&mut self, delta_time: f32) {
         self.effect_manager.update(delta_time);
         self.update_flash(delta_time);
         self.screen_shake_offset = self.compute_shake_offset();
-    }
-
-    fn update_flash(&mut self, delta_time: f32) {
-        if !self.flash_state.active {
-            return;
-        }
-        self.flash_state.remaining -= delta_time;
-        if self.flash_state.remaining <= 0.0 {
-            self.flash_state.active = false;
-            self.flash_state.remaining = 0.0;
-        }
-    }
-
-    fn compute_shake_offset(&self) -> Vec2 {
-        let mut offset = Vec2::ZERO;
-        for inst in self.effect_manager.effects() {
-            if let VisualEffect::ScreenShake { intensity, .. } = &inst.effect {
-                let progress = 1.0 - (inst.elapsed / inst.duration()).clamp(0.0, 1.0);
-                let angle = inst.elapsed * 37.0;
-                offset += Vec2::new(
-                    angle.sin() * intensity * progress,
-                    (angle * 1.3).cos() * intensity * progress,
-                );
-            }
-        }
-        offset
     }
 
     /// Removes a persistent overlay effect.
@@ -208,6 +161,64 @@ impl RendererAlpha {
             particle_instances: self.collect_particle_instances(),
         }
     }
+    
+    /// Returns a reference to the underlying `EffectManager`.
+    pub fn effect_manager(&self) -> &EffectManager {
+        &self.effect_manager
+    }
+
+    /// Returns a mutable reference to the underlying `EffectManager`.
+    pub fn effect_manager_mut(&mut self) -> &mut EffectManager {
+        &mut self.effect_manager
+    }
+
+    fn apply_effect_state(&mut self, effect: &VisualEffect) {
+        match effect {
+            VisualEffect::Flash { color, duration } => {
+                self.flash_state = FlashState {
+                    active: true,
+                    color: *color,
+                    remaining: *duration,
+                    duration: *duration,
+                };
+            }
+            VisualEffect::ColorOverlay { color, alpha } => {
+                self.overlay_state = OverlayState {
+                    active: true,
+                    color: *color,
+                    alpha: *alpha,
+                };
+            }
+            _ => {}
+        }
+    }
+
+    fn update_flash(&mut self, delta_time: f32) {
+        if !self.flash_state.active {
+            return;
+        }
+        self.flash_state.remaining -= delta_time;
+        if self.flash_state.remaining <= 0.0 {
+            self.flash_state.active = false;
+            self.flash_state.remaining = 0.0;
+        }
+    }
+
+    fn compute_shake_offset(&self) -> Vec2 {
+        let mut offset = Vec2::ZERO;
+        for inst in self.effect_manager.effects() {
+            if let VisualEffect::ScreenShake { intensity, .. } = &inst.effect {
+                let progress = 1.0 - (inst.elapsed / inst.duration()).clamp(0.0, 1.0);
+                let angle = inst.elapsed * 37.0;
+                offset += Vec2::new(
+                    angle.sin() * intensity * progress,
+                    (angle * 1.3).cos() * intensity * progress,
+                );
+            }
+        }
+        offset
+    }
+
 
     fn collect_particle_instances(&self) -> Vec<SpriteInstance> {
         let mut instances = Vec::new();
@@ -228,16 +239,6 @@ impl RendererAlpha {
             }
         }
         instances
-    }
-
-    /// Returns a reference to the underlying `EffectManager`.
-    pub fn effect_manager(&self) -> &EffectManager {
-        &self.effect_manager
-    }
-
-    /// Returns a mutable reference to the underlying `EffectManager`.
-    pub fn effect_manager_mut(&mut self) -> &mut EffectManager {
-        &mut self.effect_manager
     }
 }
 
