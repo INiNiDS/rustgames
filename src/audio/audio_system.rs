@@ -13,6 +13,12 @@ pub struct AudioSystem {
     active_sounds: HashMap<String, Arc<StaticSoundHandle>>,
 }
 
+impl Default for AudioSystem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AudioSystem {
     pub fn new() -> Self {
         let manager = AudioManager::<DefaultBackend>::new(AudioManagerSettings::default())
@@ -39,21 +45,19 @@ impl AudioSystem {
         for entry in paths {
             let entry = entry.expect("Failed to read directory entry");
             let path = entry.path();
-            if path.is_file() {
-                if let Some(extension) = path.extension() {
-                    if extension == "wav" || extension == "ogg" || extension == "mp3" {
+            if path.is_file()
+                && let Some(extension) = path.extension()
+                    && (extension == "wav" || extension == "ogg" || extension == "mp3") {
                         let file_stem = path.file_stem().unwrap().to_str().unwrap();
                         self.load_sound(file_stem, path.to_str().unwrap());
                     }
-                }
-            }
         }
     }
 
     pub fn load_sound_dir_recursive(&mut self, dir_path: &str) {
         let paths = walkdir::WalkDir::new(dir_path).into_iter();
         for entry in paths {
-            self.load_sound_dir(&entry.unwrap().path().to_str().unwrap());
+            self.load_sound_dir(entry.unwrap().path().to_str().unwrap());
         }
     }
 
@@ -61,11 +65,10 @@ impl AudioSystem {
         let data = self.sound_assets.get(name)
             .unwrap_or_else(|| panic!("Sound '{}' not loaded", name));
 
-        if let Some(handle) = self.active_sounds.get(name) {
-            if handle.state() == kira::sound::PlaybackState::Playing {
+        if let Some(handle) = self.active_sounds.get(name)
+            && handle.state() == kira::sound::PlaybackState::Playing {
                 return Arc::clone(handle);
             }
-        }
 
         let handle = self.manager.play(data.clone()).expect("Failed to play sound");
         let shared_handle = Arc::new(handle);

@@ -37,7 +37,7 @@ impl TextureController {
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
         self.instances_per_texture
             .entry(texture_label.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(instance);
     }
 
@@ -85,7 +85,7 @@ impl TextureController {
             .filter_map(|entry| entry.ok())
             .filter(|entry| entry.path().is_file());
         for entry in files {
-            let bytes = fs::read(&entry.path()).unwrap();
+            let bytes = fs::read(entry.path()).unwrap();
             self.load_texture(&bytes, entry.path().to_str().unwrap());
         }
     }

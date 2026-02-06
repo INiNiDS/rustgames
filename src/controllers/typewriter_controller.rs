@@ -48,7 +48,7 @@ impl TypewriterController {
     }
 
     pub fn is_complete(&self, id: usize) -> bool {
-        self.typewriter_instance.get_effect(id).map_or(false, |e| e.is_complete())
+        self.typewriter_instance.get_effect(id).is_some_and(|e| e.is_complete())
     }
 
     pub fn get_progress(&self, id: usize) -> f32 {

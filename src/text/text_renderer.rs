@@ -118,15 +118,14 @@ impl TextWrapper {
                 let word_text = word.to_string();
                 current_width += word_width;
 
-                if let Some(last_seg) = current_line.last_mut() {
-                    if last_seg.attrs.weight == segment.attrs.weight
+                if let Some(last_seg) = current_line.last_mut()
+                    && last_seg.attrs.weight == segment.attrs.weight
                         && last_seg.attrs.italic == segment.attrs.italic
                         && last_seg.attrs.color == segment.attrs.color
                     {
                         last_seg.text.push_str(&word_text);
                         continue;
                     }
-                }
 
                 current_line.push(StyledSegment {
                     text: word_text,

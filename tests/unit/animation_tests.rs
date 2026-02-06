@@ -1,4 +1,3 @@
-use rustgames::graphics::effects::animation::animation::{Animation, AnimationGroupID};
 use rustgames::graphics::effects::animation::animation_instance::AnimationInstance;
 use rustgames::graphics::effects::animation::easing::Easing;
 use rustgames::graphics::effects::animation::timeline::TimelineBuilder;
@@ -7,6 +6,7 @@ use rustgames::graphics::effects::animation::visual::{
 };
 use rustgames::controllers::animation_controller::AnimationController;
 use glam::Vec2;
+use rustgames::graphics::{Animation, AnimationGroupID};
 
 #[test]
 fn instance_starts_at_zero_progress() {

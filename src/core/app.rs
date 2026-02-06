@@ -30,7 +30,7 @@ impl ApplicationHandler for App {
 
                 self.engine = Some(engine);
 
-                self.game.init(&mut self.engine.as_mut().unwrap());
+                self.game.init(self.engine.as_mut().unwrap());
             }
             Err(e) => {
                 eprintln!("Failed to create window: {:?}", e);

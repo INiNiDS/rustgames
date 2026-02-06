@@ -167,6 +167,12 @@ pub struct TypewriterInstance {
     next_id: usize,
 }
 
+impl Default for TypewriterInstance {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TypewriterInstance {
     pub fn new() -> Self {
         Self {
@@ -256,11 +262,11 @@ impl TypewriterInstance {
     }
 
     pub fn is_paused(&self, id: usize) -> bool {
-        self.get_effect(id).map_or(false, |e| e.is_paused())
+        self.get_effect(id).is_some_and(|e| e.is_paused())
     }
 
     pub fn is_complete(&self, id: usize) -> bool {
-        self.get_effect(id).map_or(false, |e| e.is_complete())
+        self.get_effect(id).is_some_and(|e| e.is_complete())
     }
 
     pub fn get_progress(&self, id: usize) -> f32 {

@@ -24,7 +24,7 @@ impl Engine {
     pub fn new(window: Arc<WinitWindow>) -> Self {
         let wrapped = Window::new(window.clone());
 
-        let render_settings_future = Renderer::set(window);
+        let render_settings_future = RenderSettings::new(window);
         let render_settings = pollster::block_on(render_settings_future);
         Self {
             window: wrapped,

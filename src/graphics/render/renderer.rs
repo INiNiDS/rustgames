@@ -1,83 +1,15 @@
-use crate::controllers::text_controller::TextController;
-use crate::controllers::texture_controller::TextureController;
-use crate::controllers::typewriter_controller::TypewriterController;
-use crate::graphics::{SpriteRenderer, Camera, Color, Texture, SpriteInstance};
-use crate::controllers::{AnimationController, CameraController};
-use crate::graphics::effects::VisualState;
-use crate::text::font::DEFAULT_NORMAL_FONT;
-use crate::text::text::TextSystem;
-use crate::text::typewriter::TypewriterInstance;
+use crate::graphics::render::render_settings::RenderSettings;
+use crate::graphics::{SpriteInstance, Texture};
 use glam::Vec2;
 use std::sync::Arc;
-use wgpu::{Device, PresentMode, StoreOp, SurfaceConfiguration};
+use wgpu::StoreOp;
 use winit::dpi::PhysicalSize;
-use winit::window::Window;
-use crate::graphics::render::render_settings::RenderSettings;
 
 /// The main renderer. Initialises the WGPU device and surface, performs
 /// per-frame drawing of sprites and text.
 pub struct Renderer;
 
 impl Renderer {
-    pub async fn set(window: Arc<Window>) -> RenderSettings {
-        let instance = wgpu::Instance::default();
-        let surface = instance.create_surface(window.clone()).unwrap();
-
-        let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
-                compatible_surface: Some(&surface),
-                force_fallback_adapter: false,
-            })
-            .await
-            .expect("Failed to find an appropriate adapter");
-
-        let (device, queue) = adapter
-            .request_device(
-                &wgpu::DeviceDescriptor {
-                    label: None,
-                    required_features: wgpu::Features::empty(),
-                    required_limits: wgpu::Limits::default(),
-                    experimental_features: Default::default(),
-                    memory_hints: Default::default(),
-                    trace: Default::default(),
-                },
-            )
-            .await
-            .expect("Failed to create device");
-
-        let size = window.inner_size();
-        let mut config = surface
-            .get_default_config(&adapter, size.width, size.height)
-            .expect("Surface isn't supported by the adapter.");
-
-        config.present_mode = PresentMode::Fifo;
-        surface.configure(&device, &config);
-
-        let device_arc = Arc::new(device);
-        let queue_arc = Arc::new(queue);
-        let (camera_controller, text_controller, sprite_renderer, typewriter_controller) =
-            Self::configure_inner_modules(size, &device_arc, &config);
-
-        RenderSettings::new(
-            camera_controller,
-            sprite_renderer,
-            text_controller,
-            typewriter_controller,
-            AnimationController::new(),
-            VisualState::default(),
-            config.width as f32,
-            config.height as f32,
-            surface,
-            Arc::clone(&device_arc),
-            Arc::clone(&queue_arc),
-            window,
-            config,
-            TextureController::new(Arc::clone(&device_arc), Arc::clone(&queue_arc)),
-            Color::BLUE,
-        )
-    }
-
     pub fn resize(render_settings: &mut RenderSettings, new_size: PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             render_settings.config.width = new_size.width;
@@ -113,16 +45,6 @@ impl Renderer {
         output.present();
 
         render_settings.get_texture_controller_mut().clear_instances();
-    }
-
-    fn configure_inner_modules(size: PhysicalSize<u32>, device: &Device, config: &SurfaceConfiguration) -> (CameraController, TextController, SpriteRenderer, TypewriterController) {
-        let typewriter_controller = TypewriterController::new(TypewriterInstance::new());
-        let camera = Camera::new(size.width, size.height);
-        let camera_controller = CameraController::new(camera);
-        let sprite_renderer = SpriteRenderer::new(&device, &config);
-        let text_system = TextSystem::new(&device, &config, DEFAULT_NORMAL_FONT, None, None, None, None);
-        let text_controller = TextController::new(text_system);
-        (camera_controller, text_controller, sprite_renderer, typewriter_controller)
     }
 
     fn queue_typewriter_text(render_settings: &mut RenderSettings) {
