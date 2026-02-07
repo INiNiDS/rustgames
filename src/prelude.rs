@@ -13,7 +13,8 @@ pub use crate::graphics::{
     EffectManager, Particle, ParticleEffect, VisualEffect,
     AnimEffect, Animation, AnimationGroupID, AnimationInstance, Direction, Easing, TimelineBuilder, TimelineStep,
     Transition, VisualState,
-    RenderSettings
+    RenderSettings,
+    RendererAlpha,
 };
 
 pub use crate::window::{

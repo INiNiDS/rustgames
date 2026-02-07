@@ -5,6 +5,8 @@ use kira::AudioManagerSettings;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+/// Manages audio playback using the Kira audio engine. Sounds are loaded as
+/// named assets and can be played, stopped, or faded out.
 pub struct AudioSystem {
     manager: AudioManager,
     sound_assets: HashMap<String, StaticSoundData>,

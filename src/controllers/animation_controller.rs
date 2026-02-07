@@ -2,6 +2,8 @@ use glam::Vec2;
 use crate::graphics::effects::{TimelineStep, CustomCombinedMode, AnimationGroupID};
 use crate::prelude::{AnimEffect, Animation, AnimationInstance, Easing, VisualState};
 
+/// Manages animation instances: starting, stopping, pausing, seeking, and
+/// evaluating combined effects on a `VisualState`.
 pub struct AnimationController {
     animations: Vec<AnimationInstance>,
     next_id: usize,

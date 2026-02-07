@@ -12,4 +12,4 @@ pub use render::texture::Texture;
 pub use render::instance::SpriteInstance;
 pub use sprite_animation::{AnimationMode, SpriteAnimation};
 pub use effects::{AnimEffect, Animation, AnimationGroupID, AnimationInstance, Direction, Easing, EffectManager, Particle, ParticleEffect, TimelineBuilder, TimelineStep, Transition, VisualEffect, VisualState};
-pub use render::{RenderSettings, Renderer, SpriteRenderer};
+pub use render::{RenderSettings, Renderer, RendererAlpha, SpriteRenderer};

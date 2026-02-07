@@ -4,6 +4,8 @@ use glam::Vec2;
 use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
 use crate::graphics::color::Color;
 
+/// A textured 2D sprite with position, size, rotation, colour tint, anchor
+/// point, and per-axis flip support.
 pub struct Sprite {
     pub texture: Arc<wgpu::Texture>,
     pub position: Vec2,

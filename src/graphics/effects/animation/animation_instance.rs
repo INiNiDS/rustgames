@@ -1,6 +1,7 @@
 use glam::Vec2;
 use crate::prelude::{AnimEffect, Animation, Easing};
 
+/// A running animation with elapsed time, easing, delay, and playback speed.
 #[derive(Debug)]
 pub struct AnimationInstance {
     pub id: usize,

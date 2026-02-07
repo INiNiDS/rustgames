@@ -3,6 +3,7 @@ use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use crate::prelude::Font;
 use crate::text::TextSystem;
 
+/// Wraps `TextSystem` to queue and render styled text each frame.
 pub struct TextController {
     text_system: TextSystem,
 }

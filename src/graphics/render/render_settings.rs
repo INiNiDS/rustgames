@@ -6,6 +6,7 @@ use crate::graphics::effects::VisualState;
 use crate::graphics::{Color, SpriteRenderer};
 use crate::prelude::WindowConfig;
 
+/// Aggregates all GPU resources and controllers needed for rendering a frame.
 pub struct RenderSettings {
     pub(crate) background_color: Color,
     pub(crate) base: VisualState,

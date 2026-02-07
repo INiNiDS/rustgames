@@ -1,6 +1,8 @@
 use glam::Vec2;
 use rand::Rng;
 
+/// Trauma-based camera shake. Trauma decays linearly and the shake intensity
+/// is proportional to `trauma²`, producing a natural dampening feel.
 #[derive(Debug, Clone)]
 pub struct TraumaShake {
     trauma: f32,

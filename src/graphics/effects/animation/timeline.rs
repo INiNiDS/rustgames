@@ -2,6 +2,7 @@ use crate::controllers::AnimationController;
 use crate::graphics::effects::{Animation, Easing};
 use crate::graphics::effects::animation::AnimationGroupID;
 
+/// Fluent API for constructing a sequence of `TimelineStep` values.
 #[derive(Debug, Default, Clone)]
 pub struct TimelineBuilder {
     steps: Vec<TimelineStep>,
@@ -36,6 +37,8 @@ impl TimelineBuilder {
     }
 }
 
+/// A single step in a timeline: a single animation, a parallel group, or a
+/// time gap.
 #[derive(Debug, Clone)]
 pub enum TimelineStep {
     Single(Animation, Easing),

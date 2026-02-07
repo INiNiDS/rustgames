@@ -9,6 +9,8 @@ use winit::window::Window as WinitWindow;
 use crate::controllers::{TextureController, TypewriterController};
 use crate::graphics::render::render_settings::RenderSettings;
 
+/// Central engine managing the window, renderer, input events, audio, and
+/// per-frame timing. Provides accessor methods for every subsystem controller.
 pub struct Engine {
     window: Window,
     render_settings: RenderSettings,
@@ -66,14 +68,16 @@ impl Engine {
         self.time.begin_frame();
         self.time.update();
 
-        let events: Vec<Event> = self.event_queue.drain().into_iter().collect();
-
+        let events = self.event_queue.drain();
         for event in events {
             self.handle_event(event);
         }
 
-        let dt = self.delta_time();
+        self.update_controllers();
+    }
 
+    fn update_controllers(&mut self) {
+        let dt = self.delta_time();
         self.render_settings.get_typewriter_controller_mut().update(dt);
         self.render_settings.get_camera_controller_mut().update(dt);
         self.render_settings.get_animation_controller_mut().update(dt);

@@ -72,6 +72,8 @@ impl ApplicationHandler for App {
 
 }
 
+/// Creates a window and enters the main event loop. Returns when the window
+/// is closed.
 pub fn run(window_config: WindowConfig, game: Box<dyn Game>) -> Result<App, Box<dyn Error>> {
     let event_loop = EventLoop::new()?;
     event_loop.set_control_flow(ControlFlow::Poll);

@@ -1,5 +1,6 @@
 use glam::Vec4;
 
+/// Controls how a `SpriteAnimation` progresses through its frames.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AnimationMode {
     PlayOnce,
@@ -13,6 +14,9 @@ enum PingPongDirection {
     Backward,
 }
 
+/// Plays through a sequence of UV frames at a given FPS.
+///
+/// Supports `PlayOnce`, `Loop`, and `PingPong` playback modes.
 #[derive(Debug, Clone)]
 pub struct SpriteAnimation {
     frames: Vec<Vec4>,

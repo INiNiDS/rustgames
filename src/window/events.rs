@@ -23,6 +23,7 @@ impl From<WinitMouseButton> for MouseButton {
     }
 }
 
+/// An input or window event consumed by the game loop.
 #[derive(Debug, Clone)]
 pub enum Event {
     WindowResized(u32, u32),
@@ -36,6 +37,7 @@ pub enum Event {
     MouseWheel(f32),
 }
 
+/// Trait for receiving individual event callbacks from the engine.
 pub trait EventHandler {
     fn on_key_pressed(&mut self, _key: KeyCode) {}
     fn on_key_released(&mut self, _key: KeyCode) {}
@@ -48,6 +50,7 @@ pub trait EventHandler {
     fn on_window_closed(&mut self) {}
 }
 
+/// Buffers events for the current frame and tracks held-down keys.
 pub struct EventQueue {
     events: Vec<Event>,
     pressed_keys: std::collections::HashSet<KeyCode>,

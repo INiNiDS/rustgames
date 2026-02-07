@@ -17,6 +17,8 @@ pub const DEFAULT_SEMIBOLD_FONT: &str = concat!(
     "/src/static/Caveat-SemiBold.ttf"
 );
 
+/// A loaded font with raw byte data and a `FontArc` handle for GPU text
+/// rendering.
 pub struct Font {
     pub name: String,
     pub data: Vec<u8>,
