@@ -12,13 +12,13 @@ pub enum TextSpeed {
 
 impl TextSpeed {
     #[must_use] 
-    pub fn chars_per_second(&self) -> f32 {
+    pub const fn chars_per_second(&self) -> f32 {
         match self {
-            TextSpeed::Slow => 20.0,
-            TextSpeed::Medium => 40.0,
-            TextSpeed::Fast => 80.0,
-            TextSpeed::Instant => f32::INFINITY,
-            TextSpeed::Custom(speed) => *speed,
+            Self::Slow => 20.0,
+            Self::Medium => 40.0,
+            Self::Fast => 80.0,
+            Self::Instant => f32::INFINITY,
+            Self::Custom(speed) => *speed,
         }
     }
 }
@@ -109,7 +109,7 @@ impl TypewriterEffect {
     }
     
     #[must_use] 
-    pub fn is_complete(&self) -> bool {
+    pub const fn is_complete(&self) -> bool {
         self.complete
     }
     
@@ -119,23 +119,23 @@ impl TypewriterEffect {
         self.paused = false;
     }
     
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.visible_chars = 0;
         self.elapsed = 0.0;
         self.complete = false;
         self.paused = false;
     }
     
-    pub fn pause(&mut self) {
+    pub const fn pause(&mut self) {
         self.paused = true;
     }
     
-    pub fn resume(&mut self) {
+    pub const fn resume(&mut self) {
         self.paused = false;
     }
     
     #[must_use] 
-    pub fn is_paused(&self) -> bool {
+    pub const fn is_paused(&self) -> bool {
         self.paused
     }
     
@@ -180,7 +180,7 @@ impl Default for TypewriterInstance {
 
 impl TypewriterInstance {
     #[must_use] 
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             typewriter_effects: Vec::new(),
             next_id: 0
@@ -206,12 +206,12 @@ impl TypewriterInstance {
     }
     
     #[must_use] 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.typewriter_effects.is_empty()
     }
     
     pub fn get_typewriter_effects(&'_ self) -> Iter<'_, TypewriterEffect> {
-        self.typewriter_effects.iter().clone()
+        self.typewriter_effects.iter()
     }
 
     pub fn get_typewriter_effects_mut(&mut self) -> IterMut<'_, TypewriterEffect> {
@@ -292,7 +292,7 @@ impl TypewriterInstance {
     }
 
     #[must_use] 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.typewriter_effects.len()
     }
 }

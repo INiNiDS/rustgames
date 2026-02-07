@@ -73,36 +73,36 @@ impl VfxRenderer {
 
     /// Returns the number of active effects.
     #[must_use] 
-    pub fn active_effect_count(&self) -> usize {
+    pub const fn active_effect_count(&self) -> usize {
         self.system.count()
     }
 
     /// Returns a reference to the current flash state.
     #[must_use] 
-    pub fn flash_state(&self) -> &Flash {
+    pub const fn flash_state(&self) -> &Flash {
         &self.flash
     }
 
     /// Returns a reference to the current overlay state.
     #[must_use] 
-    pub fn overlay_state(&self) -> &Overlay {
+    pub const fn overlay_state(&self) -> &Overlay {
         &self.overlay
     }
     
     /// Returns a reference to the underlying `EffectManager`.
     #[must_use] 
-    pub fn effect_manager(&self) -> &VfxSystem {
+    pub const fn effect_manager(&self) -> &VfxSystem {
         &self.system
     }
 
     /// Returns a mutable reference to the underlying `EffectManager`.
-    pub fn effect_manager_mut(&mut self) -> &mut VfxSystem {
+    pub const fn effect_manager_mut(&mut self) -> &mut VfxSystem {
         &mut self.system
     }
 
     // -- Helpers --
 
-    fn apply_global_state(&mut self, effect: &VfxEffect) {
+    const fn apply_global_state(&mut self, effect: &VfxEffect) {
         match effect {
             VfxEffect::Flash { color, duration } => {
                 self.flash = Flash {
@@ -152,7 +152,7 @@ impl VfxRenderer {
         }
     }
 
-    fn get_overlay_color(&self) -> Option<Color> {
+    const fn get_overlay_color(&self) -> Option<Color> {
         if self.overlay.active {
             Some(self.overlay.color.with_alpha(self.overlay.alpha))
         } else {

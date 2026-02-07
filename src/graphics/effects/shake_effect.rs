@@ -15,7 +15,7 @@ pub struct TraumaShake {
 
 impl TraumaShake {
     #[must_use] 
-    pub fn new(max_offset: f32, decay_rate: f32) -> Self {
+    pub const fn new(max_offset: f32, decay_rate: f32) -> Self {
         Self {
             trauma: 0.0,
             max_trauma: 1.0,
@@ -31,7 +31,7 @@ impl TraumaShake {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        self.trauma = (self.trauma - self.decay_rate * delta_time).max(0.0);
+        self.trauma = self.decay_rate.mul_add(-delta_time, self.trauma).max(0.0);
 
         if self.trauma > 0.0 {
             self.time += delta_time;
@@ -39,8 +39,8 @@ impl TraumaShake {
             let shake = self.trauma * self.trauma;
 
             let mut rng = rand::rng();
-            let x = (self.time * 50.0 + rng.random::<f32>()).sin();
-            let y = (self.time * 45.0 + rng.random::<f32>()).cos();
+            let x = self.time.mul_add(50.0, rng.random::<f32>()).sin();
+            let y = self.time.mul_add(45.0, rng.random::<f32>()).cos();
 
             self.offset = Vec2::new(x, y) * self.max_offset * shake;
         } else {
@@ -49,7 +49,7 @@ impl TraumaShake {
     }
 
     #[must_use] 
-    pub fn offset(&self) -> Vec2 {
+    pub const fn offset(&self) -> Vec2 {
         self.offset
     }
 
@@ -59,7 +59,7 @@ impl TraumaShake {
     }
 
     #[must_use] 
-    pub fn trauma(&self) -> f32 {
+    pub const fn trauma(&self) -> f32 {
         self.trauma
     }
 }

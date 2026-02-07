@@ -27,7 +27,7 @@ impl ActiveEffect {
     }
     
     #[must_use] 
-    pub fn duration(&self) -> f32 {
+    pub const fn duration(&self) -> f32 {
         match &self.config {
             VfxEffect::Flash { duration, .. } => *duration,
             VfxEffect::Emitter(cfg) => cfg.lifetime,
@@ -88,7 +88,7 @@ pub struct VfxSystem {
 
 impl VfxSystem {
     #[must_use] 
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             effects: Vec::new(),
         }
@@ -116,7 +116,7 @@ impl VfxSystem {
     }
     
     #[must_use] 
-    pub fn count(&self) -> usize {
+    pub const fn count(&self) -> usize {
         self.effects.len()
     }
 }

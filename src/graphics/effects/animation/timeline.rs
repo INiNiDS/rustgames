@@ -9,18 +9,18 @@ pub struct TimelineBuilder {
 
 impl TimelineBuilder {
     #[must_use] 
-    pub fn new() -> TimelineBuilder {
+    pub const fn new() -> Self {
         Self { steps: Vec::new() }
     }
 
     #[must_use] 
-    pub fn single(mut self, animation: Animation, easing: Easing) -> TimelineBuilder {
+    pub fn single(mut self, animation: Animation, easing: Easing) -> Self {
         self.steps.push(TimelineStep::Single(animation, easing));
         self
     }
 
     #[must_use] 
-    pub fn parallel(mut self, step: Vec<(Animation, Easing)>) -> TimelineBuilder {
+    pub fn parallel(mut self, step: Vec<(Animation, Easing)>) -> Self {
         self.steps.push(TimelineStep::Parallel(step));
         self
     }

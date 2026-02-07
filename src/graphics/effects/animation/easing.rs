@@ -21,7 +21,7 @@ impl Easing {
             Self::EaseInOut => if t < 0.5 {
                 2.0 * t * t
             } else {
-                -1.0 + (4.0 - 2.0 * t) * t
+                2.0f32.mul_add(-t, 4.0).mul_add(t, -1.0)
             },
             Self::Bounce => Self::bounce_out(t),
             Self::Elastic => Self::elastic_in(t),
@@ -34,13 +34,13 @@ impl Easing {
             N1 * t * t
         } else if t < 2.0 / D1 {
             t -= 1.5 / D1;
-            N1 * t * t + 0.75
+            (N1 * t).mul_add(t, 0.75)
         } else if t < 2.5 / D1 {
             t -= 2.25 / D1;
-            N1 * t * t + 0.9375
+            (N1 * t).mul_add(t, 0.9375)
         } else {
             t -= 2.625 / D1;
-            N1 * t * t + 0.984375
+            (N1 * t).mul_add(t, 0.984375)
         }
     }
 
@@ -53,7 +53,7 @@ impl Easing {
         let s = P / 4.0;
 
         let post_fix = t - 1.0;
-        let amplitude = 2.0_f32.powf(10.0 * post_fix);
+        let amplitude = (10.0 * post_fix).exp2();
         let wave = ((post_fix - s) * TAU / P).sin();
 
         -(amplitude * wave)

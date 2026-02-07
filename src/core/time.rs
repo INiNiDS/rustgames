@@ -50,7 +50,7 @@ impl Time {
     }
 
     #[must_use] 
-    pub fn delta_seconds(&self) -> f32 {
+    pub const fn delta_seconds(&self) -> f32 {
         self.delta.as_secs_f32()
     }
 
@@ -60,7 +60,7 @@ impl Time {
     }
 
     #[must_use] 
-    pub fn frame_count(&self) -> u64 {
+    pub const fn frame_count(&self) -> u64 {
         self.frame_count
     }
 

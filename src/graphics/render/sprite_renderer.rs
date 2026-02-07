@@ -21,6 +21,7 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
+    #[must_use] 
     pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
         let shader = Self::create_shader(device);
         let camera_bind_group_layout = Self::create_camera_bind_group_layout(device);

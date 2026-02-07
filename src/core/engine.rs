@@ -45,11 +45,11 @@ impl Engine {
         Renderer::draw(&mut self.render_settings);
     }
 
-    pub fn delta_time(&self) -> f32 {
+    pub const fn delta_time(&self) -> f32 {
         self.time.delta_seconds()
     }
 
-    pub fn time(&self) -> &Time {
+    pub const fn time(&self) -> &Time {
         &self.time
     }
 
@@ -107,23 +107,23 @@ impl Engine {
         }
     }
 
-    pub fn get_text_system(&mut self) -> &mut TextSystem {
+    pub const fn get_text_system(&mut self) -> &mut TextSystem {
         self.render_settings.get_text_system_mut()
     }
 
-    pub fn get_camera(&mut self) -> &mut Camera {
+    pub const fn get_camera(&mut self) -> &mut Camera {
         self.render_settings.get_camera_mut()
     }
 
-    pub fn get_event_queue(&self) -> &EventQueue {
+    pub const fn get_event_queue(&self) -> &EventQueue {
         &self.event_queue
     }
 
-    pub fn get_texture_controller(&mut self) -> &mut TextureSystem {
+    pub const fn get_texture_controller(&mut self) -> &mut TextureSystem {
         self.render_settings.get_texture_controller_mut()
     }
 
-    pub fn get_audio_system(&mut self) -> &mut AudioSystem {
+    pub const fn get_audio_system(&mut self) -> &mut AudioSystem {
         &mut self.audio_system
     }
 }

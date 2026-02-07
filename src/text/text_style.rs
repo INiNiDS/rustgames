@@ -33,13 +33,13 @@ impl TextStyle {
     }
 
     #[must_use]
-    pub fn with_color(mut self, color: Color) -> Self {
+    pub const fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
 
     #[must_use]
-    pub fn with_alignment(mut self, alignment: TextAlignment) -> Self {
+    pub const fn with_alignment(mut self, alignment: TextAlignment) -> Self {
         self.alignment = alignment;
         self
     }

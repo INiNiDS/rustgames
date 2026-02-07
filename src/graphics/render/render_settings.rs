@@ -68,83 +68,83 @@ impl RenderSettings {
         }
     }
 
-    pub fn get_texture_controller(&self) -> &TextureSystem {
+    pub const fn get_texture_controller(&self) -> &TextureSystem {
         &self.texture_controller
     }
 
-    pub fn get_animation_system(&self) -> &AnimationSystem {
+    pub const fn get_animation_system(&self) -> &AnimationSystem {
         &self.animation_system
     }
 
-    pub fn get_camera(&self) -> &Camera {
+    pub const fn get_camera(&self) -> &Camera {
         &self.camera
     }
 
-    pub fn get_text_system(&self) -> &TextSystem {
+    pub const fn get_text_system(&self) -> &TextSystem {
         &self.text_system
     }
 
-    pub fn get_vfx_system(&self) -> &VfxSystem {
+    pub const fn get_vfx_system(&self) -> &VfxSystem {
         &self.vfx_system
     }
 
-    pub fn get_background_color(&self) -> &Color {
+    pub const fn get_background_color(&self) -> &Color {
         &self.background_color
     }
 
-    pub fn get_sprite_renderer(&self) -> &SpriteRenderer {
+    pub const fn get_sprite_renderer(&self) -> &SpriteRenderer {
         &self.sprite_renderer
     }
 
-    pub fn get_visual_state(&self) -> &VisualState {
+    pub const fn get_visual_state(&self) -> &VisualState {
         &self.base
     }
 
-    pub fn get_max_width_text(&self) -> f32 {
+    pub const fn get_max_width_text(&self) -> f32 {
         self.max_width_text
     }
 
-    pub fn get_max_height_text(&self) -> f32 {
+    pub const fn get_max_height_text(&self) -> f32 {
         self.max_height_text
     }
     
-    pub fn get_surface(&self) -> &Surface<'static> {
+    pub const fn get_surface(&self) -> &Surface<'static> {
         &self.surface
     }
 
-    pub fn get_device(&self) -> &Arc<Device> {
+    pub const fn get_device(&self) -> &Arc<Device> {
         &self.device
     }
 
-    pub fn get_queue(&self) -> &Arc<Queue> {
+    pub const fn get_queue(&self) -> &Arc<Queue> {
         &self.queue
     }
 
-    pub fn get_window(&self) -> &Arc<Window> {
+    pub const fn get_window(&self) -> &Arc<Window> {
         &self.window
     }
 
-    pub fn get_config(&self) -> &SurfaceConfiguration {
+    pub const fn get_config(&self) -> &SurfaceConfiguration {
         &self.config
     }
 
-    pub fn get_text_system_mut(&mut self) -> &mut TextSystem {
+    pub const fn get_text_system_mut(&mut self) -> &mut TextSystem {
         &mut self.text_system
     }
 
-    pub fn get_camera_mut(&mut self) -> &mut Camera {
+    pub const fn get_camera_mut(&mut self) -> &mut Camera {
         &mut self.camera
     }
 
-    pub fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
+    pub const fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
         &mut self.texture_controller
     }
 
-    pub fn get_vfx_system_mut(&mut self) -> &mut VfxSystem {
+    pub const fn get_vfx_system_mut(&mut self) -> &mut VfxSystem {
         &mut self.vfx_system
     }
 
-    pub fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
+    pub const fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
         &mut self.animation_system
     }
 

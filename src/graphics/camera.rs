@@ -44,7 +44,7 @@ impl Camera {
         }
     }
 
-    pub fn move_to(&mut self, x: f32, y: f32) {
+    pub const fn move_to(&mut self, x: f32, y: f32) {
         self.position = Vec3::new(x, y, self.position.z);
         self.apply_bounds();
     }
@@ -55,12 +55,12 @@ impl Camera {
         self.apply_bounds();
     }
 
-    pub fn set_zoom(&mut self, zoom: f32) {
+    pub const fn set_zoom(&mut self, zoom: f32) {
         self.zoom = zoom.max(0.1);
         self.target_zoom = self.zoom;
     }
 
-    pub fn set_zoom_smooth(&mut self, zoom: f32, speed: f32) {
+    pub const fn set_zoom_smooth(&mut self, zoom: f32, speed: f32) {
         self.target_zoom = zoom.max(0.1);
         self.zoom_speed = speed;
     }
@@ -69,30 +69,30 @@ impl Camera {
         self.trauma_shake.add_trauma(trauma);
     }
 
-    pub fn configure_trauma_shake(&mut self, max_offset: f32, decay_rate: f32) {
+    pub const fn configure_trauma_shake(&mut self, max_offset: f32, decay_rate: f32) {
         self.trauma_shake = TraumaShake::new(max_offset, decay_rate);
     }
 
-    pub fn follow_smooth(&mut self, target: Vec3, speed: f32, damping: f32) {
+    pub const fn follow_smooth(&mut self, target: Vec3, speed: f32, damping: f32) {
         self.target_position = Some(target);
         self.follow_speed = speed;
         self.damping = damping;
     }
 
-    pub fn follow(&mut self, target: Vec3, speed: f32) {
+    pub const fn follow(&mut self, target: Vec3, speed: f32) {
         self.target_position = Some(target);
         self.follow_speed = speed;
     }
 
-    pub fn stop_follow(&mut self) {
+    pub const fn stop_follow(&mut self) {
         self.target_position = None;
     }
 
-    pub fn set_bounds(&mut self, min: Vec2, max: Vec2) {
+    pub const fn set_bounds(&mut self, min: Vec2, max: Vec2) {
         self.bounds = Some((min, max));
     }
 
-    pub fn clear_bounds(&mut self) {
+    pub const fn clear_bounds(&mut self) {
         self.bounds = None;
     }
 
@@ -131,17 +131,17 @@ impl Camera {
     #[must_use] 
     pub fn screen_to_world(&self, screen_pos: Vec2, screen_size: Vec2) -> Vec2 {
         let ndc = Vec2::new(
-            (screen_pos.x / screen_size.x) * 2.0 - 1.0,
-            1.0 - (screen_pos.y / screen_size.y) * 2.0,
+            (screen_pos.x / screen_size.x).mul_add(2.0, -1.0),
+            (screen_pos.y / screen_size.y).mul_add(-2.0, 1.0),
         );
 
         Vec2::new(
-            ndc.x * self.aspect * self.zoom + self.position.x,
-            ndc.y * self.zoom + self.position.y,
+            (ndc.x * self.aspect).mul_add(self.zoom, self.position.x),
+            ndc.y.mul_add(self.zoom, self.position.y),
         )
     }
 
-    fn apply_bounds(&mut self) {
+    const fn apply_bounds(&mut self) {
         if let Some((min, max)) = self.bounds {
             self.position.x = self.position.x.clamp(min.x, max.x);
             self.position.y = self.position.y.clamp(min.y, max.y);

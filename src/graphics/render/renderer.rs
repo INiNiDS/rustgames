@@ -59,8 +59,8 @@ impl Renderer {
         });
     }
 
-    fn draw_scene_layers<'a>(
-        pass: &mut wgpu::RenderPass<'a>,
+    fn draw_scene_layers(
+        pass: &mut wgpu::RenderPass<'_>,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         sprites: &mut SpriteRenderer,

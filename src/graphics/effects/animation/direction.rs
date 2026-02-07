@@ -9,7 +9,7 @@ pub enum Direction {
 
 impl Direction {
     #[must_use] 
-    pub fn opposite(&self) -> Self {
+    pub const fn opposite(&self) -> Self {
         match self {
             Self::Left => Self::Right,
             Self::Right => Self::Left,

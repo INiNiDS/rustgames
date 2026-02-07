@@ -43,7 +43,7 @@ pub struct CustomCombinedMode {
 
 impl CustomCombinedMode {
     #[must_use] 
-    pub fn new(opacity: CombinedMode, rotation: CombinedMode, scale: CombinedMode, position: CombinedMode) -> Self {
+    pub const fn new(opacity: CombinedMode, rotation: CombinedMode, scale: CombinedMode, position: CombinedMode) -> Self {
         Self {
             opacity, rotation, scale, position
         }
@@ -134,7 +134,7 @@ impl AnimEffect {
     }
 
     #[must_use] 
-    pub fn combine(self, other: AnimEffect) -> Self {
+    pub fn combine(self, other: Self) -> Self {
         Self {
             opacity_mul: self.opacity_mul * other.opacity_mul,
             offset_add: self.offset_add + other.offset_add,

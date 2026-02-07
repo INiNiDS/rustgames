@@ -15,7 +15,7 @@ pub struct Particle {
 impl Particle {
     #[inline]
     #[must_use]
-    pub fn new(position: Vec2, velocity: Vec2, lifetime: f32, color: Color, size: f32) -> Self {
+    pub const fn new(position: Vec2, velocity: Vec2, lifetime: f32, color: Color, size: f32) -> Self {
         Self {
             position,
             velocity,

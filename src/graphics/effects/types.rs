@@ -27,7 +27,7 @@ pub struct EmitterConfig {
 
 impl EmitterConfig {
     #[must_use]
-    pub fn new(position: Vec2) -> Self {
+    pub const fn new(position: Vec2) -> Self {
         Self {
             position,
             count: 10,
@@ -41,7 +41,7 @@ impl EmitterConfig {
     }
 
     #[must_use]
-    pub fn sparkles(position: Vec2) -> Self {
+    pub const fn sparkles(position: Vec2) -> Self {
         Self {
             position,
             count: 20,
@@ -69,7 +69,7 @@ impl EmitterConfig {
     }
 
     #[must_use]
-    pub fn snow(position: Vec2, _width: f32) -> Self {
+    pub const fn snow(position: Vec2, _width: f32) -> Self {
         Self {
             position,
             count: 100,

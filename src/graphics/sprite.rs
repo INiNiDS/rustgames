@@ -36,59 +36,59 @@ impl Sprite {
     }
     
     #[must_use] 
-    pub fn with_position(mut self, x: f32, y: f32) -> Self {
+    pub const fn with_position(mut self, x: f32, y: f32) -> Self {
         self.position = Vec2::new(x, y);
         self
     }
     
-    pub fn set_position(&mut self, x: f32, y: f32) {
+    pub const fn set_position(&mut self, x: f32, y: f32) {
         self.position = Vec2::new(x, y);
     }
     
     #[must_use] 
-    pub fn with_rotation(mut self, angle: f32) -> Self {
+    pub const fn with_rotation(mut self, angle: f32) -> Self {
         self.rotation = angle;
         self
     }
     
-    pub fn set_rotation(&mut self, angle: f32) {
+    pub const fn set_rotation(&mut self, angle: f32) {
         self.rotation = angle;
     }
     
     #[must_use] 
-    pub fn with_scale(mut self, x: f32, y: f32) -> Self {
+    pub const fn with_scale(mut self, x: f32, y: f32) -> Self {
         self.scale = Vec2::new(x, y);
         self
     }
     
-    pub fn set_scale(&mut self, x: f32, y: f32) {
+    pub const fn set_scale(&mut self, x: f32, y: f32) {
         self.scale = Vec2::new(x, y);
     }
     
     #[must_use] 
-    pub fn with_uniform_scale(mut self, scale: f32) -> Self {
+    pub const fn with_uniform_scale(mut self, scale: f32) -> Self {
         self.scale = Vec2::splat(scale);
         self
     }
     
     #[must_use] 
-    pub fn with_color(mut self, color: Color) -> Self {
+    pub const fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
     
-    pub fn set_color(&mut self, color: Color) {
+    pub const fn set_color(&mut self, color: Color) {
         self.color = color;
     }
     
     #[must_use] 
-    pub fn with_anchor(mut self, x: f32, y: f32) -> Self {
+    pub const fn with_anchor(mut self, x: f32, y: f32) -> Self {
         self.anchor = Vec2::new(x, y);
         self
     }
     
     #[must_use] 
-    pub fn with_flip(mut self, flip_x: bool, flip_y: bool) -> Self {
+    pub const fn with_flip(mut self, flip_x: bool, flip_y: bool) -> Self {
         self.flip_x = flip_x;
         self.flip_y = flip_y;
         self
@@ -108,7 +108,7 @@ impl Vertex {
         wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2];
 
     #[must_use] 
-    pub fn desc() -> VertexBufferLayout<'static> {
+    pub const fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Vertex,

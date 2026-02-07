@@ -75,5 +75,5 @@ impl Font {
 
 impl Default for Font {
     fn default() -> Self {
-        Font::default_font()
+        Self::default_font()
     }}

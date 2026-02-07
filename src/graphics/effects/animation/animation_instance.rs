@@ -19,7 +19,7 @@ pub struct ActiveAnimation {
 
 impl ActiveAnimation {
     #[must_use] 
-    pub fn new(id: usize, animation: Animation, easing: Easing, delay: f32) -> Self {
+    pub const fn new(id: usize, animation: Animation, easing: Easing, delay: f32) -> Self {
         Self {
             id,
             animation,
@@ -33,7 +33,7 @@ impl ActiveAnimation {
 
 
     #[must_use] 
-    pub fn duration(&self) -> f32 {
+    pub const fn duration(&self) -> f32 {
         match &self.animation {
             Animation::FadeIn { duration } => *duration,
             Animation::FadeOut { duration } => *duration,
@@ -130,11 +130,11 @@ impl ActiveAnimation {
         }
     }
 
-    pub fn stop(&mut self) {
+    pub const fn stop(&mut self) {
         self.paused = true;
     }
 
-    pub fn set_delay(&mut self, delay: f32) {
+    pub const fn set_delay(&mut self, delay: f32) {
         self.delay = delay.max(0.0);
         self.elapsed = 0.0;
     }
@@ -144,14 +144,14 @@ impl ActiveAnimation {
     }
 
     fn lerp(start: f32, end: f32, t: f32) -> f32 {
-        start + (end - start) * t
+        (end - start).mul_add(t, start)
     }
 
     fn calculate_shake(&self, intensity: f32, t: f32) -> AnimEffect {
         let decay = 1.0 - t;
 
-        let shake_x = (self.elapsed + self.id as f32 * SHAKE_FREQUENCY_X).sin();
-        let shake_y = (self.elapsed + self.id as f32 * SHAKE_FREQUENCY_Y).cos();
+        let shake_x = (self.id as f32).mul_add(SHAKE_FREQUENCY_X, self.elapsed).sin();
+        let shake_y = (self.id as f32).mul_add(SHAKE_FREQUENCY_Y, self.elapsed).cos();
 
         let offset = Vec2::new(shake_x, shake_y) * intensity * decay;
         AnimEffect::with_offset(offset)

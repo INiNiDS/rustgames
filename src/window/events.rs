@@ -13,12 +13,12 @@ pub enum MouseButton {
 impl From<WinitMouseButton> for MouseButton {
     fn from(button: WinitMouseButton) -> Self {
         match button {
-            WinitMouseButton::Left => MouseButton::Left,
-            WinitMouseButton::Right => MouseButton::Right,
-            WinitMouseButton::Middle => MouseButton::Middle,
-            WinitMouseButton::Back => MouseButton::Other(3),
-            WinitMouseButton::Forward => MouseButton::Other(4),
-            WinitMouseButton::Other(id) => MouseButton::Other(id),
+            WinitMouseButton::Left => Self::Left,
+            WinitMouseButton::Right => Self::Right,
+            WinitMouseButton::Middle => Self::Middle,
+            WinitMouseButton::Back => Self::Other(3),
+            WinitMouseButton::Forward => Self::Other(4),
+            WinitMouseButton::Other(id) => Self::Other(id),
         }
     }
 }
@@ -83,7 +83,7 @@ impl EventQueue {
     }
 
     #[must_use] 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.events.is_empty()
     }
 

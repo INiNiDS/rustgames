@@ -80,7 +80,7 @@ impl Color {
     }
 
     #[must_use] 
-    pub fn to_array(&self) -> [f32; 4] {
+    pub const fn to_array(&self) -> [f32; 4] {
         [self.r, self.g, self.b, self.a]
     }
 
@@ -94,7 +94,7 @@ impl Color {
     }
 
     #[must_use] 
-    pub fn with_alpha(self, alpha: f32) -> Self {
+    pub const fn with_alpha(self, alpha: f32) -> Self {
         Self { a: alpha, ..self }
     }
 
@@ -102,10 +102,10 @@ impl Color {
     pub fn lerp(self, other: Self, t: f32) -> Self {
         let t = t.clamp(0.0, 1.0);
         Self {
-            r: self.r + (other.r - self.r) * t,
-            g: self.g + (other.g - self.g) * t,
-            b: self.b + (other.b - self.b) * t,
-            a: self.a + (other.a - self.a) * t,
+            r: (other.r - self.r).mul_add(t, self.r),
+            g: (other.g - self.g).mul_add(t, self.g),
+            b: (other.b - self.b).mul_add(t, self.b),
+            a: (other.a - self.a).mul_add(t, self.a),
         }
     }
 

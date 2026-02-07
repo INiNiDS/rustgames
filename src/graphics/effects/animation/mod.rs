@@ -36,22 +36,22 @@ pub struct AnimationGroupID {
 
 impl AnimationGroupID {
     #[must_use] 
-    pub fn new(ids: Vec<usize>) -> AnimationGroupID {
-        AnimationGroupID { ids }
+    pub const fn new(ids: Vec<usize>) -> Self {
+        Self { ids }
     }
 
     #[must_use] 
-    pub fn empty() -> AnimationGroupID {
-        AnimationGroupID { ids: vec![] }
+    pub const fn empty() -> Self {
+        Self { ids: vec![] }
     }
 
     #[must_use] 
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.ids.is_empty()
     }
 
     #[must_use] 
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.ids.len()
     }
 

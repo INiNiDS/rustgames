@@ -11,7 +11,7 @@ pub struct AnimationSystem {
 
 impl AnimationSystem {
     #[must_use] 
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             animations: Vec::new(),
             next_id: 0,
@@ -39,7 +39,7 @@ impl AnimationSystem {
     }
 
     #[must_use] 
-    pub fn is_playing(&self) -> bool {
+    pub const fn is_playing(&self) -> bool {
         !self.animations.is_empty()
     }
 
@@ -91,7 +91,7 @@ impl AnimationSystem {
     }
 
     #[must_use] 
-    pub fn count(&self) -> usize {
+    pub const fn count(&self) -> usize {
         self.animations.len()
     }
 
@@ -274,7 +274,7 @@ impl AnimationSystem {
         }
     }
 
-    pub fn apply_animation(&mut self) {}
+    pub const fn apply_animation(&mut self) {}
 
     fn spawn_instance(
         &mut self,

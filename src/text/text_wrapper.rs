@@ -87,7 +87,7 @@ impl TextWrapper {
     }
 
     #[must_use]
-    pub fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
+    pub const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
         match align {
             TextAlignment::Left => HorizontalAlign::Left,
             TextAlignment::Center => HorizontalAlign::Center,
@@ -97,7 +97,7 @@ impl TextWrapper {
     }
 
     #[must_use]
-    pub fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
+    pub const fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
         match align {
             VerticalAlignment::Top => VerticalAlign::Top,
             VerticalAlignment::Middle => VerticalAlign::Center,

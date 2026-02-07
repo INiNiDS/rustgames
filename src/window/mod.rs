@@ -50,12 +50,12 @@ pub struct Window {
 
 impl Window {
     #[must_use] 
-    pub fn new(inner: Arc<WinitWindow>) -> Self {
+    pub const fn new(inner: Arc<WinitWindow>) -> Self {
         Self { inner }
     }
 
     #[must_use] 
-    pub fn inner(&self) -> &Arc<WinitWindow> {
+    pub const fn inner(&self) -> &Arc<WinitWindow> {
         &self.inner
     }
 

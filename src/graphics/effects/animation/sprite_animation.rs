@@ -101,47 +101,47 @@ impl SpriteAnimation {
     }
 
     #[must_use] 
-    pub fn current_frame_index(&self) -> usize {
+    pub const fn current_frame_index(&self) -> usize {
         self.current_frame
     }
 
     #[must_use] 
-    pub fn is_finished(&self) -> bool {
+    pub const fn is_finished(&self) -> bool {
         self.finished
     }
 
-    pub fn pause(&mut self) {
+    pub const fn pause(&mut self) {
         self.paused = true;
     }
 
-    pub fn resume(&mut self) {
+    pub const fn resume(&mut self) {
         self.paused = false;
     }
 
-    pub fn reset(&mut self) {
+    pub const fn reset(&mut self) {
         self.current_frame = 0;
         self.elapsed = 0.0;
         self.finished = false;
         self.ping_pong_dir = PingPongDirection::Forward;
     }
 
-    pub fn set_frame(&mut self, frame: usize) {
+    pub const fn set_frame(&mut self, frame: usize) {
         if frame < self.frames.len() {
             self.current_frame = frame;
             self.elapsed = 0.0;
         }
     }
 
-    pub fn set_paused(&mut self, paused: bool) {
+    pub const fn set_paused(&mut self, paused: bool) {
         self.paused = paused;
     }
 
     #[must_use] 
-    pub fn frame_count(&self) -> usize {
+    pub const fn frame_count(&self) -> usize {
         self.frames.len()
     }
 
-    fn step(&mut self) -> bool {
+    const fn step(&mut self) -> bool {
         let last_idx = self.frames.len() - 1;
 
         match self.mode {

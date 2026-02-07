@@ -175,7 +175,7 @@ impl TextSystem {
         self.brush.draw(rpass);
     }
 
-    pub fn set_style(&mut self, style: TextStyle) {
+    pub const fn set_style(&mut self, style: TextStyle) {
         self.style = style;
     }
 
@@ -248,11 +248,11 @@ impl TextSystem {
     }
 
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.typewriter_instance.is_empty()
     }
 
-    fn map_h_alignment(&self, align: TextAlignment) -> HorizontalAlign {
+    const fn map_h_alignment(&self, align: TextAlignment) -> HorizontalAlign {
         match align {
             TextAlignment::Left => HorizontalAlign::Left,
             TextAlignment::Center => HorizontalAlign::Center,
@@ -261,7 +261,7 @@ impl TextSystem {
         }
     }
 
-    fn map_v_alignment(&self, align: VerticalAlignment) -> VerticalAlign {
+    const fn map_v_alignment(&self, align: VerticalAlignment) -> VerticalAlign {
         match align {
             VerticalAlignment::Top => VerticalAlign::Top,
             VerticalAlignment::Middle => VerticalAlign::Center,
