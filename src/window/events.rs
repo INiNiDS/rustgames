@@ -24,7 +24,7 @@ impl From<WinitMouseButton> for MouseButton {
 }
 
 /// An input or window event consumed by the game loop.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Event {
     WindowResized(u32, u32),
     WindowClosed,

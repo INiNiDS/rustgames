@@ -13,6 +13,11 @@ pub struct Texture {
 }
 
 impl Texture {
+    /// Creates a texture from raw image bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the image data cannot be decoded.
     pub fn from_bytes(
         device: &Device,
         queue: &Queue,

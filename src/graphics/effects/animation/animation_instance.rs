@@ -35,13 +35,13 @@ impl ActiveAnimation {
     #[must_use] 
     pub const fn duration(&self) -> f32 {
         match &self.animation {
-            Animation::FadeIn { duration } => *duration,
-            Animation::FadeOut { duration } => *duration,
-            Animation::SlideIn { duration, .. } => *duration,
-            Animation::SlideOut { duration, .. } => *duration,
-            Animation::Scale { duration, .. } => *duration,
-            Animation::Rotate { duration, .. } => *duration,
-            Animation::Shake { duration, .. } => *duration,
+            Animation::FadeIn { duration }
+            | Animation::FadeOut { duration }
+            | Animation::SlideIn { duration, .. }
+            | Animation::SlideOut { duration, .. }
+            | Animation::Scale { duration, .. }
+            | Animation::Rotate { duration, .. }
+            | Animation::Shake { duration, .. } => *duration,
         }
     }
 

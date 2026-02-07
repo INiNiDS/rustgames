@@ -68,6 +68,13 @@ impl Game for EffectsDemo {
         self.anim_controller.update(dt);
         self.renderer_alpha.update(dt);
 
+        self.handle_input(engine);
+        self.update_scene(engine);
+    }
+}
+
+impl EffectsDemo {
+    fn handle_input(&mut self, engine: &mut Engine) {
         if engine
             .get_event_queue()
             .was_key_just_pressed(KeyCode::Digit1)
@@ -166,7 +173,9 @@ impl Game for EffectsDemo {
         {
             std::process::exit(0);
         }
+    }
 
+    fn update_scene(&mut self, engine: &mut Engine) {
         let tc = engine.get_texture_controller();
 
         let sprite_size = tc

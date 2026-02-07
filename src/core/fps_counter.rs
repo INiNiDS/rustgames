@@ -83,7 +83,7 @@ mod tests {
         }
         
         let fps = counter.fps();
-        assert!((fps - 60.0).abs() < 1.0, "FPS should be approximately 60, got {}", fps);
+        assert!((fps - 60.0).abs() < 1.0, "FPS should be approximately 60, got {fps}");
     }
     
     #[test]
@@ -95,6 +95,6 @@ mod tests {
         }
         
         let frame_time = counter.frame_time_ms();
-        assert!((frame_time - 16.67).abs() < 1.0, "Frame time should be approximately 16.67ms, got {}", frame_time);
+        assert!((frame_time - 16.67).abs() < 1.0, "Frame time should be approximately 16.67ms, got {frame_time}");
     }
 }

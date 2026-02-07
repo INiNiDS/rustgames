@@ -148,7 +148,7 @@ impl RenderSettings {
         &mut self.animation_system
     }
 
-    pub fn set_window_config(&mut self, config: WindowConfig) {
+    pub fn set_window_config(&mut self, config: &WindowConfig) {
         self.config.present_mode = if config.vsync { PresentMode::Fifo } else { PresentMode::Immediate };
 
         self.surface.configure(&self.device, &self.config);

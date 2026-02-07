@@ -138,7 +138,7 @@ impl VfxRenderer {
         let mut batch = Vec::with_capacity(self.system.count() * 10);
 
         for inst in self.system.active_effects() {
-            batch.extend(self.batch_effect(inst));
+            batch.extend(Self::batch_effect(inst));
         }
         batch
     }
@@ -160,17 +160,17 @@ impl VfxRenderer {
         }
     }
 
-    fn batch_effect(&self, inst: &ActiveEffect) -> Vec<SpriteInstance> {
+    fn batch_effect(inst: &ActiveEffect) -> Vec<SpriteInstance> {
         let mut batch = Vec::new();
         if let VfxEffect::Emitter(ref cfg) = inst.config {
             for p in &inst.particles {
-                batch.push(self.batch_emitter(p, cfg));
+                batch.push(Self::batch_emitter(p, cfg));
             }
         }
         batch
     }
 
-    fn batch_emitter(&self, p: &Particle, cfg: &EmitterConfig) -> SpriteInstance {
+    fn batch_emitter(p: &Particle, cfg: &EmitterConfig) -> SpriteInstance {
         let alpha = p.alpha(cfg.lifetime);
         let color_with_alpha = p.color.with_alpha(alpha);
         SpriteInstance::new(

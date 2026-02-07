@@ -297,7 +297,3 @@ mod tests {
         assert!(!anim.is_finished());
     }
 }
-
-fn todo() {
-    todo!("Clean up and test SpriteAnimation implementation");
-}

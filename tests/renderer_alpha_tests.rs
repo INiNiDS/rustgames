@@ -1,3 +1,5 @@
+#![allow(clippy::float_cmp)]
+
 use rustgames::graphics::color::Color;
 use rustgames::graphics::effects::system::{EmitterConfig, VfxEffect};
 use rustgames::graphics::effects::renderer::VfxRenderer;

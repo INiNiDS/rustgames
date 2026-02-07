@@ -59,7 +59,7 @@ impl TextSystem {
 
         Self {
             brush,
-            style: Default::default(),
+            style: TextStyle::default(),
             fonts,
             queued_sections: Vec::new(),
             typewriter_instance: TypewriterInstance::new(),
@@ -161,8 +161,8 @@ impl TextSystem {
                     bounds: q.bounds,
                     text: wgpu_texts,
                     layout: Layout::default()
-                        .h_align(self.map_h_alignment(self.style.alignment))
-                        .v_align(self.map_v_alignment(self.style.vertical_alignment))
+                        .h_align(Self::map_h_alignment(self.style.alignment))
+                        .v_align(Self::map_v_alignment(self.style.vertical_alignment))
                         .line_breaker(BuiltInLineBreaker::UnicodeLineBreaker),
                 });
             }
@@ -179,7 +179,7 @@ impl TextSystem {
         self.style = style;
     }
 
-    pub fn set_font_by_id(&mut self, device: &Device, config: &SurfaceConfiguration, font: Font, id: usize) {
+    pub fn set_font_by_id(&mut self, device: &Device, config: &SurfaceConfiguration, font: &Font, id: usize) {
         if id < self.fonts.len() {
             self.fonts[id] = font.to_font_arc();
             self.rebuild_brush(device, config);
@@ -252,16 +252,15 @@ impl TextSystem {
         self.typewriter_instance.is_empty()
     }
 
-    const fn map_h_alignment(&self, align: TextAlignment) -> HorizontalAlign {
+    const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
         match align {
-            TextAlignment::Left => HorizontalAlign::Left,
+            TextAlignment::Left | TextAlignment::Justify => HorizontalAlign::Left,
             TextAlignment::Center => HorizontalAlign::Center,
             TextAlignment::Right => HorizontalAlign::Right,
-            TextAlignment::Justify => HorizontalAlign::Left,
         }
     }
 
-    const fn map_v_alignment(&self, align: VerticalAlignment) -> VerticalAlign {
+    const fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
         match align {
             VerticalAlignment::Top => VerticalAlign::Top,
             VerticalAlignment::Middle => VerticalAlign::Center,
@@ -277,6 +276,3 @@ struct QueuedSection {
     bounds: (f32, f32),
 }
 
-fn todo() {
-    todo!("Clean this code (<200 in file and <20 in functions) and add documentation comments");
-}

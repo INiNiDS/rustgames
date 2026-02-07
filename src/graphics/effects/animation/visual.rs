@@ -25,6 +25,7 @@ impl Default for VisualState {
 
 /// Determines how an `AnimEffect` field is combined with the base
 /// `VisualState` value.
+#[derive(Debug, Clone, Copy)]
 pub enum CombinedMode {
     Default,
     Add,
@@ -34,6 +35,7 @@ pub enum CombinedMode {
 
 
 /// Per-field combination modes for applying `AnimEffect` to a `VisualState`.
+#[derive(Debug, Clone, Copy)]
 pub struct CustomCombinedMode {
     opacity: CombinedMode,
     rotation: CombinedMode,
@@ -165,27 +167,25 @@ impl AnimEffect {
     #[must_use] 
     pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
-            opacity: self.apply_val(state.opacity, self.opacity_mul, config.opacity),
-            position: self.apply_vec2(state.position, self.offset_add, config.position),
-            scale: self.apply_vec2(state.scale, self.scale_mul, config.scale),
-            rotation: self.apply_val(state.rotation, self.rotation_add, config.rotation),
+            opacity: Self::apply_val(state.opacity, self.opacity_mul, config.opacity),
+            position: Self::apply_vec2(state.position, self.offset_add, config.position),
+            scale: Self::apply_vec2(state.scale, self.scale_mul, config.scale),
+            rotation: Self::apply_val(state.rotation, self.rotation_add, config.rotation),
             anchor: state.anchor,
         }
     }
 
-    fn apply_val(&self, base: f32, delta: f32, mode: CombinedMode) -> f32 {
+    fn apply_val(base: f32, delta: f32, mode: CombinedMode) -> f32 {
         match mode {
-            CombinedMode::Default => base * delta,
+            CombinedMode::Default | CombinedMode::Mul => base * delta,
             CombinedMode::Add => base + delta,
-            CombinedMode::Mul => base * delta,
             CombinedMode::Override => delta,
         }
     }
 
-    fn apply_vec2(&self, base: Vec2, delta: Vec2, mode: CombinedMode) -> Vec2 {
+    fn apply_vec2(base: Vec2, delta: Vec2, mode: CombinedMode) -> Vec2 {
         match mode {
-            CombinedMode::Default => base + delta,
-            CombinedMode::Add => base + delta,
+            CombinedMode::Default | CombinedMode::Add => base + delta,
             CombinedMode::Mul => base * delta,
             CombinedMode::Override => delta,
         }

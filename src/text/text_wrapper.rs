@@ -89,10 +89,9 @@ impl TextWrapper {
     #[must_use]
     pub const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
         match align {
-            TextAlignment::Left => HorizontalAlign::Left,
+            TextAlignment::Left | TextAlignment::Justify => HorizontalAlign::Left,
             TextAlignment::Center => HorizontalAlign::Center,
             TextAlignment::Right => HorizontalAlign::Right,
-            TextAlignment::Justify => HorizontalAlign::Left,
         }
     }
 

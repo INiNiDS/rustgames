@@ -199,7 +199,7 @@ fn main() {
         shake_timer: 0.0,
     };
     
-    println!("Starting stress test demo with {} entities...", initial_entities);
+    println!("Starting stress test demo with {initial_entities} entities...");
     println!();
 
     let window_config = WindowConfig {

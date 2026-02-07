@@ -36,7 +36,7 @@ impl Renderer {
 
         let output = settings.surface.get_current_texture().expect("Surface error");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = settings.device.create_command_encoder(&Default::default());
+        let mut encoder = settings.device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
         Self::record_render_commands(settings, &mut encoder, &view);
 

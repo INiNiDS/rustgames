@@ -27,6 +27,11 @@ pub struct Font {
 
 
 impl Font {
+    /// Loads a font from the given file path.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the file cannot be read or contains invalid font data.
     pub fn load(path: &str) -> Result<Self, std::io::Error> {
         let data = std::fs::read(path)?;
         let name = std::path::Path::new(path)

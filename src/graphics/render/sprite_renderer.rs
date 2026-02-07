@@ -291,7 +291,3 @@ mod tests {
         assert_eq!(buffer_size, initial_capacity * 96);
     }
 }
-
-fn todo() {
-    todo!("clean up this file, it's a mess");
-}

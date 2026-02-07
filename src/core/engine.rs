@@ -89,7 +89,7 @@ impl Engine {
         self.event_queue.push(event);
     }
 
-    pub fn set_window_config(&mut self, window_config: WindowConfig) { self.render_settings.set_window_config(window_config) }
+    pub fn set_window_config(&mut self, window_config: &WindowConfig) { self.render_settings.set_window_config(window_config) }
 
     fn handle_event(&mut self, event: Event) {
         for handler in &mut self.handler_keys {

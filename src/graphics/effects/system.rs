@@ -13,14 +13,20 @@ pub struct ActiveEffect {
 impl ActiveEffect {
     #[must_use] 
     pub fn new(effect: VfxEffect) -> Self {
+        let emitter_cfg = if let VfxEffect::Emitter(ref cfg) = effect {
+            Some(cfg.clone())
+        } else {
+            None
+        };
+
         let mut instance = Self {
-            config: effect.clone(),
+            config: effect,
             elapsed: 0.0,
             particles: Vec::new(),
         };
         
-        if let VfxEffect::Emitter(ref cfg) = effect {
-            instance.spawn_burst(cfg);
+        if let Some(cfg) = emitter_cfg {
+            instance.spawn_burst(&cfg);
         }
         
         instance

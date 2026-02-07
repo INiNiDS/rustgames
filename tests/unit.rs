@@ -1,3 +1,5 @@
+#![allow(clippy::float_cmp)]
+
 #[path = "unit/color_tests.rs"]
 mod color_tests;
 #[path = "unit/text_tests.rs"]

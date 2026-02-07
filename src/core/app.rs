@@ -26,7 +26,7 @@ impl ApplicationHandler for App {
 
                 let mut engine = Engine::new(window);
 
-                engine.set_window_config(self.window_config.clone());
+                engine.set_window_config(&self.window_config);
 
                 self.engine = Some(engine);
 
@@ -44,10 +44,7 @@ impl ApplicationHandler for App {
         _window_id: WindowId,
         event: WindowEvent
     ) {
-        let engine = match self.engine.as_mut() {
-            Some(engine) => engine,
-            None => return,
-        };
+        let Some(engine) = self.engine.as_mut() else { return };
 
         if let Some(ev) = convert_window_event(&event) {
             engine.push_event(ev);
@@ -82,6 +79,10 @@ impl App {
 
 /// Creates a window and enters the main event loop. Returns when the window
 /// is closed.
+///
+/// # Errors
+///
+/// Returns an error if the event loop cannot be created or exits with an error.
 pub fn run(window_config: WindowConfig, game: Box<dyn Game>) -> Result<App, Box<dyn Error>> {
     let event_loop = EventLoop::new()?;
     event_loop.set_control_flow(ControlFlow::Poll);

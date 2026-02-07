@@ -51,7 +51,7 @@ fn with_alpha_preserves_rgb() {
 
 #[test]
 fn to_u32_white() {
-    assert_eq!(Color::WHITE.to_u32(), 0xFFFFFFFF);
+    assert_eq!(Color::WHITE.to_u32(), 0xFFFF_FFFF);
 }
 
 #[test]

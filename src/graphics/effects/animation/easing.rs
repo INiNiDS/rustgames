@@ -40,16 +40,17 @@ impl Easing {
             (N1 * t).mul_add(t, 0.9375)
         } else {
             t -= 2.625 / D1;
-            (N1 * t).mul_add(t, 0.984375)
+            (N1 * t).mul_add(t, 0.984_375)
         }
     }
 
     fn elastic_in(t: f32) -> f32 {
+        const P: f32 = 0.3;
+
         if t <= 0.0 || t >= 1.0 {
             return t;
         }
 
-        const P: f32 = 0.3;
         let s = P / 4.0;
 
         let post_fix = t - 1.0;
