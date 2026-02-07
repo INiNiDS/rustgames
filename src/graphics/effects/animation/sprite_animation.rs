@@ -85,13 +85,14 @@ impl SpriteAnimation {
 
         self.elapsed += delta_time;
 
-        while self.elapsed >= self.frame_duration {
-            self.elapsed -= self.frame_duration;
-
-            if self.step() {
-                self.finished = true;
-                break;
+        if self.frame_duration > f32::EPSILON {
+            #[allow(clippy::while_float)]
+            while self.elapsed >= self.frame_duration {
+                self.elapsed -= self.frame_duration;
+                self.step();
             }
+        } else {
+            self.elapsed = 0.0;
         }
     }
 

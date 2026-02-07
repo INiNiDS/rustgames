@@ -1,4 +1,5 @@
-use rustgames::text::typewriter::{TextSpeed, TypewriterEffect, TypewriterInstance};
+use rustgames::text::typewriter::{TextSpeed, TypewriterEffect};
+use rustgames::text::TypewriterInstance;
 
 #[test]
 fn basic_effect_starts_empty() {

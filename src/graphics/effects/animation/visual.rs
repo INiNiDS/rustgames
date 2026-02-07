@@ -147,10 +147,10 @@ impl AnimEffect {
 
     #[must_use] 
     pub fn apply_to(&self, state: VisualState, combined_mode: Option<CustomCombinedMode>) -> VisualState {
-        match combined_mode {
-            Some(config) => self.apply_to_config(state, config),
-            None => self.apply_to_default(state),
-        }
+        combined_mode.map_or_else(
+            || self.apply_to_default(state),
+            |config| self.apply_to_config(state, config)
+        )
     }
 
     #[must_use] 

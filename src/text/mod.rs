@@ -4,7 +4,10 @@ pub mod text_renderer;
 pub mod alignment;
 pub mod text_wrapper;
 pub mod text_style;
+mod typewriter_instance;
 
+
+pub use crate::text::typewriter_instance::TypewriterInstance;
 pub use text_wrapper::TextWrapper;
 pub use font::{Font};
 pub use typewriter::{TypewriterEffect, TextSpeed};
@@ -16,7 +19,6 @@ use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{
     BuiltInLineBreaker, FontId, HorizontalAlign, Layout, Section, Text, VerticalAlign,
 };
-use self::typewriter::TypewriterInstance;
 use self::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT
 };
