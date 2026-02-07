@@ -51,7 +51,7 @@ impl SpriteInstance {
     #[must_use] 
     pub fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
-            array_stride: std::mem::size_of::<SpriteInstance>() as BufferAddress,
+            array_stride: size_of::<SpriteInstance>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,
             attributes: &[
                 wgpu::VertexAttribute {

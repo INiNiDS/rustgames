@@ -3,7 +3,7 @@ use glam::Vec2;
 use std::sync::Arc;
 use wgpu::{BufferAddress, VertexBufferLayout};
 
-/// A textured 2D sprite with position, size, rotation, colour tint, anchor
+/// A textured 2D sprite with position, size, rotation, color tint, anchor
 /// point, and per-axis flip support.
 pub struct Sprite {
     pub texture: Arc<wgpu::Texture>,
@@ -107,6 +107,7 @@ impl Vertex {
     const ATTRIBS: [wgpu::VertexAttribute; 2] =
         wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2];
 
+    #[must_use] 
     pub fn desc() -> VertexBufferLayout<'static> {
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,

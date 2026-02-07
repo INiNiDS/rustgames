@@ -296,3 +296,7 @@ impl TypewriterInstance {
         self.typewriter_effects.len()
     }
 }
+
+fn todo() {
+    todo!("Clean this code (<200 in file and <20 in functions) and add documentation comments");
+}

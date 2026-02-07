@@ -1,12 +1,17 @@
 pub mod font;
 pub mod typewriter;
 pub mod text_renderer;
+pub mod alignment;
+pub mod text_wrapper;
+pub mod text_style;
 
-use std::slice::Iter;
+pub use text_wrapper::TextWrapper;
 pub use font::{Font};
 pub use typewriter::{TypewriterEffect, TextSpeed};
-pub use text_renderer::{TextAlignment, VerticalAlignment, TextStyle, TextWrapper, RichTextParser, StyledSegment, TextAttributes, FontWeight};
+pub use text_renderer::{RichTextParser, StyledSegment};
+pub use text_style::{TextStyle, TextAttributes, FontWeight};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
+pub use alignment::{TextAlignment, VerticalAlignment};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{
     BuiltInLineBreaker, FontId, HorizontalAlign, Layout, Section, Text, VerticalAlign,
@@ -15,6 +20,7 @@ use self::typewriter::TypewriterInstance;
 use self::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT
 };
+use std::slice::Iter;
 
 pub struct TextSystem {
     brush: wgpu_text::TextBrush<FontArc>,
@@ -269,4 +275,8 @@ struct QueuedSection {
     x: f32,
     y: f32,
     bounds: (f32, f32),
+}
+
+fn todo() {
+    todo!("Clean this code (<200 in file and <20 in functions) and add documentation comments");
 }

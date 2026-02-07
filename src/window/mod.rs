@@ -1,4 +1,4 @@
-mod events;
+pub mod events;
 
 pub use events::*;
 use std::sync::Arc;
@@ -6,7 +6,7 @@ use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
 use crate::graphics::Color;
 
-/// Configuration used to create and customise the application window.
+/// Configuration used to create and customize the application window.
 #[derive(Debug, Clone)]
 pub struct WindowConfig {
     pub title: String,

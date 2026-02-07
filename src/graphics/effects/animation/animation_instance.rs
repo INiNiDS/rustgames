@@ -1,6 +1,9 @@
 use glam::Vec2;
 use crate::prelude::{AnimEffect, Animation, Easing};
 
+const SHAKE_FREQUENCY_X: f32 = 40.0;
+const SHAKE_FREQUENCY_Y: f32 = 50.0;
+
 /// A running animation with elapsed time, easing, delay, and playback speed.
 #[derive(Debug)]
 pub struct ActiveAnimation {
@@ -92,47 +95,38 @@ impl ActiveAnimation {
     pub fn eased_progress(&self) -> f32 {
         self.easing.apply(self.progress())
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn effect(&self, size: Vec2) -> AnimEffect {
         let t = self.eased_progress();
-        match &self.animation {
-            Animation::FadeIn { .. } => {
-                AnimEffect::with_opacity(t)
 
-            },
+        match &self.animation {
+            Animation::FadeIn { .. } => AnimEffect::with_opacity(t),
+
             Animation::FadeOut { .. } => AnimEffect::with_opacity(1.0 - t),
+
             Animation::SlideIn { from, distance, .. } => {
-                let dir_vec = from.to_vector();
-                let x = dir_vec.x * distance * size.x;
-                let y = dir_vec.y * distance * size.y;
-                let start_offset = Vec2::new(x, y);
-                let offset = start_offset * (1.0 - t);
-                AnimEffect::with_offset(offset)
+                let max_offset = from.to_vector() * *distance * size;
+                AnimEffect::with_offset(max_offset * (1.0 - t))
             },
 
             Animation::SlideOut { to, distance, .. } => {
-                let dir_vec = to.to_vector();
-                let x = dir_vec.x * distance * size.x;
-                let y = dir_vec.y * distance * size.y;
-                let end_offset = Vec2::new(x, y);
-                let offset = end_offset * t;
-                AnimEffect::with_offset(offset)
-            }
-            Animation::Scale { from, to, .. } => {
-                let scale = from + (to - from) * t;
-                AnimEffect::with_scale(Vec2::splat(scale))
-            },
-            Animation::Rotate { from, to, .. } => {
-                let rotation = from + (to - from) * t;
-                AnimEffect::with_rotation(rotation)
-            },
-            Animation::Shake { intensity, .. } => {
-                let shake_x = (self.elapsed + self.id as f32 * 40.0).sin() * intensity * (1.0 - t);
-                let shake_y = (self.elapsed + self.id as f32 * 50.0).cos() * intensity * (1.0 - t);
-                AnimEffect::with_offset(Vec2::new(shake_x, shake_y))
+                let max_offset = to.to_vector() * *distance * size;
+                AnimEffect::with_offset(max_offset * t)
             },
 
+            Animation::Scale { from, to, .. } => {
+                let scale = Self::lerp(*from, *to, t);
+                AnimEffect::with_scale(Vec2::splat(scale))
+            },
+
+            Animation::Rotate { from, to, .. } => {
+                AnimEffect::with_rotation(Self::lerp(*from, *to, t))
+            },
+
+            Animation::Shake { intensity, .. } => {
+                self.calculate_shake(*intensity, t)
+            },
         }
     }
 
@@ -147,6 +141,20 @@ impl ActiveAnimation {
 
     pub fn add_delay(&mut self, delay: f32) {
         self.delay += delay;
+    }
+
+    fn lerp(start: f32, end: f32, t: f32) -> f32 {
+        start + (end - start) * t
+    }
+
+    fn calculate_shake(&self, intensity: f32, t: f32) -> AnimEffect {
+        let decay = 1.0 - t;
+
+        let shake_x = (self.elapsed + self.id as f32 * SHAKE_FREQUENCY_X).sin();
+        let shake_y = (self.elapsed + self.id as f32 * SHAKE_FREQUENCY_Y).cos();
+
+        let offset = Vec2::new(shake_x, shake_y) * intensity * decay;
+        AnimEffect::with_offset(offset)
     }
 }
 

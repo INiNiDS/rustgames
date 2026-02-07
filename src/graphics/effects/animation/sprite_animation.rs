@@ -24,7 +24,7 @@ pub struct SpriteAnimation {
     elapsed: f32,
     frame_duration: f32,
     mode: AnimationMode,
-    ping_pong_direction: PingPongDirection,
+    ping_pong_dir: PingPongDirection,
     paused: bool,
     finished: bool,
 }
@@ -41,13 +41,13 @@ impl SpriteAnimation {
             elapsed: 0.0,
             frame_duration: 1.0 / fps,
             mode,
-            ping_pong_direction: PingPongDirection::Forward,
+            ping_pong_dir: PingPongDirection::Forward,
             paused: false,
             finished: false,
         }
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn from_grid(
         columns: usize,
         rows: usize,
@@ -55,79 +55,42 @@ impl SpriteAnimation {
         fps: f32,
         mode: AnimationMode,
     ) -> Self {
-        assert!(columns > 0 && rows > 0, "Grid must have at least 1x1");
-        assert!(frame_count > 0, "Must have at least one frame");
-        assert!(
-            frame_count <= columns * rows,
-            "Frame count cannot exceed grid capacity"
-        );
-        
+        assert!(columns > 0 && rows > 0, "Grid dimensions must be > 0");
+        assert!(frame_count > 0, "Frame count must be > 0");
+        assert!(frame_count <= columns * rows, "Frame count exceeds grid size");
+
         let frame_width = 1.0 / columns as f32;
         let frame_height = 1.0 / rows as f32;
-        
-        let mut frames = Vec::with_capacity(frame_count);
-        
-        for i in 0..frame_count {
-            let col = i % columns;
-            let row = i / columns;
-            
-            let x = col as f32 * frame_width;
-            let y = row as f32 * frame_height;
-            
-            frames.push(Vec4::new(x, y, frame_width, frame_height));
-        }
-        
+
+        let frames: Vec<Vec4> = (0..frame_count)
+            .map(|i| {
+                let col = (i % columns) as f32;
+                let row = (i / columns) as f32;
+                Vec4::new(
+                    col * frame_width,
+                    row * frame_height,
+                    frame_width,
+                    frame_height,
+                )
+            })
+            .collect();
+
         Self::new(frames, fps, mode)
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        if self.paused || self.finished {
+        if self.paused || self.finished || self.frames.is_empty() {
             return;
         }
-        
+
         self.elapsed += delta_time;
-        
+
         while self.elapsed >= self.frame_duration {
             self.elapsed -= self.frame_duration;
-            self.advance_frame();
-        }
-    }
 
-    fn advance_frame(&mut self) {
-        match self.mode {
-            AnimationMode::PlayOnce => {
-                if self.current_frame < self.frames.len() - 1 {
-                    self.current_frame += 1;
-                } else {
-                    self.finished = true;
-                }
-            }
-            AnimationMode::Loop => {
-                self.current_frame = (self.current_frame + 1) % self.frames.len();
-            }
-            AnimationMode::PingPong => {
-                match self.ping_pong_direction {
-                    PingPongDirection::Forward => {
-                        if self.current_frame < self.frames.len() - 1 {
-                            self.current_frame += 1;
-                        } else {
-                            self.ping_pong_direction = PingPongDirection::Backward;
-                            if self.frames.len() > 1 {
-                                self.current_frame -= 1;
-                            }
-                        }
-                    }
-                    PingPongDirection::Backward => {
-                        if self.current_frame > 0 {
-                            self.current_frame -= 1;
-                        } else {
-                            self.ping_pong_direction = PingPongDirection::Forward;
-                            if self.frames.len() > 1 {
-                                self.current_frame += 1;
-                            }
-                        }
-                    }
-                }
+            if self.step() {
+                self.finished = true;
+                break;
             }
         }
     }
@@ -159,7 +122,7 @@ impl SpriteAnimation {
         self.current_frame = 0;
         self.elapsed = 0.0;
         self.finished = false;
-        self.ping_pong_direction = PingPongDirection::Forward;
+        self.ping_pong_dir = PingPongDirection::Forward;
     }
 
     pub fn set_frame(&mut self, frame: usize) {
@@ -169,9 +132,54 @@ impl SpriteAnimation {
         }
     }
 
+    pub fn set_paused(&mut self, paused: bool) {
+        self.paused = paused;
+    }
+
     #[must_use] 
     pub fn frame_count(&self) -> usize {
         self.frames.len()
+    }
+
+    fn step(&mut self) -> bool {
+        let last_idx = self.frames.len() - 1;
+
+        match self.mode {
+            AnimationMode::PlayOnce => {
+                if self.current_frame < last_idx {
+                    self.current_frame += 1;
+                    false
+                } else {
+                    true
+                }
+            }
+            AnimationMode::Loop => {
+                self.current_frame = (self.current_frame + 1) % self.frames.len();
+                false
+            }
+            AnimationMode::PingPong => {
+                match self.ping_pong_dir {
+                    PingPongDirection::Forward => {
+                        if self.current_frame < last_idx {
+                            self.current_frame += 1;
+                        } else {
+                            self.ping_pong_dir = PingPongDirection::Backward;
+                            // Сразу шагаем назад, чтобы не задерживаться на последнем кадре дважды
+                            if last_idx > 0 { self.current_frame -= 1; }
+                        }
+                    }
+                    PingPongDirection::Backward => {
+                        if self.current_frame > 0 {
+                            self.current_frame -= 1;
+                        } else {
+                            self.ping_pong_dir = PingPongDirection::Forward;
+                            if last_idx > 0 { self.current_frame += 1; }
+                        }
+                    }
+                }
+                false
+            }
+        }
     }
 }
 
@@ -288,4 +296,8 @@ mod tests {
         assert_eq!(anim.current_frame_index(), 0);
         assert!(!anim.is_finished());
     }
+}
+
+fn todo() {
+    todo!("Clean up and test SpriteAnimation implementation");
 }

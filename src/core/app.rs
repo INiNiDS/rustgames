@@ -61,7 +61,7 @@ impl ApplicationHandler for App {
                 event_loop.exit();
             },
             WindowEvent::RedrawRequested => {
-                self.redraw()
+                self.redraw();
             },
             _ => {},
         }

@@ -30,60 +30,40 @@ pub struct RenderSettings {
 
 impl RenderSettings {
     pub async fn new(window: Arc<Window>) -> Self {
-        let instance = wgpu::Instance::default();
-        let surface = instance.create_surface(window.clone()).unwrap();
-
-        let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
-                compatible_surface: Some(&surface),
-                force_fallback_adapter: false,
-            })
-            .await
-            .expect("Failed to find an appropriate adapter");
-
-        let (device, queue) = adapter
-            .request_device(
-                &wgpu::DeviceDescriptor {
-                    label: None,
-                    required_features: wgpu::Features::empty(),
-                    required_limits: wgpu::Limits::default(),
-                    experimental_features: Default::default(),
-                    memory_hints: Default::default(),
-                    trace: Default::default(),
-                },
-            )
-            .await
-            .expect("Failed to create device");
+        let (surface, adapter, device, queue) = Self::init_graphics(window.clone()).await;
 
         let size = window.inner_size();
-        let mut config = surface
-            .get_default_config(&adapter, size.width, size.height)
-            .expect("Surface isn't supported by the adapter.");
+        let device = Arc::new(device);
+        let queue = Arc::new(queue);
 
-        config.present_mode = PresentMode::Fifo;
+        let config = surface
+            .get_default_config(&adapter, size.width, size.height)
+            .map(|mut c| {
+                c.present_mode = PresentMode::Fifo;
+                c
+            })
+            .expect("Surface/Adapter mismatch");
+
         surface.configure(&device, &config);
 
-        let device_arc = Arc::new(device);
-        let queue_arc = Arc::new(queue);
         let (camera, text_system, sprite_renderer) =
-            Self::configure_inner_modules(size, &device_arc, &config);
+            Self::configure_inner_modules(size, &device, &config);
 
         Self {
-            background_color: Color::WHITE,
-            base: VisualState::default(),
-            sprite_renderer,
-            max_width_text: size.width as f32,
-            max_height_text: size.height as f32,
-            surface,
-            device: device_arc.clone(),
-            queue: queue_arc.clone(),
             window,
+            surface,
             config,
+            device: device.clone(),
+            queue: queue.clone(),
             camera,
             text_system,
+            sprite_renderer,
+            background_color: Color::WHITE,
+            base: VisualState::default(),
+            max_width_text: size.width as f32,
+            max_height_text: size.height as f32,
             animation_system: AnimationSystem::new(),
-            texture_controller: TextureSystem::new(device_arc, queue_arc),
+            texture_controller: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
         }
     }
@@ -167,6 +147,7 @@ impl RenderSettings {
     pub fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
         &mut self.animation_system
     }
+
     pub fn set_window_config(&mut self, config: WindowConfig) {
         self.config.present_mode = if config.vsync { PresentMode::Fifo } else { PresentMode::Immediate };
 
@@ -188,6 +169,26 @@ impl RenderSettings {
         let _ = self.window.request_inner_size(new_size);
     }
 
+    async fn init_graphics(window: Arc<Window>) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
+        let instance = wgpu::Instance::default();
+        let surface = instance.create_surface(window).expect("Failed to create surface");
+
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
+                power_preference: wgpu::PowerPreference::HighPerformance,
+                compatible_surface: Some(&surface),
+                ..Default::default()
+            })
+            .await
+            .expect("No suitable GPU adapter found");
+
+        let (device, queue) = adapter
+            .request_device(&wgpu::DeviceDescriptor::default())
+            .await
+            .expect("Failed to create device");
+
+        (surface, adapter, device, queue)
+    }
 
     fn configure_inner_modules(size: PhysicalSize<u32>, device: &Device, config: &SurfaceConfiguration) -> (Camera, TextSystem, SpriteRenderer) {
         let camera = Camera::new(size.width, size.height);

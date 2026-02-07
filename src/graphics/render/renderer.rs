@@ -1,8 +1,11 @@
 use crate::graphics::render::render_settings::RenderSettings;
-use crate::graphics::{SpriteInstance, Texture};
+use crate::graphics::{SpriteRenderer, TextureSystem};
+use crate::prelude::Color;
+use crate::text::TextSystem;
 use std::sync::Arc;
-use wgpu::StoreOp;
+use wgpu::{LoadOp, StoreOp};
 use winit::dpi::PhysicalSize;
+
 
 /// The main renderer. Initialize the WGPU device and surface, performs
 /// per-frame drawing of sprites and text.
@@ -27,23 +30,50 @@ impl Renderer {
         }
     }
 
-    pub fn draw(render_settings: &mut RenderSettings) {
-        render_settings.get_sprite_renderer().update_camera(&render_settings.queue, render_settings.get_camera());
+    pub fn draw(settings: &mut RenderSettings) {
+        settings.sprite_renderer.update_camera(&settings.queue, settings.get_camera());
+        Self::queue_typewriter_text(settings);
 
-        let output = render_settings.surface.get_current_texture().expect("Failed to acquire next surface texture");
+        let output = settings.surface.get_current_texture().expect("Surface error");
         let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = settings.device.create_command_encoder(&Default::default());
 
-        let mut encoder = render_settings.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
+        Self::record_render_commands(settings, &mut encoder, &view);
 
-        Self::queue_typewriter_text(render_settings);
-        Self::execute_render_pass(render_settings, &mut encoder, &view);
-
-        render_settings.queue.submit(std::iter::once(encoder.finish()));
+        settings.queue.submit(std::iter::once(encoder.finish()));
         output.present();
+        settings.texture_controller.clear_instances();
+    }
 
-        render_settings.get_texture_controller_mut().clear_instances();
+    fn record_render_commands(
+        settings: &mut RenderSettings,
+        encoder: &mut wgpu::CommandEncoder,
+        view: &wgpu::TextureView
+    ) {
+        let RenderSettings {
+            device, queue, sprite_renderer, texture_controller, text_system, background_color, ..
+        } = settings;
+
+        Self::execute_render_pass(encoder, view, *background_color, |pass| {
+            Self::draw_scene_layers(pass, device, queue, sprite_renderer, texture_controller, text_system);
+        });
+    }
+
+    fn draw_scene_layers<'a>(
+        pass: &mut wgpu::RenderPass<'a>,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        sprites: &mut SpriteRenderer,
+        textures: &TextureSystem,
+        text: &mut TextSystem,
+    ) {
+        for (texture, instances) in textures.get_batched_instances() {
+            if !instances.is_empty() {
+                sprites.render(pass, device, queue, texture, instances);
+            }
+        }
+
+        text.draw(device, queue, pass);
     }
 
     fn queue_typewriter_text(render_settings: &mut RenderSettings) {
@@ -67,49 +97,30 @@ impl Renderer {
         }
     }
 
-    fn execute_render_pass(
-        render_settings: &mut RenderSettings,
+    fn execute_render_pass<F>(
         encoder: &mut wgpu::CommandEncoder,
         view: &wgpu::TextureView,
-    ) {
-        let device = &render_settings.device;
-        let queue = &render_settings.queue;
-        let sprite_renderer = &mut render_settings.sprite_renderer;
-        let texture_controller = &render_settings.texture_controller;
-        let text_controller = &mut render_settings.text_system;
-        let background_color = render_settings.background_color.to_wgpu_color();
+        color: Color,
+        render_logic: F,
+    ) where
+        F: FnOnce(&mut wgpu::RenderPass),
+    {
+        let color_attachment = wgpu::RenderPassColorAttachment {
+            view,
+            resolve_target: None,
+            ops: wgpu::Operations {
+                load: LoadOp::Clear(color.to_wgpu_color()),
+                store: StoreOp::Store,
+            },
+            depth_slice: None,
+        };
 
-        let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-            label: Some("Render Pass"),
-            color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                view,
-                depth_slice: None,
-                resolve_target: None,
-                ops: wgpu::Operations {
-                    load: wgpu::LoadOp::Clear(background_color),
-                    store: StoreOp::Store,
-                },
-            })],
-            depth_stencil_attachment: None,
-            timestamp_writes: None,
-            occlusion_query_set: None,
-            multiview_mask: None,
+        let mut rp = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
+            label: Some("Main Render Pass"),
+            color_attachments: &[Some(color_attachment)],
+            ..Default::default()
         });
 
-        let batches: Vec<(&Texture, &[SpriteInstance])> = texture_controller.get_batched_instances();
-
-        for (texture, instances) in batches {
-            if !instances.is_empty() {
-                sprite_renderer.render(
-                    &mut render_pass,
-                    device,
-                    queue,
-                    texture,
-                    instances,
-                );
-            }
-        }
-
-        text_controller.draw(device, queue, &mut render_pass);
+        render_logic(&mut rp);
     }
 }

@@ -6,7 +6,6 @@ use crate::graphics::Camera;
 
 /// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
 /// and instance buffers, and camera/texture bind groups.
-#[derive(Clone)]
 pub struct SpriteRenderer {
     render_pipeline: wgpu::RenderPipeline,
     vertex_buffer: wgpu::Buffer,
@@ -22,7 +21,6 @@ pub struct SpriteRenderer {
 }
 
 impl SpriteRenderer {
-    #[must_use] 
     pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
         let shader = Self::create_shader(device);
         let camera_bind_group_layout = Self::create_camera_bind_group_layout(device);
@@ -278,6 +276,7 @@ impl SpriteRenderer {
     }
 }
 
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -290,4 +289,8 @@ mod tests {
         let buffer_size = initial_capacity * instance_size;
         assert_eq!(buffer_size, initial_capacity * 96);
     }
+}
+
+fn todo() {
+    todo!("clean up this file, it's a mess");
 }
