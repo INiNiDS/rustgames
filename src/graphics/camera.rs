@@ -149,12 +149,8 @@ impl Camera {
     }
 
     fn get_shake_offset(&self) -> Vec3 {
-        let mut offset = Vec3::ZERO;
-
-        let trauma_offset = self.trauma_shake.offset();
-        offset += Vec3::new(trauma_offset.x, trauma_offset.y, 0.0);
-
-        offset
+        let o = self.trauma_shake.offset();
+        Vec3::new(o.x, o.y, 0.0)
     }
 
     fn update_position(&mut self, delta_time: f32) {

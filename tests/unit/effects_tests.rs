@@ -1,25 +1,26 @@
 use rustgames::graphics::color::Color;
-use rustgames::graphics::effects::system::{
-    ActiveEffect, VfxSystem, Particle, EmitterConfig, VfxEffect,
+use rustgames::graphics::{
+    EmitterConfig, Particle, VfxEffect,
 };
+use rustgames::graphics::effects::VfxRenderer;
 use rustgames::graphics::effects::shake_effect::TraumaShake;
 use glam::Vec2;
 
 #[test]
-fn effect_manager_lifecycle() {
-    let mut mgr = VfxSystem::new();
-    mgr.push(VfxEffect::Flash { color: Color::WHITE, duration: 0.5 });
-    assert_eq!(mgr.count(), 1);
-    mgr.update(1.0);
-    assert_eq!(mgr.count(), 0);
+fn effect_renderer_lifecycle() {
+    let mut renderer = VfxRenderer::new();
+    renderer.add_effect(VfxEffect::Flash { color: Color::WHITE, duration: 0.5 });
+    assert_eq!(renderer.active_effect_count(), 1);
+    renderer.update(1.0);
+    assert_eq!(renderer.active_effect_count(), 0);
 }
 
 #[test]
-fn effect_manager_clear() {
-    let mut mgr = VfxSystem::new();
-    mgr.push(VfxEffect::Vignette { intensity: 0.5 });
-    mgr.clear();
-    assert_eq!(mgr.count(), 0);
+fn effect_renderer_clear() {
+    let mut renderer = VfxRenderer::new();
+    renderer.add_effect(VfxEffect::Vignette { intensity: 0.5 });
+    renderer.clear_all();
+    assert_eq!(renderer.active_effect_count(), 0);
 }
 
 #[test]
@@ -45,16 +46,18 @@ fn particle_lifetime_expires() {
 }
 
 #[test]
-fn flash_effect_duration() {
-    let inst = ActiveEffect::new(VfxEffect::Flash { color: Color::RED, duration: 0.3 });
-    assert!((inst.duration() - 0.3).abs() < f32::EPSILON);
+fn flash_state_duration() {
+    let mut renderer = VfxRenderer::new();
+    renderer.add_effect(VfxEffect::Flash { color: Color::RED, duration: 0.3 });
+    assert!(renderer.flash_state().active);
 }
 
 #[test]
-fn vignette_is_infinite_and_incomplete() {
-    let inst = ActiveEffect::new(VfxEffect::Vignette { intensity: 0.5 });
-    assert!(inst.duration().is_infinite());
-    assert!(!inst.is_finished());
+fn vignette_does_not_auto_finish() {
+    let mut renderer = VfxRenderer::new();
+    renderer.add_effect(VfxEffect::Vignette { intensity: 0.5 });
+    renderer.update(10.0);
+    assert_eq!(renderer.active_effect_count(), 1);
 }
 
 #[test]

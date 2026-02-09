@@ -9,5 +9,3 @@ pub enum Transition {
     Dissolve(f32),
     Wipe { direction: Direction, duration: f32 },
 }
-
-// Its structure should be in release, make production grade code of this.

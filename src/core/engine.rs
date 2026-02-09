@@ -135,5 +135,4 @@ impl Engine {
         self.render_settings.get_vfx_system_mut()
     }
 
-    // Here all systems are given for the user? 
 }

@@ -1,12 +1,5 @@
 use glam::Vec4;
-
-/// Controls how a `SpriteAnimation` progresses through its frames.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum AnimationMode {
-    PlayOnce,
-    Loop,
-    PingPong,
-}
+use crate::graphics::effects::animation::animation_mode::AnimationMode;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PingPongDirection {
@@ -30,48 +23,36 @@ pub struct SpriteAnimation {
 }
 
 impl SpriteAnimation {
-    #[must_use] 
+    #[must_use]
     pub fn new(frames: Vec<Vec4>, fps: f32, mode: AnimationMode) -> Self {
         assert!(!frames.is_empty(), "Animation must have at least one frame");
         assert!(fps > 0.0, "FPS must be positive");
-        
+
         Self {
-            frames,
-            current_frame: 0,
-            elapsed: 0.0,
-            frame_duration: 1.0 / fps,
-            mode,
+            frames, current_frame: 0, elapsed: 0.0,
+            frame_duration: 1.0 / fps, mode,
             ping_pong_dir: PingPongDirection::Forward,
-            paused: false,
-            finished: false,
+            paused: false, finished: false,
         }
     }
 
     #[must_use]
     pub fn from_grid(
-        columns: usize,
-        rows: usize,
-        frame_count: usize,
-        fps: f32,
-        mode: AnimationMode,
+        columns: usize, rows: usize, frame_count: usize,
+        fps: f32, mode: AnimationMode,
     ) -> Self {
         assert!(columns > 0 && rows > 0, "Grid dimensions must be > 0");
         assert!(frame_count > 0, "Frame count must be > 0");
         assert!(frame_count <= columns * rows, "Frame count exceeds grid size");
 
-        let frame_width = 1.0 / columns as f32;
-        let frame_height = 1.0 / rows as f32;
+        let fw = 1.0 / columns as f32;
+        let fh = 1.0 / rows as f32;
 
         let frames: Vec<Vec4> = (0..frame_count)
             .map(|i| {
                 let col = (i % columns) as f32;
                 let row = (i / columns) as f32;
-                Vec4::new(
-                    col * frame_width,
-                    row * frame_height,
-                    frame_width,
-                    frame_height,
-                )
+                Vec4::new(col * fw, row * fh, fw, fh)
             })
             .collect();
 
@@ -82,9 +63,7 @@ impl SpriteAnimation {
         if self.paused || self.finished || self.frames.is_empty() {
             return;
         }
-
         self.elapsed += delta_time;
-
         if self.frame_duration > f32::EPSILON {
             #[allow(clippy::while_float)]
             while self.elapsed >= self.frame_duration {
@@ -99,28 +78,18 @@ impl SpriteAnimation {
         }
     }
 
-    #[must_use] 
-    pub fn current_uv(&self) -> Vec4 {
-        self.frames[self.current_frame]
-    }
+    #[must_use]
+    pub fn current_uv(&self) -> Vec4 { self.frames[self.current_frame] }
 
-    #[must_use] 
-    pub const fn current_frame_index(&self) -> usize {
-        self.current_frame
-    }
+    #[must_use]
+    pub const fn current_frame_index(&self) -> usize { self.current_frame }
 
-    #[must_use] 
-    pub const fn is_finished(&self) -> bool {
-        self.finished
-    }
+    #[must_use]
+    pub const fn is_finished(&self) -> bool { self.finished }
 
-    pub const fn pause(&mut self) {
-        self.paused = true;
-    }
+    pub const fn pause(&mut self) { self.paused = true; }
 
-    pub const fn resume(&mut self) {
-        self.paused = false;
-    }
+    pub const fn resume(&mut self) { self.paused = false; }
 
     pub const fn reset(&mut self) {
         self.current_frame = 0;
@@ -136,18 +105,13 @@ impl SpriteAnimation {
         }
     }
 
-    pub const fn set_paused(&mut self, paused: bool) {
-        self.paused = paused;
-    }
+    pub const fn set_paused(&mut self, paused: bool) { self.paused = paused; }
 
-    #[must_use] 
-    pub const fn frame_count(&self) -> usize {
-        self.frames.len()
-    }
+    #[must_use]
+    pub const fn frame_count(&self) -> usize { self.frames.len() }
 
     const fn step(&mut self) -> bool {
         let last_idx = self.frames.len() - 1;
-
         match self.mode {
             AnimationMode::PlayOnce => {
                 if self.current_frame < last_idx {
@@ -162,26 +126,29 @@ impl SpriteAnimation {
                 false
             }
             AnimationMode::PingPong => {
-                match self.ping_pong_dir {
-                    PingPongDirection::Forward => {
-                        if self.current_frame < last_idx {
-                            self.current_frame += 1;
-                        } else {
-                            self.ping_pong_dir = PingPongDirection::Backward;
-                            // Сразу шагаем назад, чтобы не задерживаться на последнем кадре дважды
-                            if last_idx > 0 { self.current_frame -= 1; }
-                        }
-                    }
-                    PingPongDirection::Backward => {
-                        if self.current_frame > 0 {
-                            self.current_frame -= 1;
-                        } else {
-                            self.ping_pong_dir = PingPongDirection::Forward;
-                            if last_idx > 0 { self.current_frame += 1; }
-                        }
-                    }
-                }
+                self.step_ping_pong(last_idx);
                 false
+            }
+        }
+    }
+
+    const fn step_ping_pong(&mut self, last_idx: usize) {
+        match self.ping_pong_dir {
+            PingPongDirection::Forward => {
+                if self.current_frame < last_idx {
+                    self.current_frame += 1;
+                } else {
+                    self.ping_pong_dir = PingPongDirection::Backward;
+                    if last_idx > 0 { self.current_frame -= 1; }
+                }
+            }
+            PingPongDirection::Backward => {
+                if self.current_frame > 0 {
+                    self.current_frame -= 1;
+                } else {
+                    self.ping_pong_dir = PingPongDirection::Forward;
+                    if last_idx > 0 { self.current_frame += 1; }
+                }
             }
         }
     }
@@ -190,7 +157,7 @@ impl SpriteAnimation {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_animation_loop() {
         let frames = vec![
@@ -198,38 +165,30 @@ mod tests {
             Vec4::new(0.5, 0.0, 0.5, 0.5),
             Vec4::new(0.0, 0.5, 0.5, 0.5),
         ];
-        
         let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::Loop);
-
         assert_eq!(anim.current_frame_index(), 0);
-
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
-
         anim.update(0.2);
         assert_eq!(anim.current_frame_index(), 0);
-        
         assert!(!anim.is_finished());
     }
-    
+
     #[test]
     fn test_animation_play_once() {
         let frames = vec![
             Vec4::new(0.0, 0.0, 0.5, 0.5),
             Vec4::new(0.5, 0.0, 0.5, 0.5),
         ];
-        
         let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::PlayOnce);
-        
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
         assert!(!anim.is_finished());
-        
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
         assert!(anim.is_finished());
     }
-    
+
     #[test]
     fn test_animation_ping_pong() {
         let frames = vec![
@@ -237,45 +196,37 @@ mod tests {
             Vec4::new(0.0, 0.0, 1.0, 1.0),
             Vec4::new(0.0, 0.0, 1.0, 1.0),
         ];
-        
         let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::PingPong);
-
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 2);
-
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 0);
-
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
     }
-    
+
     #[test]
     fn test_animation_from_grid() {
         let anim = SpriteAnimation::from_grid(4, 4, 8, 10.0, AnimationMode::Loop);
-        
         assert_eq!(anim.frame_count(), 8);
-
         let first_uv = anim.current_uv();
         assert_eq!(first_uv.x, 0.0);
         assert_eq!(first_uv.y, 0.0);
         assert_eq!(first_uv.z, 0.25);
         assert_eq!(first_uv.w, 0.25);
     }
-    
+
     #[test]
     fn test_animation_pause_resume() {
         let frames = vec![
             Vec4::new(0.0, 0.0, 1.0, 1.0),
             Vec4::new(0.0, 0.0, 1.0, 1.0),
         ];
-        
         let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::Loop);
-        
         anim.pause();
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 0);
@@ -283,24 +234,18 @@ mod tests {
         anim.update(0.1);
         assert_eq!(anim.current_frame_index(), 1);
     }
-    
+
     #[test]
     fn test_animation_reset() {
         let frames = vec![
             Vec4::new(0.0, 0.0, 1.0, 1.0),
             Vec4::new(0.0, 0.0, 1.0, 1.0),
         ];
-        
         let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::PlayOnce);
-        
         anim.update(0.2);
         assert!(anim.is_finished());
-        
         anim.reset();
         assert_eq!(anim.current_frame_index(), 0);
         assert!(!anim.is_finished());
     }
 }
-
-
-// TODO: Add support for per-frame durations, random frame order, and other features as needed. And its to big file, maybe need to split it into multiple files, like animation.rs and sprite_animation.rs, or even animation_mode.rs.

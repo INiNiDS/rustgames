@@ -1,20 +1,23 @@
 pub mod animation_instance;
+pub mod animation_mode;
 pub mod direction;
 pub mod visual;
 pub mod easing;
 pub mod timeline;
 pub mod transition;
 pub(crate) mod animation_system;
+pub(crate) mod animation_group_ops;
 pub mod sprite_animation;
 
 pub(crate) use animation_system::AnimationSystem;
 pub use animation_instance::ActiveAnimation;
+pub use animation_mode::AnimationMode;
 pub use direction::Direction;
 pub use easing::Easing;
 pub use visual::{AnimEffect, CustomCombinedMode, VisualState};
 pub use timeline::{TimelineBuilder, TimelineStep};
 pub use transition::Transition;
-pub use sprite_animation::*;
+pub use sprite_animation::SpriteAnimation;
 
 /// A named animation that can be played through `AnimationController`.
 #[derive(Debug, Clone)]

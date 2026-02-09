@@ -5,12 +5,12 @@ use crate::prelude::{AnimEffect, Animation, ActiveAnimation, Easing, VisualState
 /// Manages animation instances: starting, stopping, pausing, seeking, and
 /// evaluating combined effects on a `VisualState`.
 pub struct AnimationSystem {
-    animations: Vec<ActiveAnimation>,
-    next_id: usize,
+    pub(crate) animations: Vec<ActiveAnimation>,
+    pub(crate) next_id: usize,
 }
 
 impl AnimationSystem {
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             animations: Vec::new(),
@@ -21,7 +21,6 @@ impl AnimationSystem {
     pub fn start(&mut self, animation: Animation, easing: Easing, delay: f32) -> usize {
         let id = self.next_id;
         self.next_id += 1;
-
         self.animations.push(ActiveAnimation::new(id, animation, easing, delay));
         id
     }
@@ -31,15 +30,13 @@ impl AnimationSystem {
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        println!("Updating AnimationSystem with {} active animations", self.animations.len());
         for anim in &mut self.animations {
             anim.update(delta_time);
         }
-
         self.animations.retain(|anim| !anim.is_finished());
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn is_playing(&self) -> bool {
         !self.animations.is_empty()
     }
@@ -69,29 +66,29 @@ impl AnimationSystem {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.playback = speed;
             true
-        } else {false}
+        } else { false }
     }
 
     pub fn seek_time(&mut self, id: usize, time: f32) -> bool {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.elapsed = time.clamp(0.0, anim.duration());
             true
-        } else {false}
+        } else { false }
     }
 
     pub fn seek_progress(&mut self, id: usize, progress: f32) -> bool {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.elapsed = progress * anim.duration();
             true
-        } else {false}
+        } else { false }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_playing_id(&self, id: usize) -> bool {
         self.animations.iter().any(|a| a.id == id)
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn count(&self) -> usize {
         self.animations.len()
     }
@@ -100,63 +97,14 @@ impl AnimationSystem {
         self.animations.clear();
     }
 
-    #[must_use] 
-    pub fn evaluate(&self, base: VisualState, size: Vec2, custom_combined_mode: Option<CustomCombinedMode>) -> VisualState {
+    #[must_use]
+    pub fn evaluate(&self, base: VisualState, size: Vec2, mode: Option<CustomCombinedMode>) -> VisualState {
         let mut combined = AnimEffect::default();
         for anim in &self.animations {
-            let effect = anim.effect(size);
-            combined = combined.combine(effect);
-        };
-        combined.apply_to(base, custom_combined_mode)
-    }
-
-    pub fn start_sequence(
-        &mut self,
-        steps: Vec<(Animation, Easing)>
-    ) -> AnimationGroupID {
-        let mut ids = Vec::with_capacity(steps.len());
-        let mut delay_acc = 0.0;
-
-        for (anim, easing) in steps {
-            let (id, dur) = self.spawn_instance(anim, easing, delay_acc);
-            delay_acc += dur;
-            ids.push(id);
+            combined = combined.combine(anim.effect(size));
         }
-
-        AnimationGroupID::new(ids)
+        combined.apply_to(base, mode)
     }
-
-
-    pub fn start_parallel(
-        &mut self,
-        steps: Vec<(Animation, Easing)>
-    ) -> AnimationGroupID {
-        let mut ids = Vec::with_capacity(steps.len());
-
-        for (anim, easing) in steps {
-            let (id, _) = self.spawn_instance(anim, easing, 0.0);
-            ids.push(id);
-        }
-
-        AnimationGroupID::new(ids)
-    }
-
-
-    pub fn start_parallel_with_delay(
-        &mut self,
-        steps: Vec<(Animation, Easing)>,
-        start_delay: f32,
-    ) -> AnimationGroupID {
-        let mut ids = Vec::with_capacity(steps.len());
-
-        for (anim, easing) in steps {
-            let (id, _) = self.spawn_instance(anim, easing, start_delay);
-            ids.push(id);
-        }
-
-        AnimationGroupID::new(ids)
-    }
-
 
     pub fn start_timeline(&mut self, steps: Vec<TimelineStep>) -> AnimationGroupID {
         let mut ids = Vec::new();
@@ -164,68 +112,24 @@ impl AnimationSystem {
 
         for step in steps {
             match step {
-                TimelineStep::Gap(t) => {
-                    delay_acc += t.max(0.0);
-                }
-
+                TimelineStep::Gap(t) => delay_acc += t.max(0.0),
                 TimelineStep::Single(anim, easing) => {
-                    self.handle_single(anim, easing, &mut delay_acc, &mut ids);
+                    let (id, dur) = self.spawn_instance(anim, easing, delay_acc);
+                    delay_acc += dur;
+                    ids.push(id);
                 }
-
                 TimelineStep::Parallel(anims) => {
-                    self.handle_parallel(anims, &mut delay_acc, &mut ids);
+                    let mut max_len: f32 = 0.0;
+                    for (anim, easing) in anims {
+                        let (id, dur) = self.spawn_instance(anim, easing, delay_acc);
+                        max_len = max_len.max(dur);
+                        ids.push(id);
+                    }
+                    delay_acc += max_len;
                 }
             }
         }
-
-        println!("Timeline started!");
-        println!("Total animations: {}", self.animations.len());
-
         AnimationGroupID::new(ids)
-    }
-
-
-    pub fn stop_by_group(&mut self, group: &AnimationGroupID) {
-        for id in group.iter() {
-            self.stop(*id);
-        }
-    }
-
-    pub fn remove_from_group(&mut self, group: &mut AnimationGroupID, index: usize)  {
-        if let Some(&id) = group.get_id(index) { self.stop(id); }
-        group.remove(index);
-    }
-
-    #[must_use] 
-    pub fn is_group_playing_all(&self, group: &AnimationGroupID) -> bool {
-        group.iter().all(|id| self.is_playing_id(*id))
-    }
-
-    #[must_use] 
-    pub fn is_group_finished_all(&self, group: &AnimationGroupID) -> bool {
-        group.iter().all(|id| !self.is_playing_id(*id))
-    }
-
-    #[must_use] 
-    pub fn is_group_playing_any(&self, group: &AnimationGroupID) -> bool {
-        group.iter().any(|id| self.is_playing_id(*id))
-    }
-
-    #[must_use] 
-    pub fn is_group_finished_any(&self, group: &AnimationGroupID) -> bool {
-        group.iter().any(|id| !self.is_playing_id(*id))
-    }
-
-    pub fn pause_group(&mut self, group: &AnimationGroupID) {
-        for id in group.iter() {
-            self.pause(*id);
-        }
-    }
-
-    pub fn resume_group(&mut self, group: &AnimationGroupID) {
-        for id in group.iter() {
-            self.resume(*id);
-        }
     }
 
     pub fn stop_all(&mut self) {
@@ -252,15 +156,8 @@ impl AnimationSystem {
         self.seek_progress(id, 0.0);
     }
 
-    pub fn restart_group(&mut self, group: &AnimationGroupID) {
-        for id in group.iter() {
-            self.seek_progress(*id, 0.0);
-        }
-    }
-
     pub fn set_delay(&mut self, delay: f32, ids: Vec<usize>) {
         let delay = delay.max(0.0);
-
         for id in ids {
             if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
                 anim.set_delay(delay);
@@ -270,7 +167,6 @@ impl AnimationSystem {
 
     pub fn add_delay(&mut self, delay: f32, ids: Vec<usize>) {
         let delay = delay.max(0.0);
-
         for id in ids {
             if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
                 anim.add_delay(delay);
@@ -280,7 +176,7 @@ impl AnimationSystem {
 
     pub const fn apply_animation(&mut self) {}
 
-    fn spawn_instance(
+    pub(crate) fn spawn_instance(
         &mut self,
         anim: Animation,
         easing: Easing,
@@ -288,47 +184,11 @@ impl AnimationSystem {
     ) -> (usize, f32) {
         let id = self.next_id;
         self.next_id += 1;
-
         let inst = ActiveAnimation::new(id, anim, easing, delay);
         let dur = inst.duration();
-
         self.animations.push(inst);
         (id, dur)
     }
-
-
-    fn handle_single(
-        &mut self,
-        anim: Animation,
-        easing: Easing,
-        delay_acc: &mut f32,
-        ids: &mut Vec<usize>,
-    ) {
-        let (id, dur) = self.spawn_instance(anim, easing, *delay_acc);
-        *delay_acc += dur;
-        ids.push(id);
-    }
-
-
-    fn handle_parallel(
-        &mut self,
-        anims: Vec<(Animation, Easing)>,
-        delay_acc: &mut f32,
-        ids: &mut Vec<usize>,
-    ) {
-        let mut max_len: f32 = 0.0;
-
-        for (anim, easing) in anims {
-            let (id, dur) = self.spawn_instance(anim, easing, *delay_acc);
-            max_len = max_len.max(dur);
-            ids.push(id);
-        }
-
-        println!("Max parallel animation length: {}", self.animations.len());
-
-        *delay_acc += max_len;
-    }
-
 }
 
 impl Default for AnimationSystem {
@@ -337,4 +197,84 @@ impl Default for AnimationSystem {
     }
 }
 
-// REALLY TO BIG FILE ITS NEED TO BE SPLIT INTO MULTIPLE FILES, MAYBE ONE FOR SYSTEM, ONE FOR INSTANCE, ONE FOR ANIMATION DEFINITIONS, ONE FOR EASING, ONE FOR VISUALS, ONE FOR TIMELINE, ETC. But for the user it's should be just one module, so maybe we can have a mod.rs that re-exports everything and then split the implementation into multiple files.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn start_stop() {
+        let mut sys = AnimationSystem::new();
+        let id = sys.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+        assert!(sys.is_playing_id(id));
+        sys.stop(id);
+        assert!(!sys.is_playing_id(id));
+    }
+
+    #[test]
+    fn auto_removes_finished() {
+        let mut sys = AnimationSystem::new();
+        sys.start(Animation::FadeIn { duration: 0.5 }, Easing::Linear, 0.0);
+        assert_eq!(sys.count(), 1);
+        sys.update(1.0);
+        assert_eq!(sys.count(), 0);
+    }
+
+    #[test]
+    fn sequence_creates_group() {
+        let mut sys = AnimationSystem::new();
+        let group = sys.start_sequence(vec![
+            (Animation::FadeIn { duration: 0.5 }, Easing::Linear),
+            (Animation::FadeOut { duration: 0.5 }, Easing::Linear),
+        ]);
+        assert_eq!(group.len(), 2);
+    }
+
+    #[test]
+    fn parallel_creates_group() {
+        let mut sys = AnimationSystem::new();
+        let group = sys.start_parallel(vec![
+            (Animation::FadeIn { duration: 1.0 }, Easing::Linear),
+            (Animation::Scale { from: 0.0, to: 1.0, duration: 1.0 }, Easing::EaseOut),
+        ]);
+        assert_eq!(group.len(), 2);
+    }
+
+    #[test]
+    fn clear_removes_all() {
+        let mut sys = AnimationSystem::new();
+        sys.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+        sys.start(Animation::FadeOut { duration: 1.0 }, Easing::Linear, 0.0);
+        sys.clear();
+        assert_eq!(sys.count(), 0);
+    }
+
+    #[test]
+    fn evaluate_opacity() {
+        let mut sys = AnimationSystem::new();
+        sys.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+        sys.update(0.5);
+        let state = sys.evaluate(VisualState::default(), Vec2::new(100.0, 100.0), None);
+        assert!(state.opacity < 1.0);
+    }
+
+    #[test]
+    fn pause_resume() {
+        let mut sys = AnimationSystem::new();
+        let id = sys.start(Animation::FadeIn { duration: 2.0 }, Easing::Linear, 0.0);
+        assert!(sys.pause(id));
+        sys.update(1.0);
+        assert!(sys.is_playing_id(id));
+        assert!(sys.resume(id));
+        sys.update(3.0);
+        assert!(!sys.is_playing_id(id));
+    }
+
+    #[test]
+    fn replace_resets_animation() {
+        let mut sys = AnimationSystem::new();
+        let id = sys.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+        sys.update(0.5);
+        assert!(sys.replace(id, Animation::FadeOut { duration: 2.0 }));
+        assert!(sys.is_playing_id(id));
+    }
+}

@@ -1,5 +1,5 @@
 use rustgames::graphics::color::Color;
-use rustgames::graphics::effects::system::{EmitterConfig, VfxEffect};
+use rustgames::graphics::{EmitterConfig, VfxEffect};
 use rustgames::graphics::effects::renderer::VfxRenderer;
 use glam::Vec2;
 

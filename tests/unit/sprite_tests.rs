@@ -1,5 +1,5 @@
 use rustgames::graphics::render::instance::SpriteInstance;
-use rustgames::graphics::effects::animation::sprite_animation::{AnimationMode, SpriteAnimation};
+use rustgames::graphics::{AnimationMode, SpriteAnimation};
 use glam::{Vec2, Vec4};
 
 #[test]

@@ -6,6 +6,7 @@ pub mod text_wrapper;
 pub mod text_style;
 pub mod typewriter_instance;
 pub mod text_system;
+pub(crate) mod text_font_ops;
 
 pub use crate::text::typewriter_instance::TypewriterInstance;
 pub use alignment::{TextAlignment, VerticalAlignment};
@@ -15,4 +16,3 @@ pub use text_style::{FontWeight, TextAttributes, TextStyle};
 pub use text_wrapper::TextWrapper;
 pub use typewriter::{TextSpeed, TypewriterEffect};
 pub use text_system::TextSystem;
-

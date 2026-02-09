@@ -4,6 +4,7 @@ pub mod render_settings;
 pub mod instance;
 pub mod texture;
 pub mod texture_system;
+pub(crate) mod pipeline;
 
 pub use renderer::Renderer;
 pub use sprite_renderer::SpriteRenderer;

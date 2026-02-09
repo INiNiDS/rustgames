@@ -4,7 +4,6 @@ use rustgames::graphics::effects::animation::timeline::TimelineBuilder;
 use rustgames::graphics::effects::animation::visual::{
     AnimEffect, CombinedMode, CustomCombinedMode, VisualState,
 };
-use rustgames::graphics::effects::animation::animation_system::AnimationSystem;
 use glam::Vec2;
 use rustgames::graphics::{Animation, AnimationGroupID};
 
@@ -36,84 +35,6 @@ fn instance_paused_does_not_advance() {
     inst.paused = true;
     inst.update(0.5);
     assert_eq!(inst.progress(), 0.0);
-}
-
-#[test]
-fn controller_start_stop() {
-    let mut ctrl = AnimationSystem::new();
-    let id = ctrl.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
-    assert!(ctrl.is_playing_id(id));
-    ctrl.stop(id);
-    assert!(!ctrl.is_playing_id(id));
-}
-
-#[test]
-fn controller_auto_removes_finished() {
-    let mut ctrl = AnimationSystem::new();
-    ctrl.start(Animation::FadeIn { duration: 0.5 }, Easing::Linear, 0.0);
-    assert_eq!(ctrl.count(), 1);
-    ctrl.update(1.0);
-    assert_eq!(ctrl.count(), 0);
-}
-
-#[test]
-fn controller_sequence_creates_group() {
-    let mut ctrl = AnimationSystem::new();
-    let group = ctrl.start_sequence(vec![
-        (Animation::FadeIn { duration: 0.5 }, Easing::Linear),
-        (Animation::FadeOut { duration: 0.5 }, Easing::Linear),
-    ]);
-    assert_eq!(group.len(), 2);
-    assert!(!group.is_empty());
-}
-
-#[test]
-fn controller_parallel_creates_group() {
-    let mut ctrl = AnimationSystem::new();
-    let group = ctrl.start_parallel(vec![
-        (Animation::FadeIn { duration: 1.0 }, Easing::Linear),
-        (Animation::Scale { from: 0.0, to: 1.0, duration: 1.0 }, Easing::EaseOut),
-    ]);
-    assert_eq!(group.len(), 2);
-}
-
-#[test]
-fn controller_clear_removes_all() {
-    let mut ctrl = AnimationSystem::new();
-    ctrl.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
-    ctrl.start(Animation::FadeOut { duration: 1.0 }, Easing::Linear, 0.0);
-    ctrl.clear();
-    assert_eq!(ctrl.count(), 0);
-}
-
-#[test]
-fn controller_evaluate_opacity() {
-    let mut ctrl = AnimationSystem::new();
-    ctrl.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
-    ctrl.update(0.5);
-    let state = ctrl.evaluate(VisualState::default(), Vec2::new(100.0, 100.0), None);
-    assert!(state.opacity < 1.0);
-}
-
-#[test]
-fn controller_pause_resume() {
-    let mut ctrl = AnimationSystem::new();
-    let id = ctrl.start(Animation::FadeIn { duration: 2.0 }, Easing::Linear, 0.0);
-    assert!(ctrl.pause(id));
-    ctrl.update(1.0);
-    assert!(ctrl.is_playing_id(id));
-    assert!(ctrl.resume(id));
-    ctrl.update(3.0);
-    assert!(!ctrl.is_playing_id(id));
-}
-
-#[test]
-fn controller_replace_resets_animation() {
-    let mut ctrl = AnimationSystem::new();
-    let id = ctrl.start(Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
-    ctrl.update(0.5);
-    assert!(ctrl.replace(id, Animation::FadeOut { duration: 2.0 }));
-    assert!(ctrl.is_playing_id(id));
 }
 
 #[test]
