@@ -49,7 +49,7 @@ impl SpriteInstance {
     }
     
     #[must_use] 
-    pub const fn desc() -> VertexBufferLayout<'static> {
+    pub const fn desc() -> VertexBufferLayout<'static> { // bad function has to many clones
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,

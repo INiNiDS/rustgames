@@ -1,4 +1,3 @@
-use std::slice::{Iter, IterMut};
 
 /// The speed at which a `TypewriterEffect` reveals characters.
 #[derive(Debug, Clone, Copy)]
@@ -84,7 +83,7 @@ impl TypewriterEffect {
 
         #[allow(clippy::while_float)]
         while self.elapsed >= seconds_per_char {
-            if !self.while_need_to_update(seconds_per_char, self.chars.iter().count()) {
+            if !self.while_need_to_update(seconds_per_char, self.chars.len()) {
                 break;
             }
         }
@@ -108,7 +107,7 @@ impl TypewriterEffect {
     }
 
     pub fn skip(&mut self) {
-        self.visible_chars = self.full_text.chars().count();
+        self.visible_chars = self.chars.len();
         self.complete = true;
         self.paused = false;
     }
@@ -147,7 +146,7 @@ impl TypewriterEffect {
 
     #[must_use]
     pub fn progress(&self) -> f32 {
-        let total = self.full_text.chars().count();
+        let total = self.chars.len();
         if total == 0 {
             1.0
         } else {

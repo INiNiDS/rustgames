@@ -8,8 +8,9 @@ pub use color::Color;
 pub use sprite::{Sprite, Vertex};
 pub use camera::Camera;
 pub use effects::{
-    ActiveAnimation, AnimEffect, Animation, AnimationGroupID, AnimationSystem, Direction, Easing,
+    ActiveAnimation, AnimEffect, Animation, AnimationGroupID, Direction, Easing,
     EmitterConfig, Particle, TimelineBuilder, TimelineStep, Transition, VfxEffect, VfxFrame,
-    VfxRenderer, VfxSystem, VisualState, AnimationMode, SpriteAnimation
+    VfxRenderer, VisualState, AnimationMode, SpriteAnimation
 };
+pub(crate) use effects::{VfxSystem, AnimationSystem};
 pub use render::{RenderSettings, Renderer, SpriteInstance, SpriteRenderer, Texture, TextureSystem};

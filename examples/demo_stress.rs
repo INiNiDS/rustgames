@@ -76,32 +76,6 @@ impl Game for StressDemo {
                 self.positions[i].y = self.positions[i].y.clamp(-bounds, bounds);
             }
         }
-
-        let space_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Space);
-        let up_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp);
-        let down_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown);
-        let escape_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Escape);
-        
-        if space_pressed {
-            engine.get_camera().add_trauma(0.8);
-            let _ = engine.get_audio_system().play("perdej");
-            println!("Manual shake triggered!");
-        }
-        
-        if up_pressed {
-            self.spawn_entities(1000);
-            println!("Added 1000 entities. Total: {}", self.entity_count);
-        }
-        
-        if down_pressed && self.entity_count > 1000 {
-            self.remove_entities(1000);
-            println!("Removed 1000 entities. Total: {}", self.entity_count);
-        }
-        
-        if escape_pressed {
-            self.print_final_stats();
-            std::process::exit(0);
-        }
         
         let texture_controller = engine.get_texture_controller();
         
@@ -131,7 +105,34 @@ impl Game for StressDemo {
             );
             engine.set_title(&title);
         }
+    }
 
+    fn handle_update(&mut self, engine: &mut Engine) {
+        let space_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Space);
+        let up_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp);
+        let down_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown);
+        let escape_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Escape);
+
+        if space_pressed {
+            engine.get_camera().add_trauma(0.8);
+            let _ = engine.get_audio_system().play("perdej");
+            println!("Manual shake triggered!");
+        }
+
+        if up_pressed {
+            self.spawn_entities(1000);
+            println!("Added 1000 entities. Total: {}", self.entity_count);
+        }
+
+        if down_pressed && self.entity_count > 1000 {
+            self.remove_entities(1000);
+            println!("Removed 1000 entities. Total: {}", self.entity_count);
+        }
+
+        if escape_pressed {
+            self.print_final_stats();
+            std::process::exit(0);
+        }
     }
 }
 

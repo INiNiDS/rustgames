@@ -6,10 +6,11 @@ use rustgames::prelude::*;
 struct EffectsDemo {
     renderer_alpha: VfxRenderer,
     fps_counter: FpsCounter,
-    anim_controller: AnimationSystem,
     base_state: VisualState,
     time: f32,
     texture_size: Vec2,
+    text_id: usize,
+    is_aggressive: bool,
 }
 
 impl Game for EffectsDemo {
@@ -25,16 +26,19 @@ impl Game for EffectsDemo {
         println!("  ENTER - Entrance animation");
         println!("  ESC   - Exit");
 
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/mistral.png"),
-            "sprite",
-        );
 
         engine
             .get_texture_controller()
             .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
 
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/mistral.png"),
+            "sprite",
+        );
+
         engine.get_camera().set_zoom(1.0);
+
+        self.text_id = engine.get_text_system().add_text("Привет! Я Луна! Как твои дела?", TextSpeed::Slow, 50.0, 50.0);
 
         let entrance = TimelineBuilder::new()
             .parallel(vec![
@@ -58,18 +62,16 @@ impl Game for EffectsDemo {
             ])
             .build();
 
-        self.anim_controller.start_timeline(entrance);
+        engine.get_animation_system().start_timeline(entrance);
     }
 
     fn update(&mut self, engine: &mut Engine) {
         let dt = engine.delta_time();
         self.fps_counter.update(dt);
-        self.time += dt;
-        self.anim_controller.update(dt);
-        self.renderer_alpha.update(dt);
-
-        self.handle_input(engine);
         self.update_scene(engine);
+    }
+    fn handle_update(&mut self, engine: &mut Engine) {
+        self.handle_input(engine);
     }
 }
 
@@ -163,7 +165,7 @@ impl EffectsDemo {
                     Easing::Bounce,
                 )
                 .build();
-            self.anim_controller.start_timeline(pulse);
+            engine.get_animation_system().start_timeline(pulse);
             println!("Pulse animation!");
         }
 
@@ -176,22 +178,21 @@ impl EffectsDemo {
     }
 
     fn update_scene(&mut self, engine: &mut Engine) {
-        let tc = engine.get_texture_controller();
 
-        let sprite_size = tc
+        let sprite_size = engine.get_texture_controller()
             .get_texture("sprite")
             .map_or(self.texture_size, |tex| {
                 self.texture_size = tex.size;
                 self.texture_size
             });
 
-        tc.use_texture("background", Vec2::new(2560.0, 1440.0), Vec2::ZERO, 0.0, 1.0);
+        engine.get_texture_controller().use_texture("background", Vec2::new(2560.0, 1440.0), Vec2::ZERO, 0.0, 1.0);
 
-        let visual = self
-            .anim_controller
+        let visual = engine
+            .get_animation_system()
             .evaluate(self.base_state, sprite_size, None);
 
-        tc.use_texture(
+        engine.get_texture_controller().use_texture(
             "sprite",
             sprite_size * visual.scale,
             visual.position,
@@ -202,7 +203,17 @@ impl EffectsDemo {
         let frame = self.renderer_alpha.build_frame();
 
         for particle_inst in &frame.particle {
-            tc.add_instance("sprite", *particle_inst);
+            engine.get_texture_controller().add_instance("sprite", *particle_inst);
+        }
+
+        let text_progress = engine.get_text_system().get_progress(self.text_id);
+
+        if text_progress > 0.6 && !self.is_aggressive {
+            self.is_aggressive = true;
+            let _ = engine.get_text_system().set_text(self.text_id, "Я тебя убью...", TextSpeed::Instant);
+        } else if text_progress >= 0.7 && self.is_aggressive {
+            self.is_aggressive = false;
+            let _ = engine.get_text_system().set_text(self.text_id, "Привет! Я Луна! Как твои дела?", TextSpeed::Instant);
         }
 
         if self.time >= 0.5 {
@@ -221,18 +232,19 @@ fn main() {
     let game = EffectsDemo {
         renderer_alpha: VfxRenderer::new(),
         fps_counter: FpsCounter::new(),
-        anim_controller: AnimationSystem::new(),
         base_state: VisualState::default(),
         time: 0.0,
         texture_size: Vec2::new(128.0, 128.0),
+        text_id: 0,
+        is_aggressive: false,
     };
 
     let window_config = WindowConfig {
         title: "Effects System Demo (renderer_alpha)".to_string(),
-        width: 1280,
-        height: 720,
+        width: 2560,
+        height: 1440,
         resizable: true,
-        fullscreen: false,
+        fullscreen: true,
         vsync: true,
         background_color: Color::BLACK,
     };

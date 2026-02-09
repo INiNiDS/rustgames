@@ -60,26 +60,14 @@ impl SpriteRenderer {
     }
 
     pub fn render(
-        &mut self,
+        &self,
         render_pass: &mut wgpu::RenderPass<'_>,
         device: &wgpu::Device,
-        queue: &wgpu::Queue,
         texture: &Texture,
-        instances: &[SpriteInstance],
+        instance_count: u32,
+        start_instance: u32,
     ) {
-        if instances.is_empty() {
-            return;
-        }
-
-        if instances.len() > self.instance_capacity {
-            self.resize_instance_buffer(device, instances.len());
-        }
-
-        queue.write_buffer(
-            &self.instance_buffer,
-            0,
-            bytemuck::cast_slice(instances),
-        );
+        if instance_count == 0 { return; }
 
         let bind_group = self.create_texture_bind_group(device, texture);
 
@@ -91,7 +79,26 @@ impl SpriteRenderer {
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
 
-        render_pass.draw_indexed(0..self.num_indices, 0, 0..instances.len() as u32);
+        render_pass.draw_indexed(0..self.num_indices, 0, start_instance..(start_instance + instance_count));
+    }
+
+    pub fn prepare_batch(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        all_instances: &[SpriteInstance],
+    ) {
+        if all_instances.is_empty() { return; }
+
+        if all_instances.len() > self.instance_capacity {
+            self.resize_instance_buffer(device, all_instances.len());
+        }
+
+        queue.write_buffer(
+            &self.instance_buffer,
+            0,
+            bytemuck::cast_slice(all_instances),
+        );
     }
 
     fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
@@ -193,7 +200,7 @@ impl SpriteRenderer {
         })
     }
 
-    fn create_render_pipeline(
+    fn create_render_pipeline( // bad function, should be split into multiple smaller ones
         device: &wgpu::Device,
         config: &wgpu::SurfaceConfiguration,
         shader: &wgpu::ShaderModule,
@@ -277,6 +284,7 @@ impl SpriteRenderer {
     }
 }
 
+// TODO: bad file structure, should be split into multiple files
 
 #[cfg(test)]
 mod tests {

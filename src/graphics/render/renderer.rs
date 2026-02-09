@@ -1,7 +1,7 @@
 use crate::graphics::render::render_settings::RenderSettings;
-use crate::graphics::{SpriteRenderer, TextureSystem};
+use crate::graphics::{SpriteInstance, SpriteRenderer, Texture};
 use crate::prelude::Color;
-use crate::text::TextSystem;
+use crate::text::text_system::TextSystem;
 use std::sync::Arc;
 use wgpu::{LoadOp, StoreOp};
 use winit::dpi::PhysicalSize;
@@ -42,7 +42,7 @@ impl Renderer {
 
         settings.queue.submit(std::iter::once(encoder.finish()));
         output.present();
-        settings.texture_controller.clear_instances();
+        settings.texture_system.clear_instances();
     }
 
     fn record_render_commands(
@@ -51,11 +51,21 @@ impl Renderer {
         view: &wgpu::TextureView
     ) {
         let RenderSettings {
-            device, queue, sprite_renderer, texture_controller, text_system, background_color, ..
+            device, queue, sprite_renderer, texture_system: texture_controller, text_system, background_color, ..
         } = settings;
 
+        let batches = texture_controller.get_batched_instances();
+
+        let mut all_instances = Vec::new();
+
+        for (_, instances) in &batches {
+            all_instances.extend_from_slice(instances);
+        }
+
+        sprite_renderer.prepare_batch(device, queue, &all_instances);
+
         Self::execute_render_pass(encoder, view, *background_color, |pass| {
-            Self::draw_scene_layers(pass, device, queue, sprite_renderer, texture_controller, text_system);
+            Self::draw_scene_layers(pass, device, queue, sprite_renderer, &batches, text_system);
         });
     }
 
@@ -64,12 +74,16 @@ impl Renderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         sprites: &mut SpriteRenderer,
-        textures: &TextureSystem,
+        batches: &Vec<(&Texture, &[SpriteInstance])>,
         text: &mut TextSystem,
     ) {
-        for (texture, instances) in textures.get_batched_instances() {
-            if !instances.is_empty() {
-                sprites.render(pass, device, queue, texture, instances);
+        let mut start_instance_index = 0;
+
+        for (texture, instances) in batches {
+            let count = instances.len() as u32;
+            if count > 0 {
+                sprites.render(pass, device, texture, count, start_instance_index);
+                start_instance_index += count;
             }
         }
 

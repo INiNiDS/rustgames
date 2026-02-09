@@ -130,4 +130,14 @@ impl TypewriterInstance {
     pub const fn len(&self) -> usize {
         self.typewriter_effects.len()
     }
+
+    #[must_use]
+    pub fn set_text(&mut self, id: usize, text: impl Into<String>, speed: TextSpeed) -> bool {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.set_text(text, speed);
+            true
+        } else {
+            false
+        }
+    }
 }

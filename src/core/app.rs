@@ -69,8 +69,9 @@ impl ApplicationHandler for App {
 impl App {
     fn redraw(&mut self) {
         if let Some(engine) = self.engine.as_mut() {
-            self.game.update(engine);
+            self.game.handle_update(engine);
             engine.update();
+            self.game.update(engine);
             engine.draw();
             engine.request_redraw();
         }

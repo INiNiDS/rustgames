@@ -8,7 +8,6 @@ use glam::Vec2;
 
 struct SingleDemo {
     frame_animation: SpriteAnimation,
-    anim_controller: AnimationSystem,
     base_state: VisualState,
     fps_counter: FpsCounter,
     time: f32,
@@ -49,7 +48,7 @@ impl Game for SingleDemo {
             ])
             .build();
 
-        self.anim_controller.start_timeline(entrance_timeline);
+        engine.get_animation_system().start_timeline(entrance_timeline);
 
         println!("✓ Demo initialized. Sprite appearing...");
 
@@ -63,32 +62,14 @@ impl Game for SingleDemo {
         if self.shake_cooldown > 0.0 { self.shake_cooldown -= delta; }
 
         self.frame_animation.update(delta);
-        self.anim_controller.update(delta);
-
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Space) && self.shake_cooldown <= 0.0 {
-            engine.get_camera().add_trauma(0.5);
-            println!("Camera shake triggered!");
-            self.shake_cooldown = 0.5;
-        }
-
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Enter) {
-            let pulse = TimelineBuilder::new()
-                .single(Animation::Scale { from: 1.0, to: 1.5, duration: 0.2 }, Easing::EaseOut)
-                .single(Animation::Scale { from: 1.5, to: 1.0, duration: 0.4 }, Easing::Bounce)
-                .build();
-
-            self.anim_controller.start_timeline(pulse);
-            println!("Pulse animation triggered!");
-        }
+        engine.get_animation_system().update(delta);
 
         if engine.get_event_queue().was_key_just_pressed(KeyCode::Escape) {
             self.print_final_stats();
             std::process::exit(0);
         }
 
-        let texture_controller = engine.get_texture_controller();
-
-        let sprite_size = texture_controller.get_texture("demo_sprite").map_or(self.texture_size, |tex| {
+        let sprite_size = engine.get_texture_controller().get_texture("demo_sprite").map_or(self.texture_size, |tex| {
             self.texture_size = tex.size;
             self.texture_size
         });
@@ -102,7 +83,7 @@ impl Game for SingleDemo {
             window_height / camera_zoom
         );
 
-        texture_controller.use_texture(
+        engine.get_texture_controller().use_texture(
             "background",
             bg_world_size,
             Vec2::ZERO,
@@ -110,9 +91,9 @@ impl Game for SingleDemo {
             1.0
         );
 
-        let visual = self.anim_controller.evaluate(self.base_state, sprite_size, None);
+        let visual = engine.get_animation_system().evaluate(self.base_state, sprite_size, None);
 
-        texture_controller.use_texture(
+        engine.get_texture_controller().use_texture(
             "demo_sprite",
             sprite_size * visual.scale,
             visual.position,
@@ -123,8 +104,26 @@ impl Game for SingleDemo {
 
         if self.time >= 0.5 {
             self.time = 0.0;
-            let title = format!("FPS: {:.0} | Anim Active: {}", self.fps_counter.fps(), self.anim_controller.is_playing());
+            let title = format!("FPS: {:.0} | Anim Active: {}", self.fps_counter.fps(), engine.get_animation_system().is_playing());
             engine.set_title(&title);
+        }
+    }
+
+    fn handle_update(&mut self, engine: &mut Engine) {
+        if engine.get_event_queue().was_key_just_pressed(KeyCode::Space) && self.shake_cooldown <= 0.0 {
+            engine.get_camera().add_trauma(0.5);
+            println!("Camera shake triggered!");
+            self.shake_cooldown = 0.5;
+        }
+
+        if engine.get_event_queue().was_key_just_pressed(KeyCode::Enter) {
+            let pulse = TimelineBuilder::new()
+                .single(Animation::Scale { from: 1.0, to: 1.5, duration: 0.2 }, Easing::EaseOut)
+                .single(Animation::Scale { from: 1.5, to: 1.0, duration: 0.4 }, Easing::Bounce)
+                .build();
+
+            engine.get_animation_system().start_timeline(pulse);
+            println!("Pulse animation triggered!");
         }
     }
 }
@@ -145,7 +144,6 @@ fn main() {
 
     let game = SingleDemo {
         frame_animation: animation,
-        anim_controller: AnimationSystem::new(),
         base_state: VisualState::default(),
         fps_counter: FpsCounter::new(),
         time: 0.0,

@@ -5,9 +5,9 @@ use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
-use crate::graphics::{Camera, TextureSystem};
+use crate::graphics::{AnimationSystem, Camera, TextureSystem, VfxSystem};
 use crate::graphics::render::render_settings::RenderSettings;
-use crate::text::TextSystem;
+use crate::text::text_system::TextSystem;
 
 /// Central engine managing the window, renderer, input events, audio, and
 /// per-frame timing. Provides accessor methods for every subsystem controller.
@@ -126,4 +126,14 @@ impl Engine {
     pub const fn get_audio_system(&mut self) -> &mut AudioSystem {
         &mut self.audio_system
     }
+
+    pub fn get_animation_system(&mut self) -> &mut AnimationSystem {
+        self.render_settings.get_animation_system_mut()
+    }
+
+    pub fn vfx_system(&mut self) -> &mut VfxSystem {
+        self.render_settings.get_vfx_system_mut()
+    }
+
+    // Here all systems are given for the user? 
 }

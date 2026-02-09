@@ -81,14 +81,16 @@ impl Game for AnimationDemo {
 
         self.get_current_animation_mut().update(delta);
 
-        self.handle_input(engine);
-
         self.render_sprite(engine);
 
         if self.info_update_timer >= 0.1 {
             self.info_update_timer = 0.0;
             self.update_window_title(engine);
         }
+    }
+
+    fn handle_update(&mut self, engine: &mut Engine) {
+        self.handle_input(engine)
     }
 }
 

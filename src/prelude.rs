@@ -10,12 +10,17 @@ pub use crate::graphics::{
     SpriteAnimation,
     SpriteInstance,
     AnimationMode,
-    VfxSystem, Particle, EmitterConfig, VfxEffect,
+    Particle, EmitterConfig, VfxEffect,
     AnimEffect, Animation, AnimationGroupID, ActiveAnimation, Direction, Easing, TimelineBuilder, TimelineStep,
-    Transition, VisualState, AnimationSystem,
+    Transition, VisualState,
     RenderSettings,
     TextureSystem,
     VfxFrame
+};
+
+pub(crate) use crate::graphics::{
+    AnimationSystem,
+        VfxSystem
 };
 
 pub use crate::window::{

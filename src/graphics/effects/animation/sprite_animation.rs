@@ -89,7 +89,10 @@ impl SpriteAnimation {
             #[allow(clippy::while_float)]
             while self.elapsed >= self.frame_duration {
                 self.elapsed -= self.frame_duration;
-                self.step();
+                if self.step() {
+                    self.finished = true;
+                    break;
+                }
             }
         } else {
             self.elapsed = 0.0;
@@ -298,3 +301,6 @@ mod tests {
         assert!(!anim.is_finished());
     }
 }
+
+
+// TODO: Add support for per-frame durations, random frame order, and other features as needed. And its to big file, maybe need to split it into multiple files, like animation.rs and sprite_animation.rs, or even animation_mode.rs.

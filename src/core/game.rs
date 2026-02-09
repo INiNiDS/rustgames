@@ -8,6 +8,8 @@ use crate::core::Engine;
 pub trait Game {
     /// Called once after the window and renderer have been initialised.
     fn init(&mut self, engine: &mut Engine);
-    /// Called every frame. Use `engine` to access input, rendering, and audio.
+    /// Called every frame. Use `engine` to access rendering, and audio.
     fn update(&mut self, engine: &mut Engine);
+    /// Internal method called by the engine to trigger an update. Do not call this directly.
+    fn handle_update(&mut self, engine: &mut Engine);
 }

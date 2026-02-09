@@ -31,6 +31,7 @@ impl AnimationSystem {
     }
 
     pub fn update(&mut self, delta_time: f32) {
+        println!("Updating AnimationSystem with {} active animations", self.animations.len());
         for anim in &mut self.animations {
             anim.update(delta_time);
         }
@@ -177,6 +178,9 @@ impl AnimationSystem {
             }
         }
 
+        println!("Timeline started!");
+        println!("Total animations: {}", self.animations.len());
+
         AnimationGroupID::new(ids)
     }
 
@@ -320,6 +324,8 @@ impl AnimationSystem {
             ids.push(id);
         }
 
+        println!("Max parallel animation length: {}", self.animations.len());
+
         *delay_acc += max_len;
     }
 
@@ -330,3 +336,5 @@ impl Default for AnimationSystem {
         Self::new()
     }
 }
+
+// REALLY TO BIG FILE ITS NEED TO BE SPLIT INTO MULTIPLE FILES, MAYBE ONE FOR SYSTEM, ONE FOR INSTANCE, ONE FOR ANIMATION DEFINITIONS, ONE FOR EASING, ONE FOR VISUALS, ONE FOR TIMELINE, ETC. But for the user it's should be just one module, so maybe we can have a mod.rs that re-exports everything and then split the implementation into multiple files.

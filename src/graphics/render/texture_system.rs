@@ -14,6 +14,7 @@ pub struct TextureSystem {
     device: Arc<Device>,
     queue: Arc<Queue>,
     instances_per_texture: HashMap<String, Vec<SpriteInstance>>,
+    frame_draw_order: Vec<String>,
 }
 
 impl TextureSystem {
@@ -24,6 +25,7 @@ impl TextureSystem {
             device,
             queue,
             instances_per_texture: HashMap::new(),
+            frame_draw_order: Vec::new(),
         }
     }
 
@@ -36,10 +38,14 @@ impl TextureSystem {
     }
 
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
-        self.instances_per_texture
-            .entry(texture_label.to_string())
-            .or_default()
-            .push(instance);
+        if !self.instances_per_texture.contains_key(texture_label) {
+            self.frame_draw_order.push(texture_label.to_string());
+            self.instances_per_texture.insert(texture_label.to_string(), Vec::new());
+        }
+
+        if let Some(batch) = self.instances_per_texture.get_mut(texture_label) {
+            batch.push(instance);
+        }
     }
 
     pub fn use_texture(&mut self, label: &str, size: Vec2, position: Vec2, rotation: f32, opacity: f32) {
@@ -49,10 +55,12 @@ impl TextureSystem {
 
     #[must_use] 
     pub fn get_batched_instances(&self) -> Vec<(&Texture, &[SpriteInstance])> {
-        self.instances_per_texture
+        self.frame_draw_order
             .iter()
-            .filter_map(|(label, instances)| {
-                self.textures.get(label).map(|texture| (texture, instances.as_slice()))
+            .filter_map(|label| {
+                let texture = self.textures.get(label)?;
+                let instances = self.instances_per_texture.get(label)?;
+                Some((texture, instances.as_slice()))
             })
             .collect()
     }
@@ -61,11 +69,16 @@ impl TextureSystem {
         for instances in self.instances_per_texture.values_mut() {
             instances.clear();
         }
+        self.instances_per_texture.clear();
+        self.frame_draw_order.clear();
     }
 
     pub fn unload_texture(&mut self, label: &str) {
         self.textures.remove(label);
         self.instances_per_texture.remove(label);
+        if let Some(pos) = self.frame_draw_order.iter().position(|x| x == label) {
+            self.frame_draw_order.remove(pos);
+        }
     }
 
     pub fn load_texture_dir(&mut self, dir: &str) {

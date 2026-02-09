@@ -3,7 +3,7 @@ use crate::graphics::render::TextureSystem;
 use crate::graphics::{Camera, Color, SpriteRenderer, VfxSystem};
 use crate::prelude::WindowConfig;
 use crate::text::font::DEFAULT_NORMAL_FONT;
-use crate::text::TextSystem;
+use crate::text::text_system::TextSystem;
 use std::sync::Arc;
 use wgpu::{Device, PresentMode, Queue, Surface, SurfaceConfiguration};
 use winit::dpi::{LogicalSize, PhysicalSize};
@@ -24,7 +24,7 @@ pub struct RenderSettings {
     pub(crate) camera: Camera,
     pub(crate) text_system: TextSystem,
     pub(crate) animation_system: AnimationSystem,
-    pub(crate) texture_controller: TextureSystem,
+    pub(crate) texture_system: TextureSystem,
     pub(crate) vfx_system: VfxSystem
 }
 
@@ -63,13 +63,13 @@ impl RenderSettings {
             max_width_text: size.width as f32,
             max_height_text: size.height as f32,
             animation_system: AnimationSystem::new(),
-            texture_controller: TextureSystem::new(device, queue),
+            texture_system: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
         }
     }
 
     pub const fn get_texture_controller(&self) -> &TextureSystem {
-        &self.texture_controller
+        &self.texture_system
     }
 
     pub const fn get_animation_system(&self) -> &AnimationSystem {
@@ -137,7 +137,7 @@ impl RenderSettings {
     }
 
     pub const fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
-        &mut self.texture_controller
+        &mut self.texture_system
     }
 
     pub const fn get_vfx_system_mut(&mut self) -> &mut VfxSystem {

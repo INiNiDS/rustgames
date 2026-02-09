@@ -4,10 +4,10 @@ pub mod visual;
 pub mod easing;
 pub mod timeline;
 pub mod transition;
-pub mod animation_system;
+pub(crate) mod animation_system;
 pub mod sprite_animation;
 
-pub use animation_system::AnimationSystem;
+pub(crate) use animation_system::AnimationSystem;
 pub use animation_instance::ActiveAnimation;
 pub use direction::Direction;
 pub use easing::Easing;

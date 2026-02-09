@@ -86,6 +86,8 @@ impl ActiveEffect {
     }
 }
 
+// so its need to be all public, only VfxSystem is need to be pub(crate)
+
 /// Manages active `EffectInstance` values, advancing and pruning them each
 /// frame.
 pub struct VfxSystem {
