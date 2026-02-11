@@ -1,14 +1,11 @@
-use crate::graphics::effects::animation::animation_system::AnimationSystem;
 use crate::graphics::effects::animation::AnimationGroupID;
+use crate::graphics::effects::animation::animation_system::AnimationSystem;
 use crate::prelude::{Animation, Easing};
 
 /// Extension methods for `AnimationSystem` that operate on groups of
 /// animations (sequence, parallel, timeline).
 impl AnimationSystem {
-    pub fn start_sequence(
-        &mut self,
-        steps: Vec<(Animation, Easing)>,
-    ) -> AnimationGroupID {
+    pub fn start_sequence(&mut self, steps: Vec<(Animation, Easing)>) -> AnimationGroupID {
         let mut ids = Vec::with_capacity(steps.len());
         let mut delay_acc = 0.0;
 
@@ -21,10 +18,7 @@ impl AnimationSystem {
         AnimationGroupID::new(ids)
     }
 
-    pub fn start_parallel(
-        &mut self,
-        steps: Vec<(Animation, Easing)>,
-    ) -> AnimationGroupID {
+    pub fn start_parallel(&mut self, steps: Vec<(Animation, Easing)>) -> AnimationGroupID {
         let mut ids = Vec::with_capacity(steps.len());
         for (anim, easing) in steps {
             let (id, _) = self.spawn_instance(anim, easing, 0.0);
@@ -53,7 +47,9 @@ impl AnimationSystem {
     }
 
     pub fn remove_from_group(&mut self, group: &mut AnimationGroupID, index: usize) {
-        if let Some(&id) = group.get_id(index) { self.stop(id); }
+        if let Some(&id) = group.get_id(index) {
+            self.stop(id);
+        }
         group.remove(index);
     }
 

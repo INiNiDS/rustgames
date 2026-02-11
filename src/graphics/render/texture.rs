@@ -1,7 +1,11 @@
-use anyhow::{Result, Ok};
+use anyhow::{Ok, Result};
 use glam::Vec2;
-use image::{ GenericImageView};
-use wgpu::{Device, Origin3d, Queue, Sampler, SamplerDescriptor, TexelCopyBufferLayout, TexelCopyTextureInfo, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages, TextureView, TextureViewDescriptor};
+use image::GenericImageView;
+use wgpu::{
+    Device, Origin3d, Queue, Sampler, SamplerDescriptor, TexelCopyBufferLayout,
+    TexelCopyTextureInfo, TextureAspect, TextureDescriptor, TextureDimension, TextureFormat,
+    TextureUsages, TextureView, TextureViewDescriptor,
+};
 
 /// A GPU-resident texture loaded from image bytes. Holds a `TextureView`,
 /// `Sampler`, and pixel dimensions.
@@ -9,7 +13,7 @@ pub struct Texture {
     pub texture: wgpu::Texture,
     pub view: TextureView,
     pub sampler: Sampler,
-    pub size: Vec2
+    pub size: Vec2,
 }
 
 impl Texture {
@@ -77,5 +81,4 @@ impl Texture {
             size: Vec2::new(dimensions.0 as f32, dimensions.1 as f32),
         })
     }
-
 }

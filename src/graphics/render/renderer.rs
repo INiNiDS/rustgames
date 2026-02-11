@@ -6,7 +6,6 @@ use std::sync::Arc;
 use wgpu::{LoadOp, StoreOp};
 use winit::dpi::PhysicalSize;
 
-
 /// The main renderer. Initialize the WGPU device and surface, performs
 /// per-frame drawing of sprites and text.
 pub struct Renderer;
@@ -21,22 +20,37 @@ impl Renderer {
             render_settings.max_height_text = new_size.height as f32;
 
             let device = render_settings.get_device();
-            render_settings.surface.configure(device, render_settings.get_config());
+            render_settings
+                .surface
+                .configure(device, render_settings.get_config());
 
-            render_settings.get_camera_mut().resize(new_size.width, new_size.height);
+            render_settings
+                .get_camera_mut()
+                .resize(new_size.width, new_size.height);
 
             let queue = Arc::clone(render_settings.get_queue());
-            render_settings.get_text_system_mut().resize(new_size.width, new_size.height, &queue);
+            render_settings
+                .get_text_system_mut()
+                .resize(new_size.width, new_size.height, &queue);
         }
     }
 
     pub fn draw(settings: &mut RenderSettings) {
-        settings.sprite_renderer.update_camera(&settings.queue, settings.get_camera());
+        settings
+            .sprite_renderer
+            .update_camera(&settings.queue, settings.get_camera());
         Self::queue_typewriter_text(settings);
 
-        let output = settings.surface.get_current_texture().expect("Surface error");
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = settings.device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
+        let output = settings
+            .surface
+            .get_current_texture()
+            .expect("Surface error");
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = settings
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
 
         Self::record_render_commands(settings, &mut encoder, &view);
 
@@ -48,10 +62,16 @@ impl Renderer {
     fn record_render_commands(
         settings: &mut RenderSettings,
         encoder: &mut wgpu::CommandEncoder,
-        view: &wgpu::TextureView
+        view: &wgpu::TextureView,
     ) {
         let RenderSettings {
-            device, queue, sprite_renderer, texture_system: texture_controller, text_system, background_color, ..
+            device,
+            queue,
+            sprite_renderer,
+            texture_system: texture_controller,
+            text_system,
+            background_color,
+            ..
         } = settings;
 
         let batches = texture_controller.get_batched_instances();
@@ -101,13 +121,13 @@ impl Renderer {
         let typewriter_texts: Vec<_> = render_settings
             .get_text_system()
             .effects()
-            .map(|tw| (tw.visible_text().to_string(), tw.x, tw.y))
+            .map(|tw| (tw.visible_text().to_string(), tw.x, tw.y, tw.get_style()))
             .collect();
 
-        for (text, x, y) in typewriter_texts {
-            render_settings.get_text_system_mut().queue_text(
-                &text, x, y, max_w, max_h
-            );
+        for (text, x, y, style) in typewriter_texts {
+            render_settings
+                .get_text_system_mut()
+                .queue_text(&text, x, y, max_w, max_h, style);
         }
     }
 

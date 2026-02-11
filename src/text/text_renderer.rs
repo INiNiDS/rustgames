@@ -37,6 +37,8 @@ impl ParseState {
             attrs: TextAttributes {
                 weight: *self.weight_stack.last().unwrap(),
                 italic: *self.italic_stack.last().unwrap(),
+                underline: false,
+                strikethrough: false,
                 color: *self.color_stack.last().unwrap(),
             },
         });
@@ -58,13 +60,19 @@ impl ParseState {
     fn apply_close_tag(&mut self, tag: &str) {
         match tag {
             "b" | "m" | "sb" => {
-                if self.weight_stack.len() > 1 { self.weight_stack.pop(); }
+                if self.weight_stack.len() > 1 {
+                    self.weight_stack.pop();
+                }
             }
             "i" => {
-                if self.italic_stack.len() > 1 { self.italic_stack.pop(); }
+                if self.italic_stack.len() > 1 {
+                    self.italic_stack.pop();
+                }
             }
             "color" => {
-                if self.color_stack.len() > 1 { self.color_stack.pop(); }
+                if self.color_stack.len() > 1 {
+                    self.color_stack.pop();
+                }
             }
             _ => {}
         }
@@ -72,7 +80,7 @@ impl ParseState {
 }
 
 impl RichTextParser {
-    #[must_use] 
+    #[must_use]
     pub fn parse(text: &str) -> Vec<StyledSegment> {
         let mut state = ParseState::new();
         let mut chars = text.chars().peekable();
@@ -84,7 +92,9 @@ impl RichTextParser {
             }
 
             let is_closing = chars.peek() == Some(&'/');
-            if is_closing { chars.next(); }
+            if is_closing {
+                chars.next();
+            }
 
             let mut tag_content = String::new();
             while let Some(&next_char) = chars.peek() {

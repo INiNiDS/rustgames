@@ -1,6 +1,6 @@
+use crate::graphics::effects::{AnimationGroupID, CustomCombinedMode, TimelineStep};
+use crate::prelude::{ActiveAnimation, AnimEffect, Animation, Easing, VisualState};
 use glam::Vec2;
-use crate::graphics::effects::{TimelineStep, CustomCombinedMode, AnimationGroupID};
-use crate::prelude::{AnimEffect, Animation, ActiveAnimation, Easing, VisualState};
 
 /// Manages animation instances: starting, stopping, pausing, seeking, and
 /// evaluating combined effects on a `VisualState`.
@@ -21,7 +21,8 @@ impl AnimationSystem {
     pub fn start(&mut self, animation: Animation, easing: Easing, delay: f32) -> usize {
         let id = self.next_id;
         self.next_id += 1;
-        self.animations.push(ActiveAnimation::new(id, animation, easing, delay));
+        self.animations
+            .push(ActiveAnimation::new(id, animation, easing, delay));
         id
     }
 
@@ -66,21 +67,27 @@ impl AnimationSystem {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.playback = speed;
             true
-        } else { false }
+        } else {
+            false
+        }
     }
 
     pub fn seek_time(&mut self, id: usize, time: f32) -> bool {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.elapsed = time.clamp(0.0, anim.duration());
             true
-        } else { false }
+        } else {
+            false
+        }
     }
 
     pub fn seek_progress(&mut self, id: usize, progress: f32) -> bool {
         if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
             anim.elapsed = progress * anim.duration();
             true
-        } else { false }
+        } else {
+            false
+        }
     }
 
     #[must_use]
@@ -98,7 +105,12 @@ impl AnimationSystem {
     }
 
     #[must_use]
-    pub fn evaluate(&self, base: VisualState, size: Vec2, mode: Option<CustomCombinedMode>) -> VisualState {
+    pub fn evaluate(
+        &self,
+        base: VisualState,
+        size: Vec2,
+        mode: Option<CustomCombinedMode>,
+    ) -> VisualState {
         let mut combined = AnimEffect::default();
         for anim in &self.animations {
             combined = combined.combine(anim.effect(size));
@@ -234,7 +246,14 @@ mod tests {
         let mut sys = AnimationSystem::new();
         let group = sys.start_parallel(vec![
             (Animation::FadeIn { duration: 1.0 }, Easing::Linear),
-            (Animation::Scale { from: 0.0, to: 1.0, duration: 1.0 }, Easing::EaseOut),
+            (
+                Animation::Scale {
+                    from: 0.0,
+                    to: 1.0,
+                    duration: 1.0,
+                },
+                Easing::EaseOut,
+            ),
         ]);
         assert_eq!(group.len(), 2);
     }

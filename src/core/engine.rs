@@ -1,13 +1,13 @@
 use crate::audio::audio_system::AudioSystem;
 use crate::core::time::Time;
+use crate::graphics::render::render_settings::RenderSettings;
 use crate::graphics::render::renderer::Renderer;
+use crate::graphics::{AnimationSystem, Camera, TextureSystem, VfxSystem};
+use crate::text::text_system::TextSystem;
 use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
-use crate::graphics::{AnimationSystem, Camera, TextureSystem, VfxSystem};
-use crate::graphics::render::render_settings::RenderSettings;
-use crate::text::text_system::TextSystem;
 
 /// Central engine managing the window, renderer, input events, audio, and
 /// per-frame timing. Provides accessor methods for every subsystem controller.
@@ -17,11 +17,11 @@ pub struct Engine {
     time: Time,
     event_queue: EventQueue,
     handler_keys: Vec<Box<dyn EventHandler>>,
-    audio_system: AudioSystem
+    audio_system: AudioSystem,
 }
 
 impl Engine {
-    #[must_use] 
+    #[must_use]
     pub fn new(window: Arc<WinitWindow>) -> Self {
         let wrapped = Window::new(window.clone());
 
@@ -33,7 +33,7 @@ impl Engine {
             time: Time::new(),
             event_queue: EventQueue::new(),
             handler_keys: Vec::new(),
-            audio_system: AudioSystem::new()
+            audio_system: AudioSystem::new(),
         }
     }
 
@@ -89,7 +89,9 @@ impl Engine {
         self.event_queue.push(event);
     }
 
-    pub fn set_window_config(&mut self, window_config: &WindowConfig) { self.render_settings.set_window_config(window_config) }
+    pub fn set_window_config(&mut self, window_config: &WindowConfig) {
+        self.render_settings.set_window_config(window_config)
+    }
 
     fn handle_event(&mut self, event: Event) {
         for handler in &mut self.handler_keys {
@@ -134,5 +136,4 @@ impl Engine {
     pub fn vfx_system(&mut self) -> &mut VfxSystem {
         self.render_settings.get_vfx_system_mut()
     }
-
 }

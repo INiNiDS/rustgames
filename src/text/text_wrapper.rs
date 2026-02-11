@@ -1,6 +1,6 @@
-use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 use crate::prelude::{TextAlignment, VerticalAlignment};
 use crate::text::StyledSegment;
+use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 
 /// Utilities for word-wrapping plain and rich text and measuring text bounds.
 pub struct TextWrapper;
@@ -106,7 +106,8 @@ impl TextWrapper {
 
     pub fn measure_text(text: &str, font_size: f32) -> (f32, f32) {
         let lines: Vec<&str> = text.lines().collect();
-        let max_width = lines.iter()
+        let max_width = lines
+            .iter()
             .map(|line| line.len() as f32 * font_size * 0.6)
             .fold(0.0_f32, f32::max);
         let height = lines.len() as f32 * font_size * 1.2;

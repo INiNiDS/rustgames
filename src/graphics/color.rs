@@ -11,32 +11,126 @@ pub struct Color {
 }
 
 impl Color {
-    pub const WHITE: Self = Self { r: 1.0, g: 1.0, b: 1.0, a: 1.0 };
-    pub const BLACK: Self = Self { r: 0.0, g: 0.0, b: 0.0, a: 1.0 };
-    pub const RED: Self = Self { r: 1.0, g: 0.0, b: 0.0, a: 1.0 };
-    pub const GREEN: Self = Self { r: 0.0, g: 1.0, b: 0.0, a: 1.0 };
-    pub const BLUE: Self = Self { r: 0.0, g: 0.0, b: 1.0, a: 1.0 };
-    pub const YELLOW: Self = Self { r: 1.0, g: 1.0, b: 0.0, a: 1.0 };
-    pub const CYAN: Self = Self { r: 0.0, g: 1.0, b: 1.0, a: 1.0 };
-    pub const MAGENTA: Self = Self { r: 1.0, g: 0.0, b: 1.0, a: 1.0 };
-    pub const TRANSPARENT: Self = Self { r: 0.0, g: 0.0, b: 0.0, a: 0.0 };
+    pub const WHITE: Self = Self {
+        r: 1.0,
+        g: 1.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const BLACK: Self = Self {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const RED: Self = Self {
+        r: 1.0,
+        g: 0.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const GREEN: Self = Self {
+        r: 0.0,
+        g: 1.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const BLUE: Self = Self {
+        r: 0.0,
+        g: 0.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const YELLOW: Self = Self {
+        r: 1.0,
+        g: 1.0,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const CYAN: Self = Self {
+        r: 0.0,
+        g: 1.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const MAGENTA: Self = Self {
+        r: 1.0,
+        g: 0.0,
+        b: 1.0,
+        a: 1.0,
+    };
+    pub const TRANSPARENT: Self = Self {
+        r: 0.0,
+        g: 0.0,
+        b: 0.0,
+        a: 0.0,
+    };
 
-    #[must_use] 
+    pub const GRAY: Self = Self {
+        r: 0.5,
+        g: 0.5,
+        b: 0.5,
+        a: 1.0,
+    };
+    pub const DARK_GRAY: Self = Self {
+        r: 0.25,
+        g: 0.25,
+        b: 0.25,
+        a: 1.0,
+    };
+    pub const LIGHT_GRAY: Self = Self {
+        r: 0.75,
+        g: 0.75,
+        b: 0.75,
+        a: 1.0,
+    };
+    pub const ORANGE: Self = Self {
+        r: 1.0,
+        g: 0.5,
+        b: 0.0,
+        a: 1.0,
+    };
+    pub const PURPLE: Self = Self {
+        r: 0.5,
+        g: 0.0,
+        b: 0.5,
+        a: 1.0,
+    };
+    pub const BROWN: Self = Self {
+        r: 0.6,
+        g: 0.3,
+        b: 0.2,
+        a: 1.0,
+    };
+    pub const PINK: Self = Self {
+        r: 1.0,
+        g: 0.75,
+        b: 0.8,
+        a: 1.0,
+    };
+    pub const GOLD: Self = Self {
+        r: 1.0,
+        g: 0.84,
+        b: 0.0,
+        a: 1.0,
+    };
+
+    #[must_use]
     pub const fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self { r, g, b, a }
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
         Self { r, g, b, a: 1.0 }
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self { r, g, b, a }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn from_rgb_u8(r: u8, g: u8, b: u8) -> Self {
         Self {
             r: f32::from(r) / 255.0,
@@ -45,7 +139,7 @@ impl Color {
             a: 1.0,
         }
     }
-    #[must_use] 
+    #[must_use]
     pub fn from_rgba_u8(r: u8, g: u8, b: u8, a: u8) -> Self {
         Self {
             r: f32::from(r) / 255.0,
@@ -55,10 +149,10 @@ impl Color {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn from_hex(hex: &str) -> Option<Self> {
         let hex = hex.trim_start_matches('#');
-        
+
         let (r, g, b, a) = match hex.len() {
             6 => {
                 let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
@@ -75,16 +169,16 @@ impl Color {
             }
             _ => return None,
         };
-        
+
         Some(Self::from_rgba_u8(r, g, b, a))
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn to_array(&self) -> [f32; 4] {
         [self.r, self.g, self.b, self.a]
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn to_u32(&self) -> u32 {
         let r = (self.r * 255.0) as u32;
         let g = (self.g * 255.0) as u32;
@@ -93,12 +187,12 @@ impl Color {
         (r << 24) | (g << 16) | (b << 8) | a
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn with_alpha(self, alpha: f32) -> Self {
         Self { a: alpha, ..self }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn lerp(self, other: Self, t: f32) -> Self {
         let t = t.clamp(0.0, 1.0);
         Self {
@@ -109,7 +203,7 @@ impl Color {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn to_wgpu_color(&self) -> wgpu::Color {
         wgpu::Color {
             r: f64::from(self.r),
@@ -117,6 +211,62 @@ impl Color {
             b: f64::from(self.b),
             a: f64::from(self.a),
         }
+    }
+
+    #[must_use]
+    pub fn get_name(&self) -> Option<&'static str> {
+        if *self == Self::WHITE {
+            return Some("White");
+        }
+        if *self == Self::BLACK {
+            return Some("Black");
+        }
+        if *self == Self::RED {
+            return Some("Red");
+        }
+        if *self == Self::GREEN {
+            return Some("Green");
+        }
+        if *self == Self::BLUE {
+            return Some("Blue");
+        }
+        if *self == Self::YELLOW {
+            return Some("Yellow");
+        }
+        if *self == Self::CYAN {
+            return Some("Cyan");
+        }
+        if *self == Self::MAGENTA {
+            return Some("Magenta");
+        }
+        if *self == Self::GRAY {
+            return Some("Gray");
+        }
+        if *self == Self::DARK_GRAY {
+            return Some("Dark Gray");
+        }
+        if *self == Self::LIGHT_GRAY {
+            return Some("Light Gray");
+        }
+        if *self == Self::ORANGE {
+            return Some("Orange");
+        }
+        if *self == Self::PURPLE {
+            return Some("Purple");
+        }
+        if *self == Self::BROWN {
+            return Some("Brown");
+        }
+        if *self == Self::PINK {
+            return Some("Pink");
+        }
+        if *self == Self::GOLD {
+            return Some("Gold");
+        }
+        if self.a == 0.0 && self.r == 0.0 && self.g == 0.0 && self.b == 0.0 {
+            return Some("Transparent");
+        }
+        None
     }
 }
 

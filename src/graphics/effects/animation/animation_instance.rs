@@ -1,5 +1,5 @@
-use glam::Vec2;
 use crate::prelude::{AnimEffect, Animation, Easing};
+use glam::Vec2;
 
 const SHAKE_FREQUENCY_X: f32 = 40.0;
 const SHAKE_FREQUENCY_Y: f32 = 50.0;
@@ -13,12 +13,11 @@ pub struct ActiveAnimation {
     pub easing: Easing,
     pub paused: bool,
     pub playback: f32,
-    delay: f32
+    delay: f32,
 }
 
-
 impl ActiveAnimation {
-    #[must_use] 
+    #[must_use]
     pub const fn new(id: usize, animation: Animation, easing: Easing, delay: f32) -> Self {
         Self {
             id,
@@ -27,12 +26,11 @@ impl ActiveAnimation {
             easing,
             paused: false,
             playback: 1.0,
-            delay
+            delay,
         }
     }
 
-
-    #[must_use] 
+    #[must_use]
     pub const fn duration(&self) -> f32 {
         match &self.animation {
             Animation::FadeIn { duration }
@@ -45,8 +43,7 @@ impl ActiveAnimation {
         }
     }
 
-
-    #[must_use] 
+    #[must_use]
     pub fn progress(&self) -> f32 {
         let duration = self.duration();
 
@@ -56,7 +53,6 @@ impl ActiveAnimation {
             (self.elapsed / duration).clamp(0.0, 1.0)
         }
     }
-
 
     pub fn update(&mut self, delta_time: f32) {
         if self.paused {
@@ -79,8 +75,7 @@ impl ActiveAnimation {
         self.elapsed = self.elapsed.clamp(0.0, self.duration());
     }
 
-
-    #[must_use] 
+    #[must_use]
     pub fn is_finished(&self) -> bool {
         if self.playback >= 0.0 {
             self.elapsed >= self.duration()
@@ -89,9 +84,7 @@ impl ActiveAnimation {
         }
     }
 
-    
-
-    #[must_use] 
+    #[must_use]
     pub fn eased_progress(&self) -> f32 {
         self.easing.apply(self.progress())
     }
@@ -108,25 +101,23 @@ impl ActiveAnimation {
             Animation::SlideIn { from, distance, .. } => {
                 let max_offset = from.to_vector() * *distance * size;
                 AnimEffect::with_offset(max_offset * (1.0 - t))
-            },
+            }
 
             Animation::SlideOut { to, distance, .. } => {
                 let max_offset = to.to_vector() * *distance * size;
                 AnimEffect::with_offset(max_offset * t)
-            },
+            }
 
             Animation::Scale { from, to, .. } => {
                 let scale = Self::lerp(*from, *to, t);
                 AnimEffect::with_scale(Vec2::splat(scale))
-            },
+            }
 
             Animation::Rotate { from, to, .. } => {
                 AnimEffect::with_rotation(Self::lerp(*from, *to, t))
-            },
+            }
 
-            Animation::Shake { intensity, .. } => {
-                self.calculate_shake(*intensity, t)
-            },
+            Animation::Shake { intensity, .. } => self.calculate_shake(*intensity, t),
         }
     }
 
@@ -150,11 +141,14 @@ impl ActiveAnimation {
     fn calculate_shake(&self, intensity: f32, t: f32) -> AnimEffect {
         let decay = 1.0 - t;
 
-        let shake_x = (self.id as f32).mul_add(SHAKE_FREQUENCY_X, self.elapsed).sin();
-        let shake_y = (self.id as f32).mul_add(SHAKE_FREQUENCY_Y, self.elapsed).cos();
+        let shake_x = (self.id as f32)
+            .mul_add(SHAKE_FREQUENCY_X, self.elapsed)
+            .sin();
+        let shake_y = (self.id as f32)
+            .mul_add(SHAKE_FREQUENCY_Y, self.elapsed)
+            .cos();
 
         let offset = Vec2::new(shake_x, shake_y) * intensity * decay;
         AnimEffect::with_offset(offset)
     }
 }
-

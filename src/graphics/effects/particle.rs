@@ -1,5 +1,5 @@
-use glam::Vec2;
 use crate::graphics::Color;
+use glam::Vec2;
 
 /// A single particle with position, velocity, remaining lifetime, colour, and
 /// size. Updated each frame by its owning `EffectInstance`.
@@ -15,7 +15,13 @@ pub struct Particle {
 impl Particle {
     #[inline]
     #[must_use]
-    pub const fn new(position: Vec2, velocity: Vec2, lifetime: f32, color: Color, size: f32) -> Self {
+    pub const fn new(
+        position: Vec2,
+        velocity: Vec2,
+        lifetime: f32,
+        color: Color,
+        size: f32,
+    ) -> Self {
         Self {
             position,
             velocity,

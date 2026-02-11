@@ -1,5 +1,6 @@
+use crate::prelude::{TextStyle, TypewriterEffect};
+use crate::text::{PunctuationConfig, TextSpeed};
 use std::slice::{Iter, IterMut};
-use crate::prelude::{TextSpeed, TypewriterEffect};
 
 /// Manages a collection of `TypewriterEffect` instances by ID.
 pub struct TypewriterInstance {
@@ -18,13 +19,21 @@ impl TypewriterInstance {
     pub const fn new() -> Self {
         Self {
             typewriter_effects: Vec::new(),
-            next_id: 0
+            next_id: 0,
         }
     }
 
-
-    pub fn add_typewriter_effect(&mut self, text: impl Into<String>, speed: TextSpeed, x: f32, y: f32) -> usize {
-        let effect = TypewriterEffect::new(text, speed, self.next_id, x, y);
+    pub fn add_typewriter_effect(
+        &mut self,
+        text: impl Into<String>,
+        speed: TextSpeed,
+        x: f32,
+        y: f32,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> usize {
+        let effect =
+            TypewriterEffect::new(text, speed, self.next_id, x, y, style, punctuation_config);
         self.typewriter_effects.push(effect);
         self.next_id += 1;
         self.next_id - 1
@@ -114,7 +123,8 @@ impl TypewriterInstance {
 
     #[must_use]
     pub fn is_complete(&self, id: usize) -> bool {
-        self.get_effect(id).is_some_and(TypewriterEffect::is_complete)
+        self.get_effect(id)
+            .is_some_and(TypewriterEffect::is_complete)
     }
 
     #[must_use]
@@ -132,9 +142,25 @@ impl TypewriterInstance {
     }
 
     #[must_use]
-    pub fn set_text(&mut self, id: usize, text: impl Into<String>, speed: TextSpeed) -> bool {
+    pub fn set_text(
+        &mut self,
+        id: usize,
+        text: impl Into<String>,
+        speed: TextSpeed,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> bool {
         if let Some(effect) = self.get_effect_mut(id) {
-            effect.set_text(text, speed);
+            effect.set_text(text, speed, style, punctuation_config);
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn set_progress(&mut self, id: usize, progress: f32) -> bool {
+        if let Some(effect) = self.get_effect_mut(id) {
+            effect.set_progress(progress);
             true
         } else {
             false

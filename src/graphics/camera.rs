@@ -1,5 +1,5 @@
-use glam::{Mat4, Vec2, Vec3};
 use crate::graphics::effects::TraumaShake;
+use glam::{Mat4, Vec2, Vec3};
 
 /// A 2D orthographic camera with panning, smooth zoom, target following,
 /// bounds clamping, and trauma-based screen shake.
@@ -19,7 +19,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    #[must_use] 
+    #[must_use]
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             position: Vec3::ZERO,
@@ -106,7 +106,7 @@ impl Camera {
         self.update_position(delta_time);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn build_view_projection_matrix(&self) -> Mat4 {
         let view = Mat4::from_translation(-self.position);
 
@@ -122,13 +122,13 @@ impl Camera {
             -half_height,
             half_height,
             -100.0,
-            100.0
+            100.0,
         );
 
         projection * shake_transform * view
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn screen_to_world(&self, screen_pos: Vec2, screen_size: Vec2) -> Vec2 {
         let ndc = Vec2::new(
             (screen_pos.x / screen_size.x).mul_add(2.0, -1.0),
@@ -169,12 +169,12 @@ impl Camera {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_trauma_shake_decay() {
         let mut shake = TraumaShake::new(10.0, 1.0);
         shake.add_trauma(1.0);
-        
+
         assert_eq!(shake.trauma(), 1.0);
         assert!(shake.is_active());
 
@@ -185,7 +185,7 @@ mod tests {
         assert_eq!(shake.trauma(), 0.0);
         assert!(!shake.is_active());
     }
-    
+
     #[test]
     fn test_trauma_shake_clamping() {
         let mut shake = TraumaShake::new(10.0, 0.1);
@@ -194,26 +194,26 @@ mod tests {
 
         assert_eq!(shake.trauma(), 1.0);
     }
-    
+
     #[test]
     fn test_camera_smooth_zoom() {
         let mut camera = Camera::new(800, 600);
         camera.set_zoom_smooth(2.0, 5.0);
-        
+
         assert_eq!(camera.zoom, 1.0);
-        
+
         camera.update(0.1);
-        
+
         assert!(camera.zoom > 1.0);
     }
-    
+
     #[test]
     fn test_camera_bounds() {
         let mut camera = Camera::new(800, 600);
         camera.set_bounds(Vec2::new(0.0, 0.0), Vec2::new(100.0, 100.0));
-        
+
         camera.move_to(150.0, 150.0);
-        
+
         assert_eq!(camera.position.x, 100.0);
         assert_eq!(camera.position.y, 100.0);
     }

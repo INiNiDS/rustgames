@@ -1,10 +1,10 @@
 pub mod events;
 
+use crate::graphics::Color;
 pub use events::*;
 use std::sync::Arc;
 use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
-use crate::graphics::Color;
 
 /// Configuration used to create and customize the application window.
 #[derive(Debug, Clone)]
@@ -49,12 +49,12 @@ pub struct Window {
 }
 
 impl Window {
-    #[must_use] 
+    #[must_use]
     pub const fn new(inner: Arc<WinitWindow>) -> Self {
         Self { inner }
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn inner(&self) -> &Arc<WinitWindow> {
         &self.inner
     }
@@ -63,7 +63,7 @@ impl Window {
         self.inner.set_title(title);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn size(&self) -> (u32, u32) {
         let size = self.inner.inner_size();
         (size.width, size.height)
@@ -74,14 +74,15 @@ impl Window {
         let _ = self.inner.request_inner_size(size);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_fullscreen(&self) -> bool {
         self.inner.fullscreen().is_some()
     }
 
     pub fn set_fullscreen(&self, enabled: bool) {
         if enabled {
-            self.inner.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
+            self.inner
+                .set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
         } else {
             self.inner.set_fullscreen(None);
         }
@@ -91,7 +92,7 @@ impl Window {
         self.inner.set_cursor_visible(visible);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn scale_factor(&self) -> f64 {
         self.inner.scale_factor()
     }
@@ -99,5 +100,4 @@ impl Window {
     pub fn request_redraw(&self) {
         self.inner.request_redraw();
     }
-
 }

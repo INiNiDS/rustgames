@@ -1,10 +1,10 @@
+use glam::Vec2;
 use rustgames::graphics::effects::animation::animation_instance::ActiveAnimation;
 use rustgames::graphics::effects::animation::easing::Easing;
 use rustgames::graphics::effects::animation::timeline::TimelineBuilder;
 use rustgames::graphics::effects::animation::visual::{
     AnimEffect, CombinedMode, CustomCombinedMode, VisualState,
 };
-use glam::Vec2;
 use rustgames::graphics::{Animation, AnimationGroupID};
 
 #[test]
@@ -15,14 +15,16 @@ fn instance_starts_at_zero_progress() {
 
 #[test]
 fn instance_update_reaches_finish() {
-    let mut inst = ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+    let mut inst =
+        ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
     inst.update(1.0);
     assert!(inst.is_finished());
 }
 
 #[test]
 fn instance_delay_postpones_progress() {
-    let mut inst = ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.5);
+    let mut inst =
+        ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.5);
     inst.update(0.3);
     assert_eq!(inst.progress(), 0.0);
     inst.update(0.3);
@@ -31,7 +33,8 @@ fn instance_delay_postpones_progress() {
 
 #[test]
 fn instance_paused_does_not_advance() {
-    let mut inst = ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
+    let mut inst =
+        ActiveAnimation::new(0, Animation::FadeIn { duration: 1.0 }, Easing::Linear, 0.0);
     inst.paused = true;
     inst.update(0.5);
     assert_eq!(inst.progress(), 0.0);

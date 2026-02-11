@@ -1,5 +1,5 @@
-pub use crate::graphics::effects::{EmitterConfig, VfxEffect};
 pub use crate::graphics::Particle;
+pub use crate::graphics::effects::{EmitterConfig, VfxEffect};
 use glam::Vec2;
 use rand::Rng;
 
@@ -11,7 +11,7 @@ pub struct ActiveEffect {
 }
 
 impl ActiveEffect {
-    #[must_use] 
+    #[must_use]
     pub fn new(effect: VfxEffect) -> Self {
         let emitter_cfg = if let VfxEffect::Emitter(ref cfg) = effect {
             Some(cfg.clone())
@@ -24,36 +24,36 @@ impl ActiveEffect {
             elapsed: 0.0,
             particles: Vec::new(),
         };
-        
+
         if let Some(cfg) = emitter_cfg {
             instance.spawn_burst(&cfg);
         }
-        
+
         instance
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub const fn duration(&self) -> f32 {
         match &self.config {
             VfxEffect::Flash { duration, .. } => *duration,
             VfxEffect::Emitter(cfg) => cfg.lifetime,
-            VfxEffect::Vignette { .. } | VfxEffect::Overlay { .. }  => f32::INFINITY,
+            VfxEffect::Vignette { .. } | VfxEffect::Overlay { .. } => f32::INFINITY,
         }
     }
-    
+
     pub fn update(&mut self, delta_time: f32) {
         self.elapsed += delta_time;
-        
+
         if let VfxEffect::Emitter(ref cfg) = self.config {
             for p in &mut self.particles {
                 p.update(delta_time, cfg.gravity);
             }
-            
+
             self.particles.retain(Particle::is_alive);
         }
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn is_finished(&self) -> bool {
         let duration = self.duration();
         if duration.is_infinite() {
@@ -73,13 +73,7 @@ impl ActiveEffect {
                 rng.random_range(cfg.velocity_min.y..cfg.velocity_max.y),
             );
 
-            let particle = Particle::new(
-                cfg.position,
-                velocity,
-                cfg.lifetime,
-                cfg.color,
-                cfg.size,
-            );
+            let particle = Particle::new(cfg.position, velocity, cfg.lifetime, cfg.color, cfg.size);
 
             self.particles.push(particle);
         }
@@ -95,35 +89,35 @@ pub struct VfxSystem {
 }
 
 impl VfxSystem {
-    #[must_use] 
+    #[must_use]
     pub const fn new() -> Self {
         Self {
             effects: Vec::new(),
         }
     }
-    
+
     pub fn push(&mut self, effect: VfxEffect) {
         self.effects.push(ActiveEffect::new(effect));
     }
-    
+
     pub fn update(&mut self, delta_time: f32) {
         for effect in &mut self.effects {
             effect.update(delta_time);
         }
-        
+
         self.effects.retain(|e| !e.is_finished());
     }
-    
+
     pub fn clear(&mut self) {
         self.effects.clear();
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn active_effects(&self) -> &[ActiveEffect] {
         &self.effects
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub const fn count(&self) -> usize {
         self.effects.len()
     }
@@ -134,4 +128,3 @@ impl Default for VfxSystem {
         Self::new()
     }
 }
-

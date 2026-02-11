@@ -1,11 +1,11 @@
+use crate::graphics::SpriteInstance;
+use crate::graphics::Texture;
+use glam::Vec2;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use wgpu::{Device, Queue};
 use std::sync::Arc;
-use glam::Vec2;
-use crate::graphics::Texture;
-use crate::graphics::SpriteInstance;
+use wgpu::{Device, Queue};
 
 /// Manages GPU textures and per-frame sprite instance batching. Supports
 /// loading from files, bytes, and directories.
@@ -18,7 +18,7 @@ pub struct TextureSystem {
 }
 
 impl TextureSystem {
-    #[must_use] 
+    #[must_use]
     pub fn new(device: Arc<Device>, queue: Arc<Queue>) -> Self {
         Self {
             textures: HashMap::new(),
@@ -40,7 +40,8 @@ impl TextureSystem {
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
         if !self.instances_per_texture.contains_key(texture_label) {
             self.frame_draw_order.push(texture_label.to_string());
-            self.instances_per_texture.insert(texture_label.to_string(), Vec::new());
+            self.instances_per_texture
+                .insert(texture_label.to_string(), Vec::new());
         }
 
         if let Some(batch) = self.instances_per_texture.get_mut(texture_label) {
@@ -48,12 +49,19 @@ impl TextureSystem {
         }
     }
 
-    pub fn use_texture(&mut self, label: &str, size: Vec2, position: Vec2, rotation: f32, opacity: f32) {
+    pub fn use_texture(
+        &mut self,
+        label: &str,
+        size: Vec2,
+        position: Vec2,
+        rotation: f32,
+        opacity: f32,
+    ) {
         let instance = SpriteInstance::simple(position, size, rotation, opacity);
         self.add_instance(label, instance);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_batched_instances(&self) -> Vec<(&Texture, &[SpriteInstance])> {
         self.frame_draw_order
             .iter()
@@ -105,7 +113,7 @@ impl TextureSystem {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_texture(&self, label: &str) -> Option<&Texture> {
         self.textures.get(label)
     }

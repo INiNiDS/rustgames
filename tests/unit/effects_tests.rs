@@ -1,15 +1,16 @@
+use glam::Vec2;
 use rustgames::graphics::color::Color;
-use rustgames::graphics::{
-    EmitterConfig, Particle, VfxEffect,
-};
 use rustgames::graphics::effects::VfxRenderer;
 use rustgames::graphics::effects::shake_effect::TraumaShake;
-use glam::Vec2;
+use rustgames::graphics::{EmitterConfig, Particle, VfxEffect};
 
 #[test]
 fn effect_renderer_lifecycle() {
     let mut renderer = VfxRenderer::new();
-    renderer.add_effect(VfxEffect::Flash { color: Color::WHITE, duration: 0.5 });
+    renderer.add_effect(VfxEffect::Flash {
+        color: Color::WHITE,
+        duration: 0.5,
+    });
     assert_eq!(renderer.active_effect_count(), 1);
     renderer.update(1.0);
     assert_eq!(renderer.active_effect_count(), 0);
@@ -48,7 +49,10 @@ fn particle_lifetime_expires() {
 #[test]
 fn flash_state_duration() {
     let mut renderer = VfxRenderer::new();
-    renderer.add_effect(VfxEffect::Flash { color: Color::RED, duration: 0.3 });
+    renderer.add_effect(VfxEffect::Flash {
+        color: Color::RED,
+        duration: 0.3,
+    });
     assert!(renderer.flash_state().active);
 }
 

@@ -13,7 +13,6 @@
 
 use glam::Vec2;
 use rustgames::core::app;
-use rustgames::graphics::VfxRenderer;
 use rustgames::prelude::*;
 
 // ---------------------------------------------------------------------------
@@ -52,7 +51,11 @@ struct Nugget {
 
 impl Nugget {
     fn new(x: f32, y: f32) -> Self {
-        Self { pos: Vec2::new(x, y), collected: false, bob_time: 0.0 }
+        Self {
+            pos: Vec2::new(x, y),
+            collected: false,
+            bob_time: 0.0,
+        }
     }
 }
 
@@ -92,7 +95,12 @@ struct Boss {
 
 impl Boss {
     fn new() -> Self {
-        Self { pos: Vec2::new(300.0, -200.0), health: 5, max_health: 5, phase_timer: 0.0 }
+        Self {
+            pos: Vec2::new(300.0, -200.0),
+            health: 5,
+            max_health: 5,
+            phase_timer: 0.0,
+        }
     }
 }
 
@@ -118,6 +126,7 @@ struct SpaceChicken {
     ending_timer: f32,
     flash_cooldown: f32,
     story_step: usize,
+    hp: u32,
 }
 
 // ---------------------------------------------------------------------------
@@ -126,12 +135,12 @@ struct SpaceChicken {
 
 impl Game for SpaceChicken {
     fn init(&mut self, engine: &mut Engine) {
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/mistral.png"), "chicken",
-        );
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/OIP-475081084.jpg"), "bg",
-        );
+        engine
+            .get_texture_controller()
+            .load_texture(include_bytes!("../src/mistral.png"), "chicken");
+        engine
+            .get_texture_controller()
+            .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "bg");
 
         engine.get_camera().set_zoom(1.0);
         self.show_dialogue(engine, "Cluck cluck! I am Captain Feathers!");
@@ -153,6 +162,13 @@ impl Game for SpaceChicken {
 
         self.draw_scene(engine);
         self.update_title(engine);
+        if self.hp == 0 {
+            self.phase = Phase::Ending;
+            self.show_dialogue(
+                engine,
+                "Oh no! Captain Feathers has been defeated! - GAME OVER - Press ESC",
+            );
+        }
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
@@ -184,14 +200,20 @@ impl SpaceChicken {
         self.story_step += 1;
         match self.story_step {
             1 => self.show_dialogue(engine, "The evil Fox Empire stole all the golden nuggets!"),
-            2 => self.show_dialogue(engine, "I must collect them before dinner time... I mean, before they conquer the galaxy!"),
+            2 => self.show_dialogue(
+                engine,
+                "I must collect them before dinner time... I mean, before they conquer the galaxy!",
+            ),
             3 => self.show_dialogue(engine, "WASD to move, SPACE to interact. Let's go!"),
             _ => {
                 self.intro_done = true;
                 self.phase = Phase::Explore;
                 self.spawn_nuggets();
                 self.spawn_enemies();
-                self.show_dialogue(engine, "Collect all the golden nuggets! Watch out for fox scouts!");
+                self.show_dialogue(
+                    engine,
+                    "Collect all the golden nuggets! Watch out for fox scouts!",
+                );
             }
         }
         self.dialogue_shown = false;
@@ -214,7 +236,10 @@ impl SpaceChicken {
         if remaining == 0 && !self.boss_defeated {
             self.phase = Phase::BossFight;
             self.boss = Boss::new();
-            self.show_dialogue(engine, "All nuggets collected! But wait... BOSS FOX GENERAL appears!");
+            self.show_dialogue(
+                engine,
+                "All nuggets collected! But wait... BOSS FOX GENERAL appears!",
+            );
             self.dialogue_shown = false;
             self.play_boss_entrance(engine);
         }
@@ -248,10 +273,16 @@ impl SpaceChicken {
 
     fn update_enemies(&mut self, engine: &mut Engine, dt: f32) {
         for enemy in &mut self.enemies {
-            if !enemy.alive { continue; }
+            if !enemy.alive {
+                continue;
+            }
             enemy.pos += enemy.dir * enemy.speed * dt;
-            if enemy.pos.x.abs() > 500.0 { enemy.dir.x = -enemy.dir.x; }
-            if enemy.pos.y.abs() > 350.0 { enemy.dir.y = -enemy.dir.y; }
+            if enemy.pos.x.abs() > 500.0 {
+                enemy.dir.x = -enemy.dir.x;
+            }
+            if enemy.pos.y.abs() > 350.0 {
+                enemy.dir.y = -enemy.dir.y;
+            }
         }
         let _ = engine;
     }
@@ -259,7 +290,9 @@ impl SpaceChicken {
     fn check_nugget_collection(&mut self, engine: &mut Engine) {
         let mut collected_idx = None;
         for (i, nugget) in self.nuggets.iter().enumerate() {
-            if nugget.collected { continue; }
+            if nugget.collected {
+                continue;
+            }
             let dist = (self.player_pos - nugget.pos).length();
             if dist < (PLAYER_SIZE + NUGGET_SIZE) / 2.0 {
                 collected_idx = Some(i);
@@ -270,7 +303,8 @@ impl SpaceChicken {
             let pos = self.nuggets[i].pos;
             self.nuggets[i].collected = true;
             self.score += 100;
-            self.vfx.add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(pos)));
+            self.vfx
+                .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(pos)));
             engine.get_camera().add_trauma(0.15);
             let msg = format!("Nugget collected! Score: {} Cluck!", self.score);
             self.show_dialogue(engine, &msg);
@@ -278,9 +312,13 @@ impl SpaceChicken {
     }
 
     fn check_enemy_collision(&mut self, engine: &mut Engine) {
-        if self.flash_cooldown > 0.0 { return; }
+        if self.flash_cooldown > 0.0 {
+            return;
+        }
         for enemy in &self.enemies {
-            if !enemy.alive { continue; }
+            if !enemy.alive {
+                continue;
+            }
             let dist = (self.player_pos - enemy.pos).length();
             if dist < (PLAYER_SIZE + ENEMY_SIZE) / 2.0 {
                 self.score = (self.score - 50).max(0);
@@ -291,6 +329,7 @@ impl SpaceChicken {
                 engine.get_camera().add_trauma(0.4);
                 self.flash_cooldown = 1.0;
                 self.show_dialogue(engine, "Ouch! A fox scout got me! -50 points! BAWK!");
+                self.hp -= 1;
                 return;
             }
         }
@@ -324,17 +363,24 @@ impl SpaceChicken {
             duration: 0.2,
         });
         engine.get_camera().add_trauma(0.5);
-        self.vfx.add_effect(VfxEffect::Emitter(EmitterConfig::explosion(self.boss.pos)));
+        self.vfx
+            .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(self.boss.pos)));
 
         if self.boss.health <= 0 {
             self.boss_defeated = true;
             self.score += 500;
             self.phase = Phase::Ending;
             self.ending_timer = 0.0;
-            self.show_dialogue(engine, "The Fox General is defeated! The galaxy nuggets are safe!");
+            self.show_dialogue(
+                engine,
+                "The Fox General is defeated! The galaxy nuggets are safe!",
+            );
             self.play_victory_animation(engine);
         } else {
-            let msg = format!("Take that! Boss HP: {}/{}", self.boss.health, self.boss.max_health);
+            let msg = format!(
+                "Take that! Boss HP: {}/{}",
+                self.boss.health, self.boss.max_health
+            );
             self.show_dialogue(engine, &msg);
         }
     }
@@ -349,9 +395,13 @@ impl SpaceChicken {
         self.ending_timer += dt;
         if self.ending_timer > 3.0 && self.story_step < 100 {
             self.story_step = 100;
-            self.show_dialogue(engine, &format!(
-                "Captain Feathers saved the galaxy! Final Score: {} - THE END - Press ESC", self.score
-            ));
+            self.show_dialogue(
+                engine,
+                &format!(
+                    "Captain Feathers saved the galaxy! Final Score: {} - THE END - Press ESC",
+                    self.score
+                ),
+            );
         }
     }
 }
@@ -362,7 +412,13 @@ impl SpaceChicken {
 
 impl SpaceChicken {
     fn draw_scene(&mut self, engine: &mut Engine) {
-        engine.get_texture_controller().use_texture("bg", Vec2::new(SCREEN_W * 2.0, SCREEN_H * 2.0), Vec2::ZERO, 0.0, 1.0);
+        engine.get_texture_controller().use_texture(
+            "bg",
+            Vec2::new(SCREEN_W * 2.0, SCREEN_H * 2.0),
+            Vec2::ZERO,
+            0.0,
+            1.0,
+        );
 
         self.draw_nuggets(engine);
         self.draw_enemies(engine);
@@ -373,8 +429,12 @@ impl SpaceChicken {
 
     fn draw_player(&mut self, engine: &mut Engine) {
         let visual = engine.get_animation_system().evaluate(
-            VisualState { position: self.player_pos, ..Default::default() },
-            Vec2::splat(PLAYER_SIZE), None,
+            VisualState {
+                position: self.player_pos,
+                ..Default::default()
+            },
+            Vec2::splat(PLAYER_SIZE),
+            None,
         );
         engine.get_texture_controller().use_texture(
             "chicken",
@@ -387,32 +447,46 @@ impl SpaceChicken {
 
     fn draw_nuggets(&mut self, engine: &mut Engine) {
         for nugget in &self.nuggets {
-            if nugget.collected { continue; }
+            if nugget.collected {
+                continue;
+            }
             let bob = nugget.bob_time.sin() * 8.0;
             let pos = nugget.pos + Vec2::new(0.0, bob);
             let instance = SpriteInstance::new(
-                pos, Vec2::splat(NUGGET_SIZE), 0.0,
+                pos,
+                Vec2::splat(NUGGET_SIZE),
+                0.0,
                 glam::Vec4::new(0.0, 0.0, 1.0, 1.0),
                 glam::Vec4::new(1.0, 0.85, 0.0, 1.0),
             );
-            engine.get_texture_controller().add_instance("chicken", instance);
+            engine
+                .get_texture_controller()
+                .add_instance("chicken", instance);
         }
     }
 
     fn draw_enemies(&mut self, engine: &mut Engine) {
         for enemy in &self.enemies {
-            if !enemy.alive { continue; }
+            if !enemy.alive {
+                continue;
+            }
             let instance = SpriteInstance::new(
-                enemy.pos, Vec2::splat(ENEMY_SIZE), 0.0,
+                enemy.pos,
+                Vec2::splat(ENEMY_SIZE),
+                0.0,
                 glam::Vec4::new(0.0, 0.0, 1.0, 1.0),
                 glam::Vec4::new(1.0, 0.3, 0.0, 0.9),
             );
-            engine.get_texture_controller().add_instance("chicken", instance);
+            engine
+                .get_texture_controller()
+                .add_instance("chicken", instance);
         }
     }
 
     fn draw_boss(&mut self, engine: &mut Engine) {
-        if self.phase != Phase::BossFight { return; }
+        if self.phase != Phase::BossFight {
+            return;
+        }
         let scale = 1.0 + (self.boss.phase_timer * 2.0).sin() * 0.1;
         let instance = SpriteInstance::new(
             self.boss.pos,
@@ -421,13 +495,17 @@ impl SpaceChicken {
             glam::Vec4::new(0.0, 0.0, 1.0, 1.0),
             glam::Vec4::new(0.8, 0.0, 0.0, 1.0),
         );
-        engine.get_texture_controller().add_instance("chicken", instance);
+        engine
+            .get_texture_controller()
+            .add_instance("chicken", instance);
     }
 
     fn draw_particles(&mut self, engine: &mut Engine) {
         let frame = self.vfx.build_frame();
         for inst in &frame.particle {
-            engine.get_texture_controller().add_instance("chicken", *inst);
+            engine
+                .get_texture_controller()
+                .add_instance("chicken", *inst);
         }
     }
 }
@@ -445,10 +523,18 @@ impl SpaceChicken {
 
         {
             let eq = engine.get_event_queue();
-            if eq.is_key_pressed(KeyCode::KeyW) || eq.is_key_pressed(KeyCode::ArrowUp) { dy -= 1.0; }
-            if eq.is_key_pressed(KeyCode::KeyS) || eq.is_key_pressed(KeyCode::ArrowDown) { dy += 1.0; }
-            if eq.is_key_pressed(KeyCode::KeyA) || eq.is_key_pressed(KeyCode::ArrowLeft) { dx -= 1.0; }
-            if eq.is_key_pressed(KeyCode::KeyD) || eq.is_key_pressed(KeyCode::ArrowRight) { dx += 1.0; }
+            if eq.is_key_pressed(KeyCode::KeyW) || eq.is_key_pressed(KeyCode::ArrowUp) {
+                dy -= 1.0;
+            }
+            if eq.is_key_pressed(KeyCode::KeyS) || eq.is_key_pressed(KeyCode::ArrowDown) {
+                dy += 1.0;
+            }
+            if eq.is_key_pressed(KeyCode::KeyA) || eq.is_key_pressed(KeyCode::ArrowLeft) {
+                dx -= 1.0;
+            }
+            if eq.is_key_pressed(KeyCode::KeyD) || eq.is_key_pressed(KeyCode::ArrowRight) {
+                dx += 1.0;
+            }
             space_pressed = eq.was_key_just_pressed(KeyCode::Space);
             escape_pressed = eq.was_key_just_pressed(KeyCode::Escape);
         }
@@ -467,8 +553,14 @@ impl SpaceChicken {
 
     fn move_player(&mut self, dt: f32) {
         self.player_pos += self.player_vel * dt;
-        self.player_pos.x = self.player_pos.x.clamp(-SCREEN_W / 2.0 + 30.0, SCREEN_W / 2.0 - 30.0);
-        self.player_pos.y = self.player_pos.y.clamp(-SCREEN_H / 2.0 + 30.0, SCREEN_H / 2.0 - 30.0);
+        self.player_pos.x = self
+            .player_pos
+            .x
+            .clamp(-SCREEN_W / 2.0 + 30.0, SCREEN_W / 2.0 - 30.0);
+        self.player_pos.y = self
+            .player_pos
+            .y
+            .clamp(-SCREEN_H / 2.0 + 30.0, SCREEN_H / 2.0 - 30.0);
         self.flash_cooldown = (self.flash_cooldown - 0.016).max(0.0);
     }
 }
@@ -482,7 +574,14 @@ impl SpaceChicken {
         let timeline = TimelineBuilder::new()
             .parallel(vec![
                 (Animation::FadeIn { duration: 1.5 }, Easing::EaseOut),
-                (Animation::Scale { from: 0.0, to: 1.0, duration: 1.2 }, Easing::Elastic),
+                (
+                    Animation::Scale {
+                        from: 0.0,
+                        to: 1.0,
+                        duration: 1.2,
+                    },
+                    Easing::Elastic,
+                ),
             ])
             .build();
         engine.get_animation_system().start_timeline(timeline);
@@ -490,7 +589,13 @@ impl SpaceChicken {
 
     fn play_boss_entrance(&mut self, engine: &mut Engine) {
         let timeline = TimelineBuilder::new()
-            .single(Animation::Shake { intensity: 15.0, duration: 1.0 }, Easing::Linear)
+            .single(
+                Animation::Shake {
+                    intensity: 15.0,
+                    duration: 1.0,
+                },
+                Easing::Linear,
+            )
             .build();
         engine.get_animation_system().start_timeline(timeline);
         engine.get_camera().add_trauma(0.8);
@@ -499,15 +604,43 @@ impl SpaceChicken {
     fn play_victory_animation(&mut self, engine: &mut Engine) {
         let timeline = TimelineBuilder::new()
             .parallel(vec![
-                (Animation::Scale { from: 1.0, to: 2.0, duration: 0.5 }, Easing::EaseOut),
-                (Animation::Rotate { from: 0.0, to: std::f32::consts::TAU, duration: 1.0 }, Easing::EaseInOut),
+                (
+                    Animation::Scale {
+                        from: 1.0,
+                        to: 2.0,
+                        duration: 0.5,
+                    },
+                    Easing::EaseOut,
+                ),
+                (
+                    Animation::Rotate {
+                        from: 0.0,
+                        to: std::f32::consts::TAU,
+                        duration: 1.0,
+                    },
+                    Easing::EaseInOut,
+                ),
             ])
-            .single(Animation::Scale { from: 2.0, to: 1.0, duration: 0.5 }, Easing::Bounce)
+            .single(
+                Animation::Scale {
+                    from: 2.0,
+                    to: 1.0,
+                    duration: 0.5,
+                },
+                Easing::Bounce,
+            )
             .build();
         engine.get_animation_system().start_timeline(timeline);
-        self.vfx.add_effect(VfxEffect::Emitter(EmitterConfig::explosion(Vec2::ZERO)));
-        self.vfx.add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::new(100.0, 50.0))));
-        self.vfx.add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::new(-100.0, -50.0))));
+        self.vfx
+            .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(Vec2::ZERO)));
+        self.vfx
+            .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::new(
+                100.0, 50.0,
+            ))));
+        self.vfx
+            .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::new(
+                -100.0, -50.0,
+            ))));
     }
 }
 
@@ -519,7 +652,12 @@ impl SpaceChicken {
     fn show_dialogue(&mut self, engine: &mut Engine, text: &str) {
         engine.get_text_system().remove_text(self.dialogue_id);
         self.dialogue_id = engine.get_text_system().add_text(
-            text, TextSpeed::Medium, 40.0, 40.0,
+            text,
+            TextSpeed::Medium,
+            40.0,
+            40.0,
+            TextStyle::new(64.0),
+            PunctuationConfig::default(),
         );
     }
 
@@ -534,7 +672,9 @@ impl SpaceChicken {
             };
             engine.set_title(&format!(
                 "Space Chicken | {} | Score: {} | FPS: {:.0}",
-                phase_name, self.score, self.fps.fps(),
+                phase_name,
+                self.score,
+                self.fps.fps(),
             ));
         }
     }
@@ -563,6 +703,7 @@ fn main() {
         ending_timer: 0.0,
         flash_cooldown: 0.0,
         story_step: 0,
+        hp: 5,
     };
 
     let config = WindowConfig {

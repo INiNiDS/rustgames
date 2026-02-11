@@ -1,5 +1,5 @@
-use glam::Vec2;
 use crate::graphics::{Color, SpriteInstance};
+use glam::Vec2;
 
 /// A visual effect that can be submitted to the `EffectManager` or
 /// `RendererAlpha`.
@@ -110,7 +110,6 @@ impl EmitterConfig {
         }
     }
 }
-
 
 /// Tracks the current state of a screen-wide colour flash.
 #[derive(Debug, Clone)]

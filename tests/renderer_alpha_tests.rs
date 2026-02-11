@@ -1,7 +1,7 @@
-use rustgames::graphics::color::Color;
-use rustgames::graphics::{EmitterConfig, VfxEffect};
-use rustgames::graphics::effects::renderer::VfxRenderer;
 use glam::Vec2;
+use rustgames::graphics::color::Color;
+use rustgames::graphics::effects::renderer::VfxRenderer;
+use rustgames::graphics::{EmitterConfig, VfxEffect};
 
 #[test]
 fn new_starts_empty() {
@@ -14,7 +14,10 @@ fn new_starts_empty() {
 #[test]
 fn flash_activates_and_decays() {
     let mut ra = VfxRenderer::new();
-    ra.add_effect(VfxEffect::Flash { color: Color::RED, duration: 1.0 });
+    ra.add_effect(VfxEffect::Flash {
+        color: Color::RED,
+        duration: 1.0,
+    });
     assert!(ra.flash_state().active);
     assert!((ra.flash_state().alpha() - 1.0).abs() < 0.01);
 
@@ -29,7 +32,10 @@ fn flash_activates_and_decays() {
 #[test]
 fn color_overlay_persists() {
     let mut ra = VfxRenderer::new();
-    ra.add_effect(VfxEffect::Overlay { color: Color::BLUE, alpha: 0.5 });
+    ra.add_effect(VfxEffect::Overlay {
+        color: Color::BLUE,
+        alpha: 0.5,
+    });
     assert!(ra.overlay_state().active);
     assert_eq!(ra.overlay_state().alpha, 0.5);
 
@@ -40,7 +46,10 @@ fn color_overlay_persists() {
 #[test]
 fn clear_overlay_deactivates() {
     let mut ra = VfxRenderer::new();
-    ra.add_effect(VfxEffect::Overlay { color: Color::GREEN, alpha: 0.8 });
+    ra.add_effect(VfxEffect::Overlay {
+        color: Color::GREEN,
+        alpha: 0.8,
+    });
     ra.clear_overlay();
     assert!(!ra.overlay_state().active);
 }
@@ -48,8 +57,14 @@ fn clear_overlay_deactivates() {
 #[test]
 fn clear_all_resets_everything() {
     let mut ra = VfxRenderer::new();
-    ra.add_effect(VfxEffect::Flash { color: Color::WHITE, duration: 2.0 });
-    ra.add_effect(VfxEffect::Overlay { color: Color::RED, alpha: 1.0 });
+    ra.add_effect(VfxEffect::Flash {
+        color: Color::WHITE,
+        duration: 2.0,
+    });
+    ra.add_effect(VfxEffect::Overlay {
+        color: Color::RED,
+        alpha: 1.0,
+    });
     ra.clear_all();
     assert_eq!(ra.active_effect_count(), 0);
     assert!(!ra.flash_state().active);
@@ -86,7 +101,10 @@ fn particles_decay_over_time() {
 #[test]
 fn multiple_effects_at_once() {
     let mut ra = VfxRenderer::new();
-    ra.add_effect(VfxEffect::Flash { color: Color::WHITE, duration: 1.0 });
+    ra.add_effect(VfxEffect::Flash {
+        color: Color::WHITE,
+        duration: 1.0,
+    });
     ra.add_effect(VfxEffect::Emitter(EmitterConfig::new(Vec2::ZERO)));
     assert_eq!(ra.active_effect_count(), 2);
     ra.update(0.1);

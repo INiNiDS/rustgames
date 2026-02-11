@@ -13,11 +13,10 @@ pub struct Time {
     target_frame_time: Duration,
     accumulated_time: Duration,
     frame_start: Instant,
-
 }
 
 impl Time {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         let now = Instant::now();
         Self {
@@ -39,32 +38,32 @@ impl Time {
         if delta_secs > MAX_DELTA_TIME {
             self.delta = Duration::from_secs_f32(MAX_DELTA_TIME);
         }
-        
+
         self.last_update = now;
         self.accumulated_time += self.delta;
         self.frame_count += 1;
     }
-    
+
     pub fn begin_frame(&mut self) {
         self.frame_start = Instant::now();
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn delta_seconds(&self) -> f32 {
         self.delta.as_secs_f32()
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn total_seconds(&self) -> f32 {
         self.start_time.elapsed().as_secs_f32()
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn frame_count(&self) -> u64 {
         self.frame_count
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn fps(&self) -> f32 {
         if self.delta.as_secs_f32() > 0.0 {
             1.0 / self.delta.as_secs_f32()
@@ -93,7 +92,7 @@ impl Time {
         self.target_frame_time = Duration::from_secs_f32(1.0 / fps);
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_lag_spike(&self) -> bool {
         self.delta.as_secs_f32() > (1.0 / TARGET_FPS) * 2.0
     }

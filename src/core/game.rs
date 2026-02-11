@@ -1,4 +1,3 @@
-
 use crate::core::Engine;
 
 /// The core game trait. Implement this to define custom game logic.

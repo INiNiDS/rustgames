@@ -6,7 +6,12 @@ const D1: f32 = 2.75;
 /// Easing functions controlling animation interpolation curves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Easing {
-    Linear, EaseIn, EaseOut, EaseInOut, Bounce, Elastic,
+    Linear,
+    EaseIn,
+    EaseOut,
+    EaseInOut,
+    Bounce,
+    Elastic,
 }
 
 impl Easing {
@@ -18,18 +23,19 @@ impl Easing {
             Self::Linear => t,
             Self::EaseIn => t * t,
             Self::EaseOut => t * (2.0 - t),
-            Self::EaseInOut => if t < 0.5 {
-                2.0 * t * t
-            } else {
-                2.0f32.mul_add(-t, 4.0).mul_add(t, -1.0)
-            },
+            Self::EaseInOut => {
+                if t < 0.5 {
+                    2.0 * t * t
+                } else {
+                    2.0f32.mul_add(-t, 4.0).mul_add(t, -1.0)
+                }
+            }
             Self::Bounce => Self::bounce_out(t),
             Self::Elastic => Self::elastic_in(t),
         }
     }
 
     fn bounce_out(mut t: f32) -> f32 {
-
         if t < 1.0 / D1 {
             N1 * t * t
         } else if t < 2.0 / D1 {

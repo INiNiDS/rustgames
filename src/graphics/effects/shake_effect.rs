@@ -14,7 +14,7 @@ pub struct TraumaShake {
 }
 
 impl TraumaShake {
-    #[must_use] 
+    #[must_use]
     pub const fn new(max_offset: f32, decay_rate: f32) -> Self {
         Self {
             trauma: 0.0,
@@ -48,17 +48,17 @@ impl TraumaShake {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn offset(&self) -> Vec2 {
         self.offset
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn is_active(&self) -> bool {
         self.trauma > 0.0
     }
 
-    #[must_use] 
+    #[must_use]
     pub const fn trauma(&self) -> f32 {
         self.trauma
     }

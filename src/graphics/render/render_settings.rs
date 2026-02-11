@@ -25,7 +25,7 @@ pub struct RenderSettings {
     pub(crate) text_system: TextSystem,
     pub(crate) animation_system: AnimationSystem,
     pub(crate) texture_system: TextureSystem,
-    pub(crate) vfx_system: VfxSystem
+    pub(crate) vfx_system: VfxSystem,
 }
 
 impl RenderSettings {
@@ -107,7 +107,7 @@ impl RenderSettings {
     pub const fn get_max_height_text(&self) -> f32 {
         self.max_height_text
     }
-    
+
     pub const fn get_surface(&self) -> &Surface<'static> {
         &self.surface
     }
@@ -149,7 +149,11 @@ impl RenderSettings {
     }
 
     pub fn set_window_config(&mut self, config: &WindowConfig) {
-        self.config.present_mode = if config.vsync { PresentMode::Fifo } else { PresentMode::Immediate };
+        self.config.present_mode = if config.vsync {
+            PresentMode::Fifo
+        } else {
+            PresentMode::Immediate
+        };
 
         self.surface.configure(&self.device, &self.config);
 
@@ -160,7 +164,8 @@ impl RenderSettings {
         self.background_color = config.background_color;
 
         if config.fullscreen {
-            self.window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
+            self.window
+                .set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
         } else {
             self.window.set_fullscreen(None);
         }
@@ -169,9 +174,13 @@ impl RenderSettings {
         let _ = self.window.request_inner_size(new_size);
     }
 
-    async fn init_graphics(window: Arc<Window>) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
+    async fn init_graphics(
+        window: Arc<Window>,
+    ) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
         let instance = wgpu::Instance::default();
-        let surface = instance.create_surface(window).expect("Failed to create surface");
+        let surface = instance
+            .create_surface(window)
+            .expect("Failed to create surface");
 
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
@@ -190,10 +199,24 @@ impl RenderSettings {
         (surface, adapter, device, queue)
     }
 
-    fn configure_inner_modules(size: PhysicalSize<u32>, device: &Device, config: &SurfaceConfiguration) -> (Camera, TextSystem, SpriteRenderer) {
+    fn configure_inner_modules(
+        size: PhysicalSize<u32>,
+        device: &Device,
+        config: &SurfaceConfiguration,
+    ) -> (Camera, TextSystem, SpriteRenderer) {
         let camera = Camera::new(size.width, size.height);
         let sprite_renderer = SpriteRenderer::new(device, config);
-        let text_system = TextSystem::new(device, config, DEFAULT_NORMAL_FONT, None, None, None, None);
+        let text_system = TextSystem::new(
+            device,
+            config,
+            DEFAULT_NORMAL_FONT,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+        );
         (camera, text_system, sprite_renderer)
     }
 }

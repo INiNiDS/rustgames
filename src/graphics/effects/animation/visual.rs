@@ -33,7 +33,6 @@ pub enum CombinedMode {
     Override,
 }
 
-
 /// Per-field combination modes for applying `AnimEffect` to a `VisualState`.
 #[derive(Debug, Clone, Copy)]
 pub struct CustomCombinedMode {
@@ -44,21 +43,29 @@ pub struct CustomCombinedMode {
 }
 
 impl CustomCombinedMode {
-    #[must_use] 
-    pub const fn new(opacity: CombinedMode, rotation: CombinedMode, scale: CombinedMode, position: CombinedMode) -> Self {
+    #[must_use]
+    pub const fn new(
+        opacity: CombinedMode,
+        rotation: CombinedMode,
+        scale: CombinedMode,
+        position: CombinedMode,
+    ) -> Self {
         Self {
-            opacity, rotation, scale, position
+            opacity,
+            rotation,
+            scale,
+            position,
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_opacity(opacity: CombinedMode) -> Self {
         Self {
             opacity,
             ..Default::default()
         }
     }
-    #[must_use] 
+    #[must_use]
     pub fn with_rotation(rotation: CombinedMode) -> Self {
         Self {
             rotation,
@@ -66,7 +73,7 @@ impl CustomCombinedMode {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_scale(scale: CombinedMode) -> Self {
         Self {
             scale,
@@ -74,7 +81,7 @@ impl CustomCombinedMode {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_position(position: CombinedMode) -> Self {
         Self {
             position,
@@ -85,12 +92,12 @@ impl CustomCombinedMode {
 
 impl Default for CustomCombinedMode {
     fn default() -> Self {
-         Self {
-             opacity: CombinedMode::Mul,
-             rotation: CombinedMode::Add,
-             scale: CombinedMode::Mul,
-             position: CombinedMode::Add
-         }
+        Self {
+            opacity: CombinedMode::Mul,
+            rotation: CombinedMode::Add,
+            scale: CombinedMode::Mul,
+            position: CombinedMode::Add,
+        }
     }
 }
 
@@ -115,27 +122,39 @@ impl Default for AnimEffect {
 }
 
 impl AnimEffect {
-    #[must_use] 
+    #[must_use]
     pub fn with_opacity(opacity: f32) -> Self {
-        Self { opacity_mul: opacity, ..Default::default() }
+        Self {
+            opacity_mul: opacity,
+            ..Default::default()
+        }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_offset(offset: Vec2) -> Self {
-        Self { offset_add: offset, ..Default::default() }
+        Self {
+            offset_add: offset,
+            ..Default::default()
+        }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_scale(scale: Vec2) -> Self {
-        Self { scale_mul: scale, ..Default::default() }
+        Self {
+            scale_mul: scale,
+            ..Default::default()
+        }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn with_rotation(rotation: f32) -> Self {
-        Self { rotation_add: rotation, ..Default::default() }
+        Self {
+            rotation_add: rotation,
+            ..Default::default()
+        }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn combine(self, other: Self) -> Self {
         Self {
             opacity_mul: self.opacity_mul * other.opacity_mul,
@@ -145,15 +164,19 @@ impl AnimEffect {
         }
     }
 
-    #[must_use] 
-    pub fn apply_to(&self, state: VisualState, combined_mode: Option<CustomCombinedMode>) -> VisualState {
+    #[must_use]
+    pub fn apply_to(
+        &self,
+        state: VisualState,
+        combined_mode: Option<CustomCombinedMode>,
+    ) -> VisualState {
         combined_mode.map_or_else(
             || self.apply_to_default(state),
-            |config| self.apply_to_config(state, config)
+            |config| self.apply_to_config(state, config),
         )
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn apply_to_default(&self, state: VisualState) -> VisualState {
         VisualState {
             opacity: state.opacity * self.opacity_mul,
@@ -164,7 +187,7 @@ impl AnimEffect {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
             opacity: Self::apply_val(state.opacity, self.opacity_mul, config.opacity),

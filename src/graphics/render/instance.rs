@@ -1,6 +1,6 @@
+use crate::graphics::Color;
 use glam::{Mat4, Vec2, Vec4};
 use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
-use crate::graphics::Color;
 
 /// GPU-side representation of a sprite instance for instanced rendering.
 ///
@@ -14,28 +14,22 @@ pub struct SpriteInstance {
 }
 
 impl SpriteInstance {
-    #[must_use] 
-    pub fn new(
-        position: Vec2,
-        size: Vec2,
-        rotation: f32,
-        uv_rect: Vec4,
-        color: Vec4,
-    ) -> Self {
+    #[must_use]
+    pub fn new(position: Vec2, size: Vec2, rotation: f32, uv_rect: Vec4, color: Vec4) -> Self {
         let translation = Mat4::from_translation(position.extend(0.0));
         let rotation_mat = Mat4::from_rotation_z(rotation);
         let scale = Mat4::from_scale(size.extend(1.0));
-        
+
         let model = translation * rotation_mat * scale;
-        
+
         Self {
             model: model.to_cols_array_2d(),
             uv_rect: uv_rect.to_array(),
             color: color.to_array(),
         }
     }
-    
-    #[must_use] 
+
+    #[must_use]
     pub fn simple(position: Vec2, size: Vec2, rotation: f32, opacity: f32) -> Self {
         let mut color = Color::WHITE;
         color.a = opacity;
@@ -47,9 +41,10 @@ impl SpriteInstance {
             Vec4::from(color.to_array()),
         )
     }
-    
-    #[must_use] 
-    pub const fn desc() -> VertexBufferLayout<'static> { // bad function has to many clones
+
+    #[must_use]
+    pub const fn desc() -> VertexBufferLayout<'static> {
+        // bad function has to many clones
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,
@@ -92,21 +87,22 @@ impl SpriteInstance {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_instance_size_alignment() {
         let size = std::mem::size_of::<SpriteInstance>();
         assert_eq!(size, 96, "SpriteInstance size must be 96 bytes");
         assert_eq!(size % 16, 0, "SpriteInstance must be 16-byte aligned");
     }
-    
+
     #[test]
     fn test_instance_creation() {
-        let instance = SpriteInstance::simple(Vec2::new(100.0, 200.0), Vec2::new(64.0, 64.0), 0.0, 1.0);
+        let instance =
+            SpriteInstance::simple(Vec2::new(100.0, 200.0), Vec2::new(64.0, 64.0), 0.0, 1.0);
         assert_eq!(instance.uv_rect, [0.0, 0.0, 1.0, 1.0]);
         assert_eq!(instance.color, [1.0, 1.0, 1.0, 1.0]);
     }
-    
+
     #[test]
     fn test_instance_with_rotation() {
         let instance = SpriteInstance::new(

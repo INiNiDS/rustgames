@@ -1,3 +1,5 @@
+use crate::graphics::EmitterConfig;
+use crate::graphics::color::Color;
 /// An alternative renderer that integrates the effects system on top of the
 /// standard rendering pipeline. It delegates sprite and text drawing to the
 /// existing `Renderer` while applying active visual effects such as screen
@@ -8,13 +10,11 @@
 /// `RendererAlpha` wraps `RenderSettings` without modifying the main
 /// `Renderer`. All effect-related state lives here, keeping the original
 /// rendering path untouched.
-use crate::graphics::effects::system::{VfxSystem, VfxEffect};
-use crate::graphics::color::Color;
-use crate::graphics::render::instance::SpriteInstance;
-use glam::{Vec2, Vec4};
+use crate::graphics::effects::system::{VfxEffect, VfxSystem};
 use crate::graphics::effects::{ActiveEffect, Flash, Overlay, VfxFrame};
-use crate::graphics::EmitterConfig;
+use crate::graphics::render::instance::SpriteInstance;
 use crate::prelude::Particle;
+use glam::{Vec2, Vec4};
 
 /// Manages the lifecycle and rendering of visual effects layered on top of the
 /// standard renderer output.
@@ -26,7 +26,7 @@ pub struct VfxRenderer {
 
 impl VfxRenderer {
     /// Creates a new `RendererAlpha` with no active effects.
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             system: VfxSystem::new(),
@@ -72,25 +72,25 @@ impl VfxRenderer {
     }
 
     /// Returns the number of active effects.
-    #[must_use] 
+    #[must_use]
     pub const fn active_effect_count(&self) -> usize {
         self.system.count()
     }
 
     /// Returns a reference to the current flash state.
-    #[must_use] 
+    #[must_use]
     pub const fn flash_state(&self) -> &Flash {
         &self.flash
     }
 
     /// Returns a reference to the current overlay state.
-    #[must_use] 
+    #[must_use]
     pub const fn overlay_state(&self) -> &Overlay {
         &self.overlay
     }
-    
+
     /// Returns a reference to the underlying `EffectManager`.
-    #[must_use] 
+    #[must_use]
     pub const fn effect_manager(&self) -> &VfxSystem {
         &self.system
     }

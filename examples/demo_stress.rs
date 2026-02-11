@@ -1,7 +1,7 @@
-use rustgames::prelude::*;
-use rustgames::core::app;
 use glam::{Vec2, Vec4};
 use rand::Rng;
+use rustgames::core::app;
+use rustgames::prelude::*;
 
 struct StressDemo {
     animations: Vec<SpriteAnimation>,
@@ -31,20 +31,21 @@ impl Game for StressDemo {
         println!("  ESC   - Exit");
         println!();
 
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/mistral.png"),
-            "stress_sprite"
-        );
+        engine
+            .get_texture_controller()
+            .load_texture(include_bytes!("../src/mistral.png"), "stress_sprite");
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);
 
         self.spawn_entities(self.entity_count);
-        
+
         println!("✓ Demo initialized with {} entities", self.entity_count);
 
-
-        engine.get_audio_system().load_sound("perdej", "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3");
+        engine.get_audio_system().load_sound(
+            "perdej",
+            "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
+        );
     }
 
     fn update(&mut self, engine: &mut Engine) {
@@ -76,23 +77,18 @@ impl Game for StressDemo {
                 self.positions[i].y = self.positions[i].y.clamp(-bounds, bounds);
             }
         }
-        
+
         let texture_controller = engine.get_texture_controller();
-        
+
         for i in 0..self.entity_count {
             let uv = self.animations[i].current_uv();
-            
-            let instance = SpriteInstance::new(
-                self.positions[i],
-                Vec2::new(20.0, 20.0),
-                0.0, 
-                uv,
-                Vec4::ONE, 
-            );
-            
+
+            let instance =
+                SpriteInstance::new(self.positions[i], Vec2::new(20.0, 20.0), 0.0, uv, Vec4::ONE);
+
             texture_controller.add_instance("stress_sprite", instance);
         }
-        
+
         if self.time >= 0.1 {
             self.time = 0.0;
             let title = format!(
@@ -108,10 +104,18 @@ impl Game for StressDemo {
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
-        let space_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Space);
-        let up_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp);
-        let down_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown);
-        let escape_pressed = engine.get_event_queue().was_key_just_pressed(KeyCode::Escape);
+        let space_pressed = engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Space);
+        let up_pressed = engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowUp);
+        let down_pressed = engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowDown);
+        let escape_pressed = engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Escape);
 
         if space_pressed {
             engine.get_camera().add_trauma(0.8);
@@ -139,49 +143,54 @@ impl Game for StressDemo {
 impl StressDemo {
     fn spawn_entities(&mut self, count: usize) {
         let mut rng = rand::rng();
-        
+
         for _ in 0..count {
             let anim = SpriteAnimation::from_grid(
-                2, 2, 4,
+                2,
+                2,
+                4,
                 5.0 + rng.random::<f32>() * 10.0,
-                AnimationMode::Loop
+                AnimationMode::Loop,
             );
             self.animations.push(anim);
-            
+
             let pos = Vec2::new(
                 (rng.random::<f32>() - 0.5) * 600.0,
                 (rng.random::<f32>() - 0.5) * 600.0,
             );
             self.positions.push(pos);
-            
+
             let vel = Vec2::new(
                 (rng.random::<f32>() - 0.5) * 100.0,
                 (rng.random::<f32>() - 0.5) * 100.0,
             );
             self.velocities.push(vel);
         }
-        
+
         self.entity_count = self.animations.len();
     }
-    
+
     fn remove_entities(&mut self, count: usize) {
         let remove = count.min(self.animations.len());
-        
+
         for _ in 0..remove {
             self.animations.pop();
             self.positions.pop();
             self.velocities.pop();
         }
-        
+
         self.entity_count = self.animations.len();
     }
-    
+
     fn print_final_stats(&self) {
         println!();
         println!("=== Final Statistics ===");
         println!("Total entities: {}", self.entity_count);
         println!("Average FPS: {:.1}", self.fps_counter.fps());
-        println!("Average frame time: {:.2}ms", self.fps_counter.frame_time_ms());
+        println!(
+            "Average frame time: {:.2}ms",
+            self.fps_counter.frame_time_ms()
+        );
         println!("Min FPS: {:.1}", self.fps_counter.min_fps());
         println!("Max FPS: {:.1}", self.fps_counter.max_fps());
     }
@@ -189,7 +198,7 @@ impl StressDemo {
 
 fn main() {
     let initial_entities = 10000;
-    
+
     let game = StressDemo {
         animations: Vec::with_capacity(initial_entities),
         positions: Vec::with_capacity(initial_entities),
@@ -199,7 +208,7 @@ fn main() {
         time: 0.0,
         shake_timer: 0.0,
     };
-    
+
     println!("Starting stress test demo with {initial_entities} entities...");
     println!();
 
@@ -212,7 +221,6 @@ fn main() {
         vsync: true,
         background_color: Color::WHITE,
     };
-    
-    app::run(window_config, Box::new(game))
-        .expect("Failed to run stress test");
+
+    app::run(window_config, Box::new(game)).expect("Failed to run stress test");
 }

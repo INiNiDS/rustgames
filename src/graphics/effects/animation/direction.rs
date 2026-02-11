@@ -3,12 +3,18 @@ use glam::Vec2;
 /// Cardinal and diagonal directions for slide animations and transitions.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
-    Left, Right, Top, Bottom,
-    TopLeft, TopRight, BottomLeft, BottomRight,
+    Left,
+    Right,
+    Top,
+    Bottom,
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
 }
 
 impl Direction {
-    #[must_use] 
+    #[must_use]
     pub const fn opposite(&self) -> Self {
         match self {
             Self::Left => Self::Right,
@@ -22,7 +28,7 @@ impl Direction {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn to_vector(&self) -> Vec2 {
         let v = match self {
             Self::Left => Vec2::new(-1.0, 0.0),

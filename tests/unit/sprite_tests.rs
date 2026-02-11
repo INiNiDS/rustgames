@@ -1,6 +1,6 @@
+use glam::{Vec2, Vec4};
 use rustgames::graphics::render::instance::SpriteInstance;
 use rustgames::graphics::{AnimationMode, SpriteAnimation};
-use glam::{Vec2, Vec4};
 
 #[test]
 fn simple_defaults() {

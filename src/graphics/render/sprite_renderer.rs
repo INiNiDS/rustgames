@@ -1,8 +1,8 @@
+use crate::graphics::Camera;
 use crate::graphics::render::instance::SpriteInstance;
 use crate::graphics::render::pipeline;
 use crate::graphics::render::texture::Texture;
 use crate::graphics::sprite::{QUAD_INDICES, QUAD_VERTICES};
-use crate::graphics::Camera;
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
 
 /// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
@@ -37,9 +37,15 @@ impl SpriteRenderer {
         let instance_buffer = Self::create_instance_buffer(device, initial_capacity);
 
         Self {
-            render_pipeline, vertex_buffer, index_buffer, num_indices,
-            instance_buffer, instance_capacity: initial_capacity,
-            texture_bind_group_layout: texture_bgl, camera_bind_group, camera_buffer,
+            render_pipeline,
+            vertex_buffer,
+            index_buffer,
+            num_indices,
+            instance_buffer,
+            instance_capacity: initial_capacity,
+            texture_bind_group_layout: texture_bgl,
+            camera_bind_group,
+            camera_buffer,
         }
     }
 
@@ -56,7 +62,9 @@ impl SpriteRenderer {
         instance_count: u32,
         start_instance: u32,
     ) {
-        if instance_count == 0 { return; }
+        if instance_count == 0 {
+            return;
+        }
         let bind_group = self.create_texture_bind_group(device, texture);
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_bind_group(0, &self.camera_bind_group, &[]);
@@ -64,7 +72,11 @@ impl SpriteRenderer {
         render_pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
         render_pass.set_vertex_buffer(1, self.instance_buffer.slice(..));
         render_pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint16);
-        render_pass.draw_indexed(0..self.num_indices, 0, start_instance..(start_instance + instance_count));
+        render_pass.draw_indexed(
+            0..self.num_indices,
+            0,
+            start_instance..(start_instance + instance_count),
+        );
     }
 
     pub fn prepare_batch(
@@ -73,11 +85,17 @@ impl SpriteRenderer {
         queue: &wgpu::Queue,
         all_instances: &[SpriteInstance],
     ) {
-        if all_instances.is_empty() { return; }
+        if all_instances.is_empty() {
+            return;
+        }
         if all_instances.len() > self.instance_capacity {
             self.resize_instance_buffer(device, all_instances.len());
         }
-        queue.write_buffer(&self.instance_buffer, 0, bytemuck::cast_slice(all_instances));
+        queue.write_buffer(
+            &self.instance_buffer,
+            0,
+            bytemuck::cast_slice(all_instances),
+        );
     }
 
     fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
@@ -133,7 +151,11 @@ impl SpriteRenderer {
         (vb, ib, QUAD_INDICES.len() as u32)
     }
 
-    fn create_texture_bind_group(&self, device: &wgpu::Device, texture: &Texture) -> wgpu::BindGroup {
+    fn create_texture_bind_group(
+        &self,
+        device: &wgpu::Device,
+        texture: &Texture,
+    ) -> wgpu::BindGroup {
         device.create_bind_group(&wgpu::BindGroupDescriptor {
             label: Some("texture_bind_group"),
             layout: &self.texture_bind_group_layout,

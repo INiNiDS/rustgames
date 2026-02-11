@@ -1,7 +1,7 @@
-use rustgames::text::{
-    RichTextParser, TextWrapper, FontWeight, TextStyle, TextAlignment, VerticalAlignment,
-};
 use rustgames::graphics::color::Color;
+use rustgames::text::{
+    FontWeight, RichTextParser, TextAlignment, TextStyle, TextWrapper, VerticalAlignment,
+};
 
 #[test]
 fn wrap_text_splits_into_lines() {

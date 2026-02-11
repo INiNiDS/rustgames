@@ -11,6 +11,7 @@ struct EffectsDemo {
     texture_size: Vec2,
     text_id: usize,
     is_aggressive: bool,
+    is_complete: bool,
 }
 
 impl Game for EffectsDemo {
@@ -26,19 +27,24 @@ impl Game for EffectsDemo {
         println!("  ENTER - Entrance animation");
         println!("  ESC   - Exit");
 
-
         engine
             .get_texture_controller()
             .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
 
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/mistral.png"),
-            "sprite",
-        );
+        engine
+            .get_texture_controller()
+            .load_texture(include_bytes!("../src/mistral.png"), "sprite");
 
         engine.get_camera().set_zoom(1.0);
 
-        self.text_id = engine.get_text_system().add_text("Привет! Я Луна! Как твои дела?", TextSpeed::Slow, 50.0, 50.0);
+        self.text_id = engine.get_text_system().add_text(
+            "Привет! Я Луна! Как твои дела?",
+            TextSpeed::Slow,
+            50.0,
+            50.0,
+            TextStyle::new(64.0).with_color(Color::YELLOW),
+            PunctuationConfig::DEFAULT,
+        );
 
         let entrance = TimelineBuilder::new()
             .parallel(vec![
@@ -101,9 +107,7 @@ impl EffectsDemo {
             .was_key_just_pressed(KeyCode::Digit3)
         {
             self.renderer_alpha
-                .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(
-                    Vec2::ZERO,
-                )));
+                .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::ZERO)));
             println!("Sparkles!");
         }
 
@@ -115,11 +119,10 @@ impl EffectsDemo {
                 self.renderer_alpha.clear_overlay();
                 println!("Overlay removed");
             } else {
-                self.renderer_alpha
-                    .add_effect(VfxEffect::Overlay {
-                        color: Color::BLUE,
-                        alpha: 0.25,
-                    });
+                self.renderer_alpha.add_effect(VfxEffect::Overlay {
+                    color: Color::BLUE,
+                    alpha: 0.25,
+                });
                 println!("Blue overlay applied");
             }
         }
@@ -129,9 +132,7 @@ impl EffectsDemo {
             .was_key_just_pressed(KeyCode::Digit5)
         {
             self.renderer_alpha
-                .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(
-                    Vec2::ZERO,
-                )));
+                .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(Vec2::ZERO)));
             println!("Explosion!");
         }
 
@@ -178,15 +179,21 @@ impl EffectsDemo {
     }
 
     fn update_scene(&mut self, engine: &mut Engine) {
-
-        let sprite_size = engine.get_texture_controller()
+        let sprite_size = engine
+            .get_texture_controller()
             .get_texture("sprite")
             .map_or(self.texture_size, |tex| {
                 self.texture_size = tex.size;
                 self.texture_size
             });
 
-        engine.get_texture_controller().use_texture("background", Vec2::new(2560.0, 1440.0), Vec2::ZERO, 0.0, 1.0);
+        engine.get_texture_controller().use_texture(
+            "background",
+            Vec2::new(2560.0, 1440.0),
+            Vec2::ZERO,
+            0.0,
+            1.0,
+        );
 
         let visual = engine
             .get_animation_system()
@@ -203,17 +210,35 @@ impl EffectsDemo {
         let frame = self.renderer_alpha.build_frame();
 
         for particle_inst in &frame.particle {
-            engine.get_texture_controller().add_instance("sprite", *particle_inst);
+            engine
+                .get_texture_controller()
+                .add_instance("sprite", *particle_inst);
         }
 
         let text_progress = engine.get_text_system().get_progress(self.text_id);
 
         if text_progress > 0.6 && !self.is_aggressive {
             self.is_aggressive = true;
-            let _ = engine.get_text_system().set_text(self.text_id, "Я тебя убью...", TextSpeed::Instant);
-        } else if text_progress >= 0.7 && self.is_aggressive {
-            self.is_aggressive = false;
-            let _ = engine.get_text_system().set_text(self.text_id, "Привет! Я Луна! Как твои дела?", TextSpeed::Instant);
+            let _ = engine.get_text_system().set_text(
+                self.text_id,
+                "Я тебя убью...",
+                TextSpeed::Slow,
+                TextStyle::new(64.0).with_color(Color::RED),
+                PunctuationConfig::INSTANT,
+            );
+        } else if self.is_aggressive
+            && engine.get_text_system().is_complete(self.text_id)
+            && !self.is_complete
+        {
+            let _ = engine.get_text_system().set_text(
+                self.text_id,
+                "Привет! Я Луна! Как твои дела?",
+                TextSpeed::Slow,
+                TextStyle::new(64.0).with_color(Color::YELLOW),
+                PunctuationConfig::default(),
+            );
+            let _ = engine.get_text_system().set_progress(self.text_id, 0.6);
+            self.is_complete = true;
         }
 
         if self.time >= 0.5 {
@@ -237,6 +262,7 @@ fn main() {
         texture_size: Vec2::new(128.0, 128.0),
         text_id: 0,
         is_aggressive: false,
+        is_complete: false,
     };
 
     let window_config = WindowConfig {
