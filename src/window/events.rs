@@ -1,0 +1,173 @@
+use winit::event::{
+    ElementState, MouseButton as WinitMouseButton, WindowEvent as WinitWindowEvent,
+};
+pub use winit::keyboard::KeyCode;
+use winit::keyboard::PhysicalKey;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum MouseButton {
+    Left,
+    Right,
+    Middle,
+    Other(u16),
+}
+
+impl From<WinitMouseButton> for MouseButton {
+    fn from(button: WinitMouseButton) -> Self {
+        match button {
+            WinitMouseButton::Left => Self::Left,
+            WinitMouseButton::Right => Self::Right,
+            WinitMouseButton::Middle => Self::Middle,
+            WinitMouseButton::Back => Self::Other(3),
+            WinitMouseButton::Forward => Self::Other(4),
+            WinitMouseButton::Other(id) => Self::Other(id),
+        }
+    }
+}
+
+/// An input or window event consumed by the game loop.
+#[derive(Debug, Clone, Copy)]
+pub enum Event {
+    WindowResized(u32, u32),
+    WindowClosed,
+    WindowFocused(bool),
+    KeyPressed(KeyCode),
+    KeyReleased(KeyCode),
+    MouseMoved(f32, f32),
+    MousePressed(MouseButton),
+    MouseReleased(MouseButton),
+    MouseWheel(f32),
+}
+
+/// Trait for receiving individual event callbacks from the engine.
+pub trait EventHandler {
+    fn on_key_pressed(&mut self, _key: KeyCode) {}
+    fn on_key_released(&mut self, _key: KeyCode) {}
+    fn on_mouse_moved(&mut self, _x: f32, _y: f32) {}
+    fn on_mouse_pressed(&mut self, _button: MouseButton) {}
+    fn on_mouse_released(&mut self, _button: MouseButton) {}
+    fn on_mouse_wheel(&mut self, _delta: f32) {}
+    fn on_window_resized(&mut self, _width: u32, _height: u32) {}
+    fn on_window_focused(&mut self, _focused: bool) {}
+    fn on_window_closed(&mut self) {}
+}
+
+/// Buffers events for the current frame and tracks held-down keys.
+pub struct EventQueue {
+    events: Vec<Event>,
+    pressed_keys: std::collections::HashSet<KeyCode>,
+}
+
+impl EventQueue {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
+            events: Vec::new(),
+            pressed_keys: std::collections::HashSet::new(),
+        }
+    }
+
+    pub fn push(&mut self, event: Event) {
+        match event {
+            Event::KeyPressed(key) => {
+                self.pressed_keys.insert(key);
+            }
+            Event::KeyReleased(key) => {
+                self.pressed_keys.remove(&key);
+            }
+            _ => {}
+        }
+        self.events.push(event);
+    }
+
+    pub fn drain(&mut self) -> Vec<Event> {
+        std::mem::take(&mut self.events)
+    }
+
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        self.events.is_empty()
+    }
+
+    pub fn clear(&mut self) {
+        self.events.clear();
+    }
+
+    #[must_use]
+    pub fn is_key_pressed(&self, key: KeyCode) -> bool {
+        self.pressed_keys.contains(&key)
+    }
+
+    #[must_use]
+    pub fn was_key_just_pressed(&self, key: KeyCode) -> bool {
+        self.events
+            .iter()
+            .any(|e| matches!(e, Event::KeyPressed(k) if *k == key))
+    }
+}
+
+impl Default for EventQueue {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[must_use]
+pub fn convert_window_event(event: &WinitWindowEvent) -> Option<Event> {
+    match event {
+        WinitWindowEvent::Resized(_)
+        | WinitWindowEvent::CloseRequested
+        | WinitWindowEvent::Focused(_) => convert_window_lifecycle_event(event),
+        _ => convert_input_event(event),
+    }
+}
+
+const fn convert_window_lifecycle_event(event: &WinitWindowEvent) -> Option<Event> {
+    match event {
+        WinitWindowEvent::Resized(size) => Some(Event::WindowResized(size.width, size.height)),
+        WinitWindowEvent::CloseRequested => Some(Event::WindowClosed),
+        WinitWindowEvent::Focused(focused) => Some(Event::WindowFocused(*focused)),
+        _ => None,
+    }
+}
+
+fn convert_input_event(event: &WinitWindowEvent) -> Option<Event> {
+    match event {
+        WinitWindowEvent::KeyboardInput { event, .. } => convert_keyboard_event(event),
+        WinitWindowEvent::CursorMoved { position, .. } => {
+            Some(Event::MouseMoved(position.x as f32, position.y as f32))
+        }
+        WinitWindowEvent::MouseInput { state, button, .. } => {
+            Some(convert_mouse_button_event(*state, *button))
+        }
+        WinitWindowEvent::MouseWheel { delta, .. } => Some(convert_mouse_wheel_event(delta)),
+        _ => None,
+    }
+}
+
+const fn convert_keyboard_event(event: &winit::event::KeyEvent) -> Option<Event> {
+    if let PhysicalKey::Code(keycode) = event.physical_key {
+        match event.state {
+            ElementState::Pressed => Some(Event::KeyPressed(keycode)),
+            ElementState::Released => Some(Event::KeyReleased(keycode)),
+        }
+    } else {
+        None
+    }
+}
+
+fn convert_mouse_button_event(state: ElementState, button: WinitMouseButton) -> Event {
+    let button = MouseButton::from(button);
+    match state {
+        ElementState::Pressed => Event::MousePressed(button),
+        ElementState::Released => Event::MouseReleased(button),
+    }
+}
+
+fn convert_mouse_wheel_event(delta: &winit::event::MouseScrollDelta) -> Event {
+    let delta_y = match delta {
+        winit::event::MouseScrollDelta::LineDelta(_, y) => *y,
+        winit::event::MouseScrollDelta::PixelDelta(pos) => pos.y as f32 / 100.0,
+    };
+    Event::MouseWheel(delta_y)
+}
