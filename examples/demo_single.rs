@@ -22,11 +22,11 @@ impl Game for SingleDemo {
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/mistral.png"), "demo_sprite");
+            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "demo_sprite");
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
+            .load_texture(include_bytes!("../src/static/textures/OIP-475081084.jpg"), "background");
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);

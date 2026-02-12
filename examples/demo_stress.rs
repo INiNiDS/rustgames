@@ -33,7 +33,7 @@ impl Game for StressDemo {
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/mistral.png"), "stress_sprite");
+            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "stress_sprite");
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);

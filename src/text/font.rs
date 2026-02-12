@@ -1,14 +1,14 @@
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 
 pub const DEFAULT_NORMAL_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/Caveat-Regular.ttf");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Regular.ttf");
 pub const DEFAULT_BOLD_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/Caveat-Bold.ttf");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Bold.ttf");
 pub const DEFAULT_MEDIUM_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/Caveat-Medium.ttf");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Medium.ttf");
 pub const DEFAULT_SEMIBOLD_FONT: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/src/static/Caveat-SemiBold.ttf"
+    "/src/static/font/Caveat-SemiBold.ttf"
 );
 
 /// A loaded font with raw byte data and a `FontArc` handle for GPU text

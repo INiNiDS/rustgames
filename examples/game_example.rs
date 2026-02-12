@@ -29,11 +29,11 @@ impl Game for EffectsDemo {
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/OIP-475081084.jpg"), "background");
+            .load_texture(include_bytes!("../src/static/textures/OIP-475081084.jpg"), "background");
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/mistral.png"), "sprite");
+            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "sprite");
 
         engine.get_camera().set_zoom(1.0);
 

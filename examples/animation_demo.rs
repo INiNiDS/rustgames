@@ -59,7 +59,7 @@ impl Game for AnimationDemo {
 
         engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/mistral.png"), "animation_sheet");
+            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "animation_sheet");
 
         engine.get_camera().set_zoom(300.0);
 
