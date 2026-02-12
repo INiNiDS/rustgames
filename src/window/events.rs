@@ -138,14 +138,14 @@ fn convert_input_event(event: &WinitWindowEvent) -> Option<Event> {
             Some(Event::MouseMoved(position.x as f32, position.y as f32))
         }
         WinitWindowEvent::MouseInput { state, button, .. } => {
-            convert_mouse_button_event(*state, *button)
+            Some(convert_mouse_button_event(*state, *button))
         }
-        WinitWindowEvent::MouseWheel { delta, .. } => convert_mouse_wheel_event(delta),
+        WinitWindowEvent::MouseWheel { delta, .. } => Some(convert_mouse_wheel_event(delta)),
         _ => None,
     }
 }
 
-fn convert_keyboard_event(event: &winit::event::KeyEvent) -> Option<Event> {
+const fn convert_keyboard_event(event: &winit::event::KeyEvent) -> Option<Event> {
     if let PhysicalKey::Code(keycode) = event.physical_key {
         match event.state {
             ElementState::Pressed => Some(Event::KeyPressed(keycode)),
@@ -156,18 +156,18 @@ fn convert_keyboard_event(event: &winit::event::KeyEvent) -> Option<Event> {
     }
 }
 
-fn convert_mouse_button_event(state: ElementState, button: WinitMouseButton) -> Option<Event> {
+fn convert_mouse_button_event(state: ElementState, button: WinitMouseButton) -> Event {
     let button = MouseButton::from(button);
     match state {
-        ElementState::Pressed => Some(Event::MousePressed(button)),
-        ElementState::Released => Some(Event::MouseReleased(button)),
+        ElementState::Pressed => Event::MousePressed(button),
+        ElementState::Released => Event::MouseReleased(button),
     }
 }
 
-fn convert_mouse_wheel_event(delta: &winit::event::MouseScrollDelta) -> Option<Event> {
+fn convert_mouse_wheel_event(delta: &winit::event::MouseScrollDelta) -> Event {
     let delta_y = match delta {
         winit::event::MouseScrollDelta::LineDelta(_, y) => *y,
         winit::event::MouseScrollDelta::PixelDelta(pos) => pos.y as f32 / 100.0,
     };
-    Some(Event::MouseWheel(delta_y))
+    Event::MouseWheel(delta_y)
 }

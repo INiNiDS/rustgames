@@ -69,11 +69,7 @@ impl AnimEffect {
     }
 
     #[must_use]
-    pub fn apply_to_config(
-        &self,
-        state: VisualState,
-        config: CustomCombinedMode,
-    ) -> VisualState {
+    pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
             opacity: Self::apply_val(state.opacity, self.opacity_mul, config.opacity),
             position: Self::apply_vec2(state.position, self.offset_add, config.position),

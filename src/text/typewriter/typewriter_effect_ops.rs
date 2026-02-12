@@ -36,26 +36,23 @@ impl TypewriterEffect {
             return false;
         }
         #[allow(clippy::cast_sign_loss)]
-        { self.visible_chars = (total_chars as f32 * progress).round() as usize; }
+        {
+            self.visible_chars = (total_chars as f32 * progress).round() as usize;
+        }
         self.complete = self.visible_chars >= total_chars;
-        if self.complete { self.visible_chars = total_chars; }
+        if self.complete {
+            self.visible_chars = total_chars;
+        }
         self.elapsed = 0.0;
         self.pause_timer = 0.0;
         true
     }
 
-    pub const fn set_punctuation_config(
-        &mut self,
-        punctuation_config: PunctuationConfig,
-    ) {
+    pub const fn set_punctuation_config(&mut self, punctuation_config: PunctuationConfig) {
         self.punctuation_config = punctuation_config;
     }
 
-    pub(super) fn while_need_to_update(
-        &mut self,
-        seconds_per_char: f32,
-        text_len: usize,
-    ) -> bool {
+    pub(super) fn while_need_to_update(&mut self, seconds_per_char: f32, text_len: usize) -> bool {
         self.elapsed -= seconds_per_char;
 
         if self.visible_chars >= text_len {

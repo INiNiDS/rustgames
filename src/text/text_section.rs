@@ -1,5 +1,5 @@
-use crate::text::text_style::{TextShadow, TextWrapMode};
 use crate::text::FontWeight;
+use crate::text::text_style::{TextShadow, TextWrapMode};
 use wgpu_text::glyph_brush::{FontId, HorizontalAlign, VerticalAlign};
 
 use crate::prelude::{TextAlignment, VerticalAlignment};

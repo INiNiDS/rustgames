@@ -1,6 +1,6 @@
 use glam::Vec2;
-use rustgames::graphics::effects::TraumaShake;
 use rustgames::graphics::Camera;
+use rustgames::graphics::effects::TraumaShake;
 
 #[test]
 fn test_trauma_shake_decay() {

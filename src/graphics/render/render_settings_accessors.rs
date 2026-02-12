@@ -77,9 +77,7 @@ impl RenderSettings {
         &mut self.camera
     }
 
-    pub const fn get_texture_controller_mut(
-        &mut self,
-    ) -> &mut TextureSystem {
+    pub const fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
         &mut self.texture_system
     }
 
@@ -87,9 +85,7 @@ impl RenderSettings {
         &mut self.vfx_system
     }
 
-    pub const fn get_animation_system_mut(
-        &mut self,
-    ) -> &mut AnimationSystem {
+    pub const fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
         &mut self.animation_system
     }
 }

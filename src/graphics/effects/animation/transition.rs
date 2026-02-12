@@ -23,10 +23,7 @@ pub enum Transition {
     /// Pixel-dissolve effect over `duration` seconds.
     Dissolve(f32),
     /// Directional wipe from one edge.
-    Wipe {
-        direction: Direction,
-        duration: f32,
-    },
+    Wipe { direction: Direction, duration: f32 },
 }
 
 impl Transition {
@@ -35,9 +32,7 @@ impl Transition {
     pub const fn duration(&self) -> f32 {
         match self {
             Self::Instant => 0.0,
-            Self::Fade(d)
-            | Self::FadeToBlack(d)
-            | Self::Dissolve(d) => *d,
+            Self::Fade(d) | Self::FadeToBlack(d) | Self::Dissolve(d) => *d,
             Self::Wipe { duration, .. } => *duration,
         }
     }

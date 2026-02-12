@@ -34,11 +34,25 @@ impl TypewriterEffect {
         let chars: Vec<char> = full_text.chars().collect();
         let chars_per_second = speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
-        let visible_chars = if complete { full_text.chars().count() } else { 0 };
+        let visible_chars = if complete {
+            full_text.chars().count()
+        } else {
+            0
+        };
         Self {
-            chars, full_text, visible_chars, chars_per_second,
-            elapsed: 0.0, paused: false, complete, id, x, y,
-            style, pause_timer: 0.0, punctuation_config,
+            chars,
+            full_text,
+            visible_chars,
+            chars_per_second,
+            elapsed: 0.0,
+            paused: false,
+            complete,
+            id,
+            x,
+            y,
+            style,
+            pause_timer: 0.0,
+            punctuation_config,
         }
     }
 

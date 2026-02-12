@@ -39,11 +39,18 @@ impl RenderSettings {
         let (camera, text_system, sprite_renderer) =
             Self::configure_inner_modules(size, &device, &config);
         Self {
-            window, surface, config,
-            device: device.clone(), queue: queue.clone(),
-            camera, text_system, sprite_renderer,
-            background_color: Color::WHITE, base: VisualState::default(),
-            max_width_text: size.width as f32, max_height_text: size.height as f32,
+            window,
+            surface,
+            config,
+            device: device.clone(),
+            queue: queue.clone(),
+            camera,
+            text_system,
+            sprite_renderer,
+            background_color: Color::WHITE,
+            base: VisualState::default(),
+            max_width_text: size.width as f32,
+            max_height_text: size.height as f32,
             animation_system: AnimationSystem::new(),
             texture_system: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
@@ -75,7 +82,9 @@ impl RenderSettings {
         self.window.set_resizable(config.resizable);
         self.background_color = config.background_color;
         Self::apply_fullscreen(&self.window, config);
-        let _ = self.window.request_inner_size(LogicalSize::new(config.width, config.height));
+        let _ = self
+            .window
+            .request_inner_size(LogicalSize::new(config.width, config.height));
     }
 
     fn apply_fullscreen(window: &Window, config: &WindowConfig) {
@@ -90,7 +99,9 @@ impl RenderSettings {
         window: Arc<Window>,
     ) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
         let instance = wgpu::Instance::default();
-        let surface = instance.create_surface(window).expect("Failed to create surface");
+        let surface = instance
+            .create_surface(window)
+            .expect("Failed to create surface");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,

@@ -97,10 +97,7 @@ impl RichTextParser {
         state.segments
     }
 
-    fn process_tag(
-        state: &mut ParseState,
-        chars: &mut std::iter::Peekable<std::str::Chars<'_>>,
-    ) {
+    fn process_tag(state: &mut ParseState, chars: &mut std::iter::Peekable<std::str::Chars<'_>>) {
         let is_closing = chars.peek() == Some(&'/');
         if is_closing {
             chars.next();

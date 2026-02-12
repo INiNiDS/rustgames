@@ -2,7 +2,7 @@ use crate::prelude::{Font, TextStyle};
 use crate::text::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT,
 };
-use crate::text::text_section::{map_h_alignment, map_v_alignment, resolve_font_id, QueuedSection};
+use crate::text::text_section::{QueuedSection, map_h_alignment, map_v_alignment, resolve_font_id};
 use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
@@ -121,10 +121,7 @@ impl TextSystem {
         self.brush.draw(rpass);
     }
 
-    fn build_section_pair<'a>(
-        out: &mut Vec<Section<'a>>,
-        q: &'a QueuedSection,
-    ) {
+    fn build_section_pair<'a>(out: &mut Vec<Section<'a>>, q: &'a QueuedSection) {
         let (lb, bounds) = Self::resolve_wrap(q);
         let layout = Layout::default()
             .h_align(q.h_align)
@@ -169,7 +166,10 @@ impl TextSystem {
         data.iter()
             .map(|(s, fid, c)| {
                 let color = color_override.unwrap_or(*c);
-                Text::new(s).with_color(color).with_scale(scale).with_font_id(*fid)
+                Text::new(s)
+                    .with_color(color)
+                    .with_scale(scale)
+                    .with_font_id(*fid)
             })
             .collect()
     }
