@@ -4,6 +4,7 @@ pub(crate) mod text_font_ops;
 pub mod text_renderer;
 pub mod text_style;
 pub mod text_system;
+pub(crate) mod text_typewriter_ops;
 pub mod text_wrapper;
 pub mod typewriter;
 

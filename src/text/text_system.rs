@@ -1,12 +1,9 @@
-use crate::prelude::{
-    Font, TextAlignment, TextSpeed, TextStyle, TypewriterEffect, VerticalAlignment,
-};
+use crate::prelude::{Font, TextAlignment, TextStyle, VerticalAlignment};
 use crate::text::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT,
 };
 use crate::text::text_style::{TextShadow, TextWrapMode};
-use crate::text::{FontWeight, PunctuationConfig, RichTextParser, TypewriterInstance};
-use std::slice::Iter;
+use crate::text::{FontWeight, RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{
@@ -19,7 +16,7 @@ pub struct TextSystem {
     pub(crate) fonts: Vec<FontArc>,
     brush: wgpu_text::TextBrush<FontArc>,
     queued_sections: Vec<QueuedSection>,
-    typewriter_instance: TypewriterInstance,
+    pub(crate) typewriter_instance: TypewriterInstance,
 }
 
 impl TextSystem {
@@ -177,104 +174,6 @@ impl TextSystem {
         self.queued_sections.clear();
 
         self.brush.draw(rpass);
-    }
-
-    pub fn add_text(
-        &mut self,
-        text: impl Into<String>,
-        speed: TextSpeed,
-        x: f32,
-        y: f32,
-        style: TextStyle,
-        punctuation_config: PunctuationConfig,
-    ) -> usize {
-        self.typewriter_instance
-            .add_typewriter_effect(text, speed, x, y, style, punctuation_config)
-    }
-
-    pub fn remove_text(&mut self, id: usize) {
-        self.typewriter_instance.remove_typewriter_effect(id);
-    }
-
-    pub fn update(&mut self, delta_time: f32) {
-        self.typewriter_instance.update(delta_time);
-    }
-
-    pub fn skip(&mut self, id: usize) {
-        self.typewriter_instance.skip_effect(id);
-    }
-
-    pub fn pause(&mut self, id: usize) {
-        self.typewriter_instance.pause_effect(id);
-    }
-
-    pub fn resume(&mut self, id: usize) {
-        self.typewriter_instance.resume_effect(id);
-    }
-
-    pub fn set_speed(&mut self, id: usize, speed: TextSpeed) {
-        self.typewriter_instance.set_effect_speed(id, speed);
-    }
-
-    #[must_use]
-    pub fn set_text(
-        &mut self,
-        id: usize,
-        text: impl Into<String>,
-        speed: TextSpeed,
-        style: TextStyle,
-        punctuation_config: PunctuationConfig,
-    ) -> bool {
-        self.typewriter_instance
-            .set_text(id, text, speed, style, punctuation_config)
-    }
-
-    #[must_use]
-    pub fn set_progress(&mut self, id: usize, progress: f32) -> bool {
-        self.typewriter_instance.set_progress(id, progress)
-    }
-
-    #[must_use]
-    pub fn get_visible_text(&self, id: usize) -> Option<&str> {
-        self.typewriter_instance
-            .get_effect(id)
-            .map(TypewriterEffect::visible_text)
-    }
-
-    #[must_use]
-    pub fn is_complete(&self, id: usize) -> bool {
-        self.typewriter_instance
-            .get_effect(id)
-            .is_some_and(TypewriterEffect::is_complete)
-    }
-
-    #[must_use]
-    pub fn get_progress(&self, id: usize) -> f32 {
-        self.typewriter_instance
-            .get_effect(id)
-            .map_or(0.0, TypewriterEffect::progress)
-    }
-
-    pub fn effects(&self) -> Iter<'_, TypewriterEffect> {
-        self.typewriter_instance.get_typewriter_effects()
-    }
-
-    pub fn effects_mut(&mut self) -> std::slice::IterMut<'_, TypewriterEffect> {
-        self.typewriter_instance.get_typewriter_effects_mut()
-    }
-
-    #[must_use]
-    pub fn effect(&self, id: usize) -> Option<&TypewriterEffect> {
-        self.typewriter_instance.get_effect(id)
-    }
-
-    pub fn effect_mut(&mut self, id: usize) -> Option<&mut TypewriterEffect> {
-        self.typewriter_instance.get_effect_mut(id)
-    }
-
-    #[must_use]
-    pub const fn is_empty(&self) -> bool {
-        self.typewriter_instance.is_empty()
     }
 
     const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
