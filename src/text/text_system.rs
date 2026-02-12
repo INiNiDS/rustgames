@@ -1,14 +1,13 @@
-use crate::prelude::{Font, TextAlignment, TextStyle, VerticalAlignment};
+use crate::prelude::{Font, TextStyle};
 use crate::text::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT,
 };
-use crate::text::text_style::{TextShadow, TextWrapMode};
-use crate::text::{FontWeight, RichTextParser, TypewriterInstance};
+use crate::text::text_section::{map_h_alignment, map_v_alignment, resolve_font_id, QueuedSection};
+use crate::text::text_style::TextWrapMode;
+use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
-use wgpu_text::glyph_brush::{
-    BuiltInLineBreaker, FontId, HorizontalAlign, Layout, Section, Text, VerticalAlign,
-};
+use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text};
 
 /// Manages text rendering including typewriter effects, font loading, and
 /// styled text queueing for GPU draw calls.
@@ -88,7 +87,7 @@ impl TextSystem {
         let text_data = segments
             .into_iter()
             .map(|seg| {
-                let font_id = Self::resolve_font_id(&seg.attrs);
+                let font_id = resolve_font_id(&seg.attrs);
                 let color = seg.attrs.color.unwrap_or(style.color).to_array();
                 (seg.text, font_id, color)
             })
@@ -100,8 +99,8 @@ impl TextSystem {
             y,
             bounds: (max_w, max_h),
             scale: style.size,
-            h_align: Self::map_h_alignment(style.alignment),
-            v_align: Self::map_v_alignment(style.vertical_alignment),
+            h_align: map_h_alignment(style.alignment),
+            v_align: map_v_alignment(style.vertical_alignment),
             shadow: style.shadow,
             wrap_mode: style.wrap_mode,
         });
@@ -114,105 +113,64 @@ impl TextSystem {
         }
 
         let mut all_sections = Vec::new();
-
         for q in &self.queued_sections {
-            let (line_breaker, bounds) = match q.wrap_mode {
-                TextWrapMode::NoWrap => (
-                    BuiltInLineBreaker::AnyCharLineBreaker,
-                    (f32::INFINITY, q.bounds.1),
-                ),
-                TextWrapMode::Word => (BuiltInLineBreaker::UnicodeLineBreaker, q.bounds),
-                TextWrapMode::Character => (BuiltInLineBreaker::AnyCharLineBreaker, q.bounds),
-            };
+            Self::build_section_pair(&mut all_sections, q);
+        }
+        self.brush.queue(device, queue, all_sections).unwrap();
+        self.queued_sections.clear();
+        self.brush.draw(rpass);
+    }
 
-            let layout = Layout::default()
-                .h_align(q.h_align)
-                .v_align(q.v_align)
-                .line_breaker(line_breaker);
+    fn build_section_pair<'a>(
+        out: &mut Vec<Section<'a>>,
+        q: &'a QueuedSection,
+    ) {
+        let (lb, bounds) = Self::resolve_wrap(q);
+        let layout = Layout::default()
+            .h_align(q.h_align)
+            .v_align(q.v_align)
+            .line_breaker(lb);
 
-            if let Some(shadow) = q.shadow {
-                let shadow_texts: Vec<Text> = q
-                    .text_data
-                    .iter()
-                    .map(|(s, fid, _)| {
-                        Text::new(s)
-                            .with_color(shadow.color.to_array())
-                            .with_scale(q.scale)
-                            .with_font_id(*fid)
-                    })
-                    .collect();
-
-                all_sections.push(Section {
-                    screen_position: (q.x + shadow.offset.0, q.y + shadow.offset.1),
-                    bounds,
-                    text: shadow_texts,
-                    layout,
-                });
-            }
-
-            let main_texts: Vec<Text> = q
-                .text_data
-                .iter()
-                .map(|(s, fid, c)| {
-                    Text::new(s)
-                        .with_color(*c)
-                        .with_scale(q.scale)
-                        .with_font_id(*fid)
-                })
-                .collect();
-
-            all_sections.push(Section {
-                screen_position: (q.x, q.y),
+        if let Some(shadow) = q.shadow {
+            let texts = Self::make_texts(&q.text_data, q.scale, Some(shadow.color.to_array()));
+            out.push(Section {
+                screen_position: (q.x + shadow.offset.0, q.y + shadow.offset.1),
                 bounds,
-                text: main_texts,
+                text: texts,
                 layout,
             });
         }
 
-        self.brush.queue(device, queue, all_sections).unwrap();
-
-        self.queued_sections.clear();
-
-        self.brush.draw(rpass);
+        let texts = Self::make_texts(&q.text_data, q.scale, None);
+        out.push(Section {
+            screen_position: (q.x, q.y),
+            bounds,
+            text: texts,
+            layout,
+        });
     }
 
-    const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
-        match (attrs.weight, attrs.italic) {
-            (_, true) => FontId(2),
-            (FontWeight::Bold, _) => FontId(1),
-            (FontWeight::SemiBold, _) => FontId(4),
-            (FontWeight::Medium, _) => FontId(3),
-            (FontWeight::Normal, _) => FontId(0),
-            (FontWeight::Light, _) => FontId(5),
-            (FontWeight::ExtraBold, _) => FontId(6),
+    fn resolve_wrap(q: &QueuedSection) -> (BuiltInLineBreaker, (f32, f32)) {
+        match q.wrap_mode {
+            TextWrapMode::NoWrap => (
+                BuiltInLineBreaker::AnyCharLineBreaker,
+                (f32::INFINITY, q.bounds.1),
+            ),
+            TextWrapMode::Word => (BuiltInLineBreaker::UnicodeLineBreaker, q.bounds),
+            TextWrapMode::Character => (BuiltInLineBreaker::AnyCharLineBreaker, q.bounds),
         }
     }
 
-    const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
-        match align {
-            TextAlignment::Left | TextAlignment::Justify => HorizontalAlign::Left,
-            TextAlignment::Center => HorizontalAlign::Center,
-            TextAlignment::Right => HorizontalAlign::Right,
-        }
+    fn make_texts(
+        data: &[(String, FontId, [f32; 4])],
+        scale: f32,
+        color_override: Option<[f32; 4]>,
+    ) -> Vec<Text<'_>> {
+        data.iter()
+            .map(|(s, fid, c)| {
+                let color = color_override.unwrap_or(*c);
+                Text::new(s).with_color(color).with_scale(scale).with_font_id(*fid)
+            })
+            .collect()
     }
-
-    const fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
-        match align {
-            VerticalAlignment::Top => VerticalAlign::Top,
-            VerticalAlignment::Middle => VerticalAlign::Center,
-            VerticalAlignment::Bottom => VerticalAlign::Bottom,
-        }
-    }
-}
-
-struct QueuedSection {
-    text_data: Vec<(String, FontId, [f32; 4])>,
-    x: f32,
-    y: f32,
-    bounds: (f32, f32),
-    scale: f32,
-    h_align: HorizontalAlign,
-    v_align: VerticalAlign,
-    shadow: Option<TextShadow>,
-    wrap_mode: TextWrapMode,
 }

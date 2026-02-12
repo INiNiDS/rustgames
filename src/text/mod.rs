@@ -2,6 +2,7 @@ pub mod alignment;
 pub mod font;
 pub(crate) mod text_font_ops;
 pub mod text_renderer;
+pub(crate) mod text_section;
 pub mod text_style;
 pub mod text_system;
 pub(crate) mod text_typewriter_ops;

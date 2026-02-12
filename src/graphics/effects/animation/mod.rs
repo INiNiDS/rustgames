@@ -2,6 +2,7 @@ pub(crate) mod animation_group_ops;
 pub mod animation_instance;
 pub mod animation_mode;
 pub(crate) mod animation_system;
+pub(crate) mod animation_system_ext;
 pub mod direction;
 pub mod easing;
 pub mod sprite_animation;
