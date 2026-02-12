@@ -12,6 +12,30 @@ impl TextWrapper {
         let mut current_line = String::new();
         let mut current_width = 0.0;
 
+        Self::wrap_words(
+            text,
+            max_width,
+            char_width,
+            &mut lines,
+            &mut current_line,
+            &mut current_width,
+        );
+
+        if !current_line.is_empty() {
+            lines.push(current_line);
+        }
+
+        lines
+    }
+
+    fn wrap_words(
+        text: &str,
+        max_width: f32,
+        char_width: f32,
+        lines: &mut Vec<String>,
+        current_line: &mut String,
+        current_width: &mut f32,
+    ) {
         for word in text.split_whitespace() {
             let word_width = word.len() as f32 * char_width;
             Self::append_word(
@@ -19,17 +43,11 @@ impl TextWrapper {
                 word_width,
                 max_width,
                 char_width,
-                &mut lines,
-                &mut current_line,
-                &mut current_width,
+                lines,
+                current_line,
+                current_width,
             );
         }
-
-        if !current_line.is_empty() {
-            lines.push(current_line);
-        }
-
-        lines
     }
 
     fn append_word(

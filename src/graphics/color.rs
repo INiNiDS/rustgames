@@ -144,22 +144,26 @@ impl Color {
         let hex = hex.trim_start_matches('#');
 
         let (r, g, b, a) = match hex.len() {
-            6 => {
-                let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
-                let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
-                let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
-                (r, g, b, 255)
-            }
-            8 => {
-                let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
-                let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
-                let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
-                let a = u8::from_str_radix(&hex[6..8], 16).ok()?;
-                (r, g, b, a)
-            }
+            6 => Self::parse_rgb_hex(hex)?,
+            8 => Self::parse_rgba_hex(hex)?,
             _ => return None,
         };
 
         Some(Self::from_rgba_u8(r, g, b, a))
+    }
+
+    fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
+        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+        Some((r, g, b, 255))
+    }
+
+    fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
+        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
+        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
+        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+        let a = u8::from_str_radix(&hex[6..8], 16).ok()?;
+        Some((r, g, b, a))
     }
 }
