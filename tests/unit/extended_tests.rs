@@ -8,8 +8,8 @@ use rustgames::graphics::effects::animation::visual::{AnimEffect, VisualState};
 use rustgames::graphics::render::instance::SpriteInstance;
 use rustgames::graphics::{Animation, AnimationGroupID, Direction};
 use rustgames::prelude::PunctuationConfig;
-use rustgames::text::typewriter::{TextSpeed, TypewriterEffect};
 use rustgames::text::TextStyle;
+use rustgames::text::typewriter::{TextSpeed, TypewriterEffect};
 use rustgames::window::{Event, EventQueue, KeyCode};
 
 // ───────────────────────── Color (10 tests) ─────────────────────────

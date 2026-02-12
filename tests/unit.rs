@@ -10,6 +10,8 @@ mod easing_tests;
 mod effects_tests;
 #[path = "unit/event_tests.rs"]
 mod event_tests;
+#[path = "unit/extended_tests.rs"]
+mod extended_tests;
 #[path = "unit/sprite_animation_tests.rs"]
 mod sprite_animation_tests;
 #[path = "unit/sprite_tests.rs"]
@@ -18,5 +20,3 @@ mod sprite_tests;
 mod text_tests;
 #[path = "unit/typewriter_tests.rs"]
 mod typewriter_tests;
-#[path = "unit/extended_tests.rs"]
-mod extended_tests;
