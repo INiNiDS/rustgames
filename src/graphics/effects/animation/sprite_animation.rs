@@ -158,25 +158,29 @@ impl SpriteAnimation {
 
     const fn step_ping_pong(&mut self, last_idx: usize) {
         match self.ping_pong_dir {
-            PingPongDirection::Forward => {
-                if self.current_frame < last_idx {
-                    self.current_frame += 1;
-                } else {
-                    self.ping_pong_dir = PingPongDirection::Backward;
-                    if last_idx > 0 {
-                        self.current_frame -= 1;
-                    }
-                }
+            PingPongDirection::Forward => self.step_ping_pong_forward(last_idx),
+            PingPongDirection::Backward => self.step_ping_pong_backward(last_idx),
+        }
+    }
+
+    const fn step_ping_pong_forward(&mut self, last_idx: usize) {
+        if self.current_frame < last_idx {
+            self.current_frame += 1;
+        } else {
+            self.ping_pong_dir = PingPongDirection::Backward;
+            if last_idx > 0 {
+                self.current_frame -= 1;
             }
-            PingPongDirection::Backward => {
-                if self.current_frame > 0 {
-                    self.current_frame -= 1;
-                } else {
-                    self.ping_pong_dir = PingPongDirection::Forward;
-                    if last_idx > 0 {
-                        self.current_frame += 1;
-                    }
-                }
+        }
+    }
+
+    const fn step_ping_pong_backward(&mut self, last_idx: usize) {
+        if self.current_frame > 0 {
+            self.current_frame -= 1;
+        } else {
+            self.ping_pong_dir = PingPongDirection::Forward;
+            if last_idx > 0 {
+                self.current_frame += 1;
             }
         }
     }

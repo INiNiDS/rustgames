@@ -90,31 +90,41 @@ impl RichTextParser {
                 state.current_text.push(c);
                 continue;
             }
-
-            let is_closing = chars.peek() == Some(&'/');
-            if is_closing {
-                chars.next();
-            }
-
-            let mut tag_content = String::new();
-            while let Some(&next_char) = chars.peek() {
-                if next_char == ']' {
-                    chars.next();
-                    break;
-                }
-                tag_content.push(chars.next().unwrap());
-            }
-
-            state.flush_segment();
-
-            if is_closing {
-                state.apply_close_tag(&tag_content);
-            } else {
-                state.apply_open_tag(&tag_content);
-            }
+            Self::process_tag(&mut state, &mut chars);
         }
 
         state.flush_segment();
         state.segments
+    }
+
+    fn process_tag(
+        state: &mut ParseState,
+        chars: &mut std::iter::Peekable<std::str::Chars<'_>>,
+    ) {
+        let is_closing = chars.peek() == Some(&'/');
+        if is_closing {
+            chars.next();
+        }
+
+        let tag_content = Self::read_tag_content(chars);
+        state.flush_segment();
+
+        if is_closing {
+            state.apply_close_tag(&tag_content);
+        } else {
+            state.apply_open_tag(&tag_content);
+        }
+    }
+
+    fn read_tag_content(chars: &mut std::iter::Peekable<std::str::Chars<'_>>) -> String {
+        let mut tag_content = String::new();
+        while let Some(&next_char) = chars.peek() {
+            if next_char == ']' {
+                chars.next();
+                break;
+            }
+            tag_content.push(chars.next().unwrap());
+        }
+        tag_content
     }
 }

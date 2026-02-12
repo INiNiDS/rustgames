@@ -115,9 +115,24 @@ impl Default for EventQueue {
 #[must_use]
 pub fn convert_window_event(event: &WinitWindowEvent) -> Option<Event> {
     match event {
+        WinitWindowEvent::Resized(_)
+        | WinitWindowEvent::CloseRequested
+        | WinitWindowEvent::Focused(_) => convert_window_lifecycle_event(event),
+        _ => convert_input_event(event),
+    }
+}
+
+const fn convert_window_lifecycle_event(event: &WinitWindowEvent) -> Option<Event> {
+    match event {
         WinitWindowEvent::Resized(size) => Some(Event::WindowResized(size.width, size.height)),
         WinitWindowEvent::CloseRequested => Some(Event::WindowClosed),
         WinitWindowEvent::Focused(focused) => Some(Event::WindowFocused(*focused)),
+        _ => None,
+    }
+}
+
+fn convert_input_event(event: &WinitWindowEvent) -> Option<Event> {
+    match event {
         WinitWindowEvent::KeyboardInput { event, .. } => {
             if let PhysicalKey::Code(keycode) = event.physical_key {
                 match event.state {

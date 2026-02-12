@@ -95,29 +95,33 @@ impl ActiveAnimation {
 
         match &self.animation {
             Animation::FadeIn { .. } => AnimEffect::with_opacity(t),
-
             Animation::FadeOut { .. } => AnimEffect::with_opacity(1.0 - t),
+            Animation::SlideIn { .. }
+            | Animation::SlideOut { .. }
+            | Animation::Scale { .. }
+            | Animation::Rotate { .. } => self.transform_effect(t, size),
+            Animation::Shake { intensity, .. } => self.calculate_shake(*intensity, t),
+        }
+    }
 
+    fn transform_effect(&self, t: f32, size: Vec2) -> AnimEffect {
+        match &self.animation {
             Animation::SlideIn { from, distance, .. } => {
                 let max_offset = from.to_vector() * *distance * size;
                 AnimEffect::with_offset(max_offset * (1.0 - t))
             }
-
             Animation::SlideOut { to, distance, .. } => {
                 let max_offset = to.to_vector() * *distance * size;
                 AnimEffect::with_offset(max_offset * t)
             }
-
             Animation::Scale { from, to, .. } => {
                 let scale = Self::lerp(*from, *to, t);
                 AnimEffect::with_scale(Vec2::splat(scale))
             }
-
             Animation::Rotate { from, to, .. } => {
                 AnimEffect::with_rotation(Self::lerp(*from, *to, t))
             }
-
-            Animation::Shake { intensity, .. } => self.calculate_shake(*intensity, t),
+            _ => AnimEffect::default(),
         }
     }
 

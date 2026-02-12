@@ -9,25 +9,34 @@ impl AnimationSystem {
         let mut delay_acc = 0.0;
 
         for step in steps {
-            match step {
-                TimelineStep::Gap(t) => delay_acc += t.max(0.0),
-                TimelineStep::Single(anim, easing) => {
-                    let (id, dur) = self.spawn_instance(anim, easing, delay_acc);
-                    delay_acc += dur;
-                    ids.push(id);
-                }
-                TimelineStep::Parallel(anims) => {
-                    let mut max_len: f32 = 0.0;
-                    for (anim, easing) in anims {
-                        let (id, dur) = self.spawn_instance(anim, easing, delay_acc);
-                        max_len = max_len.max(dur);
-                        ids.push(id);
-                    }
-                    delay_acc += max_len;
-                }
-            }
+            self.process_timeline_step(step, &mut ids, &mut delay_acc);
         }
         AnimationGroupID::new(ids)
+    }
+
+    fn process_timeline_step(
+        &mut self,
+        step: TimelineStep,
+        ids: &mut Vec<usize>,
+        delay_acc: &mut f32,
+    ) {
+        match step {
+            TimelineStep::Gap(t) => *delay_acc += t.max(0.0),
+            TimelineStep::Single(anim, easing) => {
+                let (id, dur) = self.spawn_instance(anim, easing, *delay_acc);
+                *delay_acc += dur;
+                ids.push(id);
+            }
+            TimelineStep::Parallel(anims) => {
+                let mut max_len: f32 = 0.0;
+                for (anim, easing) in anims {
+                    let (id, dur) = self.spawn_instance(anim, easing, *delay_acc);
+                    max_len = max_len.max(dur);
+                    ids.push(id);
+                }
+                *delay_acc += max_len;
+            }
+        }
     }
 
     pub fn stop_all(&mut self) {

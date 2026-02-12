@@ -42,44 +42,21 @@ impl SpriteInstance {
         )
     }
 
+    const INSTANCE_ATTRIBUTES: [wgpu::VertexAttribute; 6] = [
+        wgpu::VertexAttribute { offset: 0, shader_location: 2, format: VertexFormat::Float32x4 },
+        wgpu::VertexAttribute { offset: size_of::<[f32; 4]>() as BufferAddress, shader_location: 3, format: VertexFormat::Float32x4 },
+        wgpu::VertexAttribute { offset: size_of::<[f32; 8]>() as BufferAddress, shader_location: 4, format: VertexFormat::Float32x4 },
+        wgpu::VertexAttribute { offset: size_of::<[f32; 12]>() as BufferAddress, shader_location: 5, format: VertexFormat::Float32x4 },
+        wgpu::VertexAttribute { offset: size_of::<[f32; 16]>() as BufferAddress, shader_location: 6, format: VertexFormat::Float32x4 },
+        wgpu::VertexAttribute { offset: size_of::<[f32; 20]>() as BufferAddress, shader_location: 7, format: VertexFormat::Float32x4 },
+    ];
+
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        // bad function has to many clones
         VertexBufferLayout {
             array_stride: size_of::<Self>() as BufferAddress,
             step_mode: wgpu::VertexStepMode::Instance,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 2,
-                    format: VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 4]>() as BufferAddress,
-                    shader_location: 3,
-                    format: VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 8]>() as BufferAddress,
-                    shader_location: 4,
-                    format: VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 12]>() as BufferAddress,
-                    shader_location: 5,
-                    format: VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 16]>() as BufferAddress,
-                    shader_location: 6,
-                    format: VertexFormat::Float32x4,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 20]>() as BufferAddress,
-                    shader_location: 7,
-                    format: VertexFormat::Float32x4,
-                },
-            ],
+            attributes: &Self::INSTANCE_ATTRIBUTES,
         }
     }
 }

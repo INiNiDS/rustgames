@@ -54,6 +54,11 @@ impl Color {
 
     #[must_use]
     pub fn get_name(&self) -> Option<&'static str> {
+        self.primary_color_name()
+            .or_else(|| self.secondary_color_name())
+    }
+
+    fn primary_color_name(&self) -> Option<&'static str> {
         if *self == Self::WHITE {
             return Some("White");
         }
@@ -78,6 +83,10 @@ impl Color {
         if *self == Self::MAGENTA {
             return Some("Magenta");
         }
+        None
+    }
+
+    fn secondary_color_name(&self) -> Option<&'static str> {
         if *self == Self::GRAY {
             return Some("Gray");
         }

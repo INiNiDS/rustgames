@@ -22,16 +22,9 @@ pub struct SpriteRenderer {
 impl SpriteRenderer {
     #[must_use]
     pub fn new(device: &wgpu::Device, config: &wgpu::SurfaceConfiguration) -> Self {
-        let shader = pipeline::create_shader(device);
         let camera_bgl = pipeline::create_camera_bind_group_layout(device);
-        let texture_bgl = pipeline::create_texture_bind_group_layout(device);
-
-        let camera_buffer = Self::create_camera_buffer(device);
-        let camera_bind_group = Self::create_camera_bind_group(device, &camera_bgl, &camera_buffer);
-
-        let layout = pipeline::create_pipeline_layout(device, &camera_bgl, &texture_bgl);
-        let render_pipeline = pipeline::create_render_pipeline(device, config, &shader, &layout);
-
+        let (render_pipeline, texture_bgl) = Self::create_pipeline(device, config, &camera_bgl);
+        let (camera_buffer, camera_bind_group) = Self::init_camera(device, &camera_bgl);
         let (vertex_buffer, index_buffer, num_indices) = Self::create_quad_buffers(device);
         let initial_capacity = 1000;
         let instance_buffer = Self::create_instance_buffer(device, initial_capacity);
@@ -47,6 +40,27 @@ impl SpriteRenderer {
             camera_bind_group,
             camera_buffer,
         }
+    }
+
+    fn create_pipeline(
+        device: &wgpu::Device,
+        config: &wgpu::SurfaceConfiguration,
+        camera_bgl: &wgpu::BindGroupLayout,
+    ) -> (wgpu::RenderPipeline, wgpu::BindGroupLayout) {
+        let shader = pipeline::create_shader(device);
+        let texture_bgl = pipeline::create_texture_bind_group_layout(device);
+        let layout = pipeline::create_pipeline_layout(device, camera_bgl, &texture_bgl);
+        let render_pipeline = pipeline::create_render_pipeline(device, config, &shader, &layout);
+        (render_pipeline, texture_bgl)
+    }
+
+    fn init_camera(
+        device: &wgpu::Device,
+        camera_bgl: &wgpu::BindGroupLayout,
+    ) -> (wgpu::Buffer, wgpu::BindGroup) {
+        let camera_buffer = Self::create_camera_buffer(device);
+        let camera_bind_group = Self::create_camera_bind_group(device, camera_bgl, &camera_buffer);
+        (camera_buffer, camera_bind_group)
     }
 
     pub fn update_camera(&self, queue: &wgpu::Queue, camera: &Camera) {

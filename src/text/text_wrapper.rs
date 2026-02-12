@@ -14,21 +14,15 @@ impl TextWrapper {
 
         for word in text.split_whitespace() {
             let word_width = word.len() as f32 * char_width;
-
-            if current_width + word_width <= max_width {
-                if !current_line.is_empty() {
-                    current_line.push(' ');
-                    current_width += char_width;
-                }
-                current_line.push_str(word);
-                current_width += word_width;
-            } else {
-                if !current_line.is_empty() {
-                    lines.push(current_line);
-                }
-                current_line = word.to_string();
-                current_width = word_width;
-            }
+            Self::append_word(
+                word,
+                word_width,
+                max_width,
+                char_width,
+                &mut lines,
+                &mut current_line,
+                &mut current_width,
+            );
         }
 
         if !current_line.is_empty() {
@@ -36,6 +30,31 @@ impl TextWrapper {
         }
 
         lines
+    }
+
+    fn append_word(
+        word: &str,
+        word_width: f32,
+        max_width: f32,
+        char_width: f32,
+        lines: &mut Vec<String>,
+        current_line: &mut String,
+        current_width: &mut f32,
+    ) {
+        if *current_width + word_width <= max_width {
+            if !current_line.is_empty() {
+                current_line.push(' ');
+                *current_width += char_width;
+            }
+            current_line.push_str(word);
+            *current_width += word_width;
+        } else {
+            if !current_line.is_empty() {
+                lines.push(std::mem::take(current_line));
+            }
+            *current_line = word.to_string();
+            *current_width = word_width;
+        }
     }
 
     #[must_use]
