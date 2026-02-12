@@ -57,9 +57,10 @@ impl Game for AnimationDemo {
         println!("  ESC   - Exit");
         println!();
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "animation_sheet");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "animation_sheet",
+        );
 
         engine.get_camera().set_zoom(300.0);
 

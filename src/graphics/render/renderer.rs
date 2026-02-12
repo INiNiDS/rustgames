@@ -93,7 +93,7 @@ impl Renderer {
         pass: &mut wgpu::RenderPass<'_>,
         device: &wgpu::Device,
         queue: &wgpu::Queue,
-        sprites: &mut SpriteRenderer,
+        sprites: &SpriteRenderer,
         batches: &Vec<(&Texture, &[SpriteInstance])>,
         text: &mut TextSystem,
     ) {
@@ -127,7 +127,7 @@ impl Renderer {
         for (text, x, y, style) in typewriter_texts {
             render_settings
                 .get_text_system_mut()
-                .queue_text(&text, x, y, max_w, max_h, style);
+                .queue_text(&text, x, y, max_w, max_h, &style);
         }
     }
 

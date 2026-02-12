@@ -31,9 +31,10 @@ impl Game for StressDemo {
         println!("  ESC   - Exit");
         println!();
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "stress_sprite");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "stress_sprite",
+        );
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);

@@ -20,13 +20,15 @@ impl Game for SingleDemo {
         println!("  ENTER - Trigger 'Pulse' Animation");
         println!("  ESC   - Exit");
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "demo_sprite");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "demo_sprite",
+        );
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/OIP-475081084.jpg"), "background");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
+            "background",
+        );
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);

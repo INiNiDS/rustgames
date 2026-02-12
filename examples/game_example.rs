@@ -27,13 +27,15 @@ impl Game for EffectsDemo {
         println!("  ENTER - Entrance animation");
         println!("  ESC   - Exit");
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/OIP-475081084.jpg"), "background");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
+            "background",
+        );
 
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "sprite");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "sprite",
+        );
 
         engine.get_camera().set_zoom(1.0);
 

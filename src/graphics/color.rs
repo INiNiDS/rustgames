@@ -179,6 +179,7 @@ impl Color {
     }
 
     #[must_use]
+    #[allow(clippy::cast_sign_loss)]
     pub fn to_u32(&self) -> u32 {
         let r = (self.r * 255.0) as u32;
         let g = (self.g * 255.0) as u32;

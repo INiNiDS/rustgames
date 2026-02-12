@@ -5,6 +5,7 @@ const MAX_DELTA_TIME: f32 = 0.1;
 
 /// Frame-level timing: delta time, total elapsed time, FPS limiting, and lag
 /// spike detection.
+#[allow(clippy::struct_field_names)]
 pub struct Time {
     start_time: Instant,
     last_update: Instant,

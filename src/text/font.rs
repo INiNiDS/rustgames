@@ -1,11 +1,17 @@
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 
-pub const DEFAULT_NORMAL_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Regular.ttf");
-pub const DEFAULT_BOLD_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Bold.ttf");
-pub const DEFAULT_MEDIUM_FONT: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/src/static/font/Caveat-Medium.ttf");
+pub const DEFAULT_NORMAL_FONT: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/static/font/Caveat-Regular.ttf"
+);
+pub const DEFAULT_BOLD_FONT: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/static/font/Caveat-Bold.ttf"
+);
+pub const DEFAULT_MEDIUM_FONT: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/src/static/font/Caveat-Medium.ttf"
+);
 pub const DEFAULT_SEMIBOLD_FONT: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/src/static/font/Caveat-SemiBold.ttf"

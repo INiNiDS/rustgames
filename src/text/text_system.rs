@@ -24,6 +24,7 @@ pub struct TextSystem {
 
 impl TextSystem {
     #[must_use]
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         device: &Device,
         config: &SurfaceConfiguration,
@@ -83,7 +84,7 @@ impl TextSystem {
         y: f32,
         max_w: f32,
         max_h: f32,
-        style: TextStyle,
+        style: &TextStyle,
     ) {
         let segments = RichTextParser::parse(content);
 

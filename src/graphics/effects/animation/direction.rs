@@ -42,5 +42,4 @@ impl Direction {
         };
         v.normalize_or_zero()
     }
-    
 }

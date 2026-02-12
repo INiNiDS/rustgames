@@ -99,6 +99,7 @@ impl SpriteRenderer {
     }
 
     fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
+        #[allow(clippy::cast_sign_loss)]
         let new_capacity = (new_capacity as f32 * 1.5) as usize;
         self.instance_buffer = Self::create_instance_buffer(device, new_capacity);
         self.instance_capacity = new_capacity;

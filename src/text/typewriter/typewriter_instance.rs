@@ -150,20 +150,16 @@ impl TypewriterInstance {
         style: TextStyle,
         punctuation_config: PunctuationConfig,
     ) -> bool {
-        if let Some(effect) = self.get_effect_mut(id) {
+        self.get_effect_mut(id).is_some_and(|effect| {
             effect.set_text(text, speed, style, punctuation_config);
             true
-        } else {
-            false
-        }
+        })
     }
 
     pub fn set_progress(&mut self, id: usize, progress: f32) -> bool {
-        if let Some(effect) = self.get_effect_mut(id) {
+        self.get_effect_mut(id).is_some_and(|effect| {
             effect.set_progress(progress);
             true
-        } else {
-            false
-        }
+        })
     }
 }

@@ -129,6 +129,7 @@ impl TypewriterEffect {
         self.paused
     }
 
+    #[allow(clippy::missing_const_for_fn)]
     pub fn set_speed(&mut self, speed: TextSpeed) {
         self.chars_per_second = speed.chars_per_second();
         if self.chars_per_second.is_infinite() {
@@ -188,7 +189,10 @@ impl TypewriterEffect {
             return false;
         }
 
-        self.visible_chars = (total_chars as f32 * progress).round() as usize;
+        #[allow(clippy::cast_sign_loss)]
+        {
+            self.visible_chars = (total_chars as f32 * progress).round() as usize;
+        }
 
         if self.visible_chars >= total_chars {
             self.visible_chars = total_chars;

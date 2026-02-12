@@ -135,12 +135,14 @@ struct SpaceChicken {
 
 impl Game for SpaceChicken {
     fn init(&mut self, engine: &mut Engine) {
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "chicken");
-        engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/OIP-475081084.jpg"), "bg");
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "chicken",
+        );
+        engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
+            "bg",
+        );
 
         engine.get_camera().set_zoom(1.0);
         self.show_dialogue(engine, "Cluck cluck! I am Captain Feathers!");

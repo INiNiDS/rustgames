@@ -9,6 +9,7 @@ struct TransitionUniform {
     dir_y: f32,
 }
 
+#[allow(dead_code)]
 pub struct TransitionRenderer {
     pipeline: wgpu::RenderPipeline,
     bind_group_layout: wgpu::BindGroupLayout,
@@ -16,6 +17,7 @@ pub struct TransitionRenderer {
     sampler: wgpu::Sampler,
 }
 
+#[allow(dead_code)]
 impl TransitionRenderer {
     pub fn new(device: &wgpu::Device, format: wgpu::TextureFormat) -> Self {
         let uniform_buffer = device.create_buffer(&wgpu::BufferDescriptor {
@@ -96,13 +98,13 @@ impl TransitionRenderer {
             vertex: wgpu::VertexState {
                 module: &shader,
                 entry_point: Option::from("vs_main"),
-                compilation_options: Default::default(),
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
                 buffers: &[],
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
                 entry_point: Option::from("fs_main"),
-                compilation_options: Default::default(),
+                compilation_options: wgpu::PipelineCompilationOptions::default(),
                 targets: &[Some(wgpu::ColorTargetState {
                     format,
                     blend: Some(wgpu::BlendState::REPLACE),
@@ -124,6 +126,7 @@ impl TransitionRenderer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn render(
         &self,
         encoder: &mut wgpu::CommandEncoder,
@@ -144,7 +147,7 @@ impl TransitionRenderer {
             Transition::Wipe { direction, .. } => {
                 let vec = direction.to_vector();
                 (4, vec.x, vec.y)
-            },
+            }
         };
 
         let uniform = TransitionUniform {
@@ -159,11 +162,26 @@ impl TransitionRenderer {
             label: Some("Transition Bind Group"),
             layout: &self.bind_group_layout,
             entries: &[
-                wgpu::BindGroupEntry { binding: 0, resource: wgpu::BindingResource::TextureView(old_view) },
-                wgpu::BindGroupEntry { binding: 1, resource: wgpu::BindingResource::Sampler(&self.sampler) },
-                wgpu::BindGroupEntry { binding: 2, resource: wgpu::BindingResource::TextureView(new_view) },
-                wgpu::BindGroupEntry { binding: 3, resource: wgpu::BindingResource::Sampler(&self.sampler) },
-                wgpu::BindGroupEntry { binding: 4, resource: self.uniform_buffer.as_entire_binding() },
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(old_view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&self.sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: wgpu::BindingResource::TextureView(new_view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: wgpu::BindingResource::Sampler(&self.sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 4,
+                    resource: self.uniform_buffer.as_entire_binding(),
+                },
             ],
         });
 

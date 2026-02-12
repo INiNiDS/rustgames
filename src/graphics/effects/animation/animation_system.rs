@@ -186,7 +186,8 @@ impl AnimationSystem {
         }
     }
 
-    pub const fn apply_animation(&mut self) {}
+    #[allow(clippy::unused_self)]
+    pub const fn apply_animation(&self) {}
 
     pub(crate) fn spawn_instance(
         &mut self,
