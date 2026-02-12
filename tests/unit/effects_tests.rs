@@ -1,7 +1,7 @@
 use glam::Vec2;
 use rustgames::graphics::color::Color;
 use rustgames::graphics::effects::VfxRenderer;
-use rustgames::graphics::effects::shake_effect::TraumaShake;
+use rustgames::graphics::effects::trauma_shake::TraumaShake;
 use rustgames::graphics::{EmitterConfig, Particle, VfxEffect};
 
 #[test]

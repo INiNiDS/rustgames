@@ -276,7 +276,7 @@ impl TextSystem {
         self.typewriter_instance.is_empty()
     }
 
-    fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
+    const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
         match (attrs.weight, attrs.italic) {
             (_, true) => FontId(2),
             (FontWeight::Bold, _) => FontId(1),

@@ -5,6 +5,7 @@ pub mod renderer;
 pub mod sprite_renderer;
 pub mod texture;
 pub mod texture_system;
+mod transition_renderer;
 
 pub use instance::SpriteInstance;
 pub use render_settings::RenderSettings;

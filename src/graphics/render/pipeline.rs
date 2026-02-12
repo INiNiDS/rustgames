@@ -65,7 +65,7 @@ pub fn create_pipeline_layout(
 }
 
 /// Returns the primitive state used by the render pipeline.
-fn primitive_state() -> wgpu::PrimitiveState {
+const fn primitive_state() -> wgpu::PrimitiveState {
     wgpu::PrimitiveState {
         topology: wgpu::PrimitiveTopology::TriangleList,
         strip_index_format: None,
@@ -78,7 +78,7 @@ fn primitive_state() -> wgpu::PrimitiveState {
 }
 
 /// Returns the multisample state used by the render pipeline.
-fn multisample_state() -> wgpu::MultisampleState {
+const fn multisample_state() -> wgpu::MultisampleState {
     wgpu::MultisampleState {
         count: 1,
         mask: !0,

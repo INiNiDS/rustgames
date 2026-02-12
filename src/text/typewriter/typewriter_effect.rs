@@ -103,7 +103,7 @@ impl TypewriterEffect {
         self.complete
     }
 
-    pub fn skip(&mut self) {
+    pub const fn skip(&mut self) {
         self.visible_chars = self.chars.len();
         self.complete = true;
         self.paused = false;
@@ -202,8 +202,8 @@ impl TypewriterEffect {
         true
     }
 
-    pub fn set_punctuation_config(&mut self, punctuation_config: PunctuationConfig) {
-        self.punctuation_config = punctuation_config
+    pub const fn set_punctuation_config(&mut self, punctuation_config: PunctuationConfig) {
+        self.punctuation_config = punctuation_config;
     }
 
     fn while_need_to_update(&mut self, seconds_per_char: f32, text_len: usize) -> bool {

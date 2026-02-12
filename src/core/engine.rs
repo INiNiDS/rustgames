@@ -90,7 +90,7 @@ impl Engine {
     }
 
     pub fn set_window_config(&mut self, window_config: &WindowConfig) {
-        self.render_settings.set_window_config(window_config)
+        self.render_settings.set_window_config(window_config);
     }
 
     fn handle_event(&mut self, event: Event) {
@@ -129,11 +129,11 @@ impl Engine {
         &mut self.audio_system
     }
 
-    pub fn get_animation_system(&mut self) -> &mut AnimationSystem {
+    pub const fn get_animation_system(&mut self) -> &mut AnimationSystem {
         self.render_settings.get_animation_system_mut()
     }
 
-    pub fn vfx_system(&mut self) -> &mut VfxSystem {
+    pub const fn vfx_system(&mut self) -> &mut VfxSystem {
         self.render_settings.get_vfx_system_mut()
     }
 }
