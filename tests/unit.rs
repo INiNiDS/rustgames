@@ -18,3 +18,5 @@ mod sprite_tests;
 mod text_tests;
 #[path = "unit/typewriter_tests.rs"]
 mod typewriter_tests;
+#[path = "unit/extended_tests.rs"]
+mod extended_tests;

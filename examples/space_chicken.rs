@@ -526,10 +526,10 @@ impl SpaceChicken {
         {
             let eq = engine.get_event_queue();
             if eq.is_key_pressed(KeyCode::KeyW) || eq.is_key_pressed(KeyCode::ArrowUp) {
-                dy -= 1.0;
+                dy += 1.0;
             }
             if eq.is_key_pressed(KeyCode::KeyS) || eq.is_key_pressed(KeyCode::ArrowDown) {
-                dy += 1.0;
+                dy -= 1.0;
             }
             if eq.is_key_pressed(KeyCode::KeyA) || eq.is_key_pressed(KeyCode::ArrowLeft) {
                 dx -= 1.0;
