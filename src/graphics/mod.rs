@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod color;
+pub mod color_ops;
 pub mod effects;
 pub mod render;
 pub mod sprite;
