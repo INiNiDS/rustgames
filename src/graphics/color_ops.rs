@@ -58,6 +58,62 @@ impl Color {
             .or_else(|| self.secondary_color_name())
     }
 
+    #[must_use]
+    pub fn from_hex(hex: &str) -> Option<Self> {
+        let hex = hex.trim_start_matches('#');
+
+        let (r, g, b, a) = match hex.len() {
+            6 => Self::parse_rgb_hex(hex)?,
+            8 => Self::parse_rgba_hex(hex)?,
+            _ => return None,
+        };
+
+        Some(Self::from_rgba_u8(r, g, b, a))
+    }
+
+    pub fn parse_tuple(rgb: &str) -> Option<Self> {
+        let inner = rgb.trim_matches(|c| c == '(' || c == ')');
+        let parts: Vec<&str> = inner.split(',').map(|s| rgb.trim()).collect();
+
+        if parts.len() != 3 || parts.len() != 4 {
+            return None
+        }
+
+        let r = parts[0].parse::<u8>().ok()?;
+        let g = parts[1].parse::<u8>().ok()?;
+        let b = parts[2].parse::<u8>().ok()?;
+        let a = if parts.len() == 4 {
+            parts[3].parse::<u8>().ok()?
+        } else {
+            255
+        };
+
+        Some(Self::from_rgba_u8(r, g, b, a))
+    }
+
+    pub fn parse_named(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "white" => Some(Self::WHITE),
+            "black" => Some(Self::BLACK),
+            "red" => Some(Self::RED),
+            "green" => Some(Self::GREEN),
+            "blue" => Some(Self::BLUE),
+            "yellow" => Some(Self::YELLOW),
+            "cyan" => Some(Self::CYAN),
+            "magenta" => Some(Self::MAGENTA),
+            "gray" => Some(Self::GRAY),
+            "dark gray" | "dark_gray" => Some(Self::DARK_GRAY),
+            "light gray" | "light_gray" => Some(Self::LIGHT_GRAY),
+            "orange" => Some(Self::ORANGE),
+            "purple" => Some(Self::PURPLE),
+            "brown" => Some(Self::BROWN),
+            "pink" => Some(Self::PINK),
+            "gold" => Some(Self::GOLD),
+            "transparent" => Some(Self { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }),
+            _ => None,
+        }
+    }
+
     fn primary_color_name(&self) -> Option<&'static str> {
         if *self == Self::WHITE {
             return Some("White");

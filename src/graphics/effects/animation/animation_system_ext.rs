@@ -80,9 +80,6 @@ impl AnimationSystem {
             }
         }
     }
-
-    #[allow(clippy::unused_self)]
-    pub const fn apply_animation(&self) {}
 }
 
 #[cfg(test)]

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 /// An RGBA colour stored as four `f32` values in the range `0.0..=1.0`.
 ///
 /// Provides named constants for common colours, conversions from hex strings,
@@ -139,31 +141,41 @@ impl Color {
             a: 1.0,
         }
     }
-    #[must_use]
-    pub fn from_hex(hex: &str) -> Option<Self> {
-        let hex = hex.trim_start_matches('#');
 
-        let (r, g, b, a) = match hex.len() {
-            6 => Self::parse_rgb_hex(hex)?,
-            8 => Self::parse_rgba_hex(hex)?,
-            _ => return None,
-        };
-
-        Some(Self::from_rgba_u8(r, g, b, a))
-    }
-
-    fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
+    pub fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
         let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
         let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
         Some((r, g, b, 255))
     }
 
-    fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
+    pub fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
         let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
         let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
         let a = u8::from_str_radix(&hex[6..8], 16).ok()?;
         Some((r, g, b, a))
+    }
+}
+
+impl FromStr for Color {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let trimmed = s.trim();
+
+        if trimmed.starts_with('(') && trimmed.ends_with(')') {
+            return Color::parse_tuple(trimmed).ok_or_else(|| format!("Unknown color name: '{}'", s));
+        }
+
+        if trimmed.contains(',') {
+            return Color::parse_tuple(trimmed).ok_or_else(|| format!("Unknown color name: '{}'", s));
+        }
+
+        if trimmed.starts_with('#') || trimmed.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Ok(Color::from_hex(trimmed).ok_or_else(|| format!("Invalid hex color: '{}'", s))?);
+        }
+
+        Color::parse_named(trimmed).ok_or_else(|| format!("Unknown color name: '{}'", s))
     }
 }

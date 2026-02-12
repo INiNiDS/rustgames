@@ -7,5 +7,3 @@ pub mod graphics;
 pub mod prelude;
 pub mod text;
 pub mod window;
-
-// All files should be <200 lines, and all functions should be <20 lines.

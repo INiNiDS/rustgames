@@ -43,7 +43,7 @@ struct MoonlitConfession {
 impl MoonlitConfession {
     fn build_script() -> Vec<DialogueLine> {
         vec![
-            dl("???", "The moonlight paints the old bridge silver..."),
+            dl("???", "[color=FF0000]The moonlight[/color] paints the old bridge silver..."),
             dl("Hana", "I didn't think you'd actually come."),
             dl("You", "I almost didn't. The rain nearly stopped me."),
             dl("Hana", "But it stopped, didn't it? Almost like fate."),
@@ -52,18 +52,14 @@ impl MoonlitConfession {
             dl("Hana", "I'm leaving the city next week."),
             dl("You", "What?! Why didn't you say sooner?"),
             dl("Hana", "I was scared. Scared of your answer."),
-            // choice 0 inserted at index 9
-            // kind path
             dl("You", "Then let me walk with you. Wherever you go."),
             dl("Hana", "You... you mean that?"),
             dl("You", "Every word."),
             dl("Hana", "Thank you. That means everything."),
-            // bold path
             dl("You", "Then we'd better make tonight count."),
             dl("Hana", "Ha! Same reckless spirit as always."),
             dl("You", "That's why you like me, right?"),
             dl("Hana", "...Maybe."),
-            // ending
             dl("???", "They stood on the bridge until dawn."),
             dl("???", "THE END — Press ESC"),
         ]
@@ -135,7 +131,7 @@ impl MoonlitConfession {
             TextSpeed::Fast,
             60.0,
             H - 120.0,
-            TextStyle::default(),
+            TextStyle::new(64.0),
             PunctuationConfig::default(),
         );
     }
@@ -183,7 +179,6 @@ impl MoonlitConfession {
             engine.get_text_system().skip(self.tw_id);
             return;
         }
-        // Check if next line triggers a choice
         let next = self.current + 1;
         if next == 9 {
             self.waiting_choice = Some(0);
@@ -195,12 +190,11 @@ impl MoonlitConfession {
                 TextSpeed::Instant,
                 60.0,
                 H - 120.0,
-                TextStyle::default(),
+                TextStyle::new(64.0),
                 PunctuationConfig::default(),
             );
             return;
         }
-        // Skip to ending after branch
         let next = if self.current == 13 || self.current == 17 {
             18
         } else {
@@ -228,7 +222,7 @@ fn main() {
         width: W as u32,
         height: H as u32,
         resizable: true,
-        fullscreen: false,
+        fullscreen: true,
         vsync: true,
         background_color: Color::new(0.05, 0.0, 0.1, 1.0),
     };

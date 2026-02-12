@@ -12,8 +12,11 @@ impl TypewriterEffect {
         punctuation_config: PunctuationConfig,
     ) {
         self.full_text = text.into();
-        self.chars = self.full_text.chars().collect();
         self.punctuation_config = punctuation_config;
+
+        let (chars, visible_indices) = Self::parse_tags(&self.full_text);
+        self.chars = chars;
+        self.visible_indices = visible_indices;
 
         self.visible_chars = 0;
         self.elapsed = 0.0;
@@ -29,8 +32,10 @@ impl TypewriterEffect {
         if self.chars_per_second <= f32::EPSILON {
             return false;
         }
+
         let progress = progress.clamp(0.0, 1.0);
         let total_chars = self.chars.len();
+
         if total_chars == 0 {
             self.complete = true;
             return false;
@@ -65,7 +70,9 @@ impl TypewriterEffect {
 
         let pause = self.get_pause_for_char(c);
         self.pause_timer = pause;
-        false
+
+        // Продолжаем цикл, только если не установлена пауза
+        self.pause_timer <= 0.0
     }
 
     const fn get_pause_for_char(&self, c: char) -> f32 {

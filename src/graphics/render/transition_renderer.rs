@@ -9,7 +9,6 @@ struct TransitionUniform {
     dir_y: f32,
 }
 
-#[allow(dead_code)]
 pub struct TransitionRenderer {
     pipeline: wgpu::RenderPipeline,
     bind_group_layout: wgpu::BindGroupLayout,
@@ -17,7 +16,6 @@ pub struct TransitionRenderer {
     sampler: wgpu::Sampler,
 }
 
-#[allow(dead_code)]
 impl TransitionRenderer {
     pub fn new(device: &wgpu::Device, format: wgpu::TextureFormat) -> Self {
         let uniform_buffer = Self::create_uniform_buffer(device);

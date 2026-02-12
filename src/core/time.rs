@@ -5,14 +5,13 @@ const MAX_DELTA_TIME: f32 = 0.1;
 
 /// Frame-level timing: delta time, total elapsed time, FPS limiting, and lag
 /// spike detection.
-#[allow(clippy::struct_field_names)]
 pub struct Time {
     start_time: Instant,
     last_update: Instant,
     delta: Duration,
     frame_count: u64,
-    target_frame_time: Duration,
-    accumulated_time: Duration,
+    target_frame_duration: Duration,
+    accumulated_duration: Duration,
     frame_start: Instant,
 }
 
@@ -25,8 +24,8 @@ impl Time {
             last_update: now,
             delta: Duration::from_secs_f32(1.0 / 60.0),
             frame_count: 0,
-            target_frame_time: Duration::from_secs_f32(1.0 / TARGET_FPS),
-            accumulated_time: Duration::ZERO,
+            target_frame_duration: Duration::from_secs_f32(1.0 / TARGET_FPS),
+            accumulated_duration: Duration::ZERO,
             frame_start: now,
         }
     }
@@ -41,7 +40,7 @@ impl Time {
         }
 
         self.last_update = now;
-        self.accumulated_time += self.delta;
+        self.accumulated_duration += self.delta;
         self.frame_count += 1;
     }
 
@@ -79,18 +78,18 @@ impl Time {
         self.last_update = now;
         self.delta = Duration::from_secs_f32(1.0 / 60.0);
         self.frame_count = 0;
-        self.accumulated_time = Duration::ZERO;
+        self.accumulated_duration = Duration::ZERO;
     }
 
     pub fn limit_fps(&self) {
         let frame_time = self.frame_start.elapsed();
-        if frame_time < self.target_frame_time {
-            std::thread::sleep(self.target_frame_time.checked_sub(frame_time).unwrap());
+        if frame_time < self.target_frame_duration {
+            std::thread::sleep(self.target_frame_duration.checked_sub(frame_time).unwrap());
         }
     }
 
     pub fn set_target_fps(&mut self, fps: f32) {
-        self.target_frame_time = Duration::from_secs_f32(1.0 / fps);
+        self.target_frame_duration = Duration::from_secs_f32(1.0 / fps);
     }
 
     #[must_use]

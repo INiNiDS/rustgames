@@ -55,20 +55,16 @@ impl CatCafe {
             l("Mochi", "A Cat Whisperer. And now, so are you."),
             l("Mochi", "But first, this place is a mess."),
             l("Mochi", "We need customers. And fish. Mostly fish."),
-            // choice at 14
-            // mochi path (15-19)
             l("You", "Alright Mochi, teach me the ways of the cafe."),
             l("Mochi", "First rule: cats are always right."),
             l("Mochi", "Second rule: see rule one."),
             l("You", "This is going to be interesting..."),
             l("Mochi", "Now scratch behind my ears. It helps me think."),
-            // solo path (20-24)
             l("You", "I appreciate it, but I'll figure it out myself."),
             l("Mochi", "Hmph. Stubborn, just like your grandma."),
             l("You", "I start cleaning. Mochi watches from a shelf."),
             l("Mochi", "...You missed a spot."),
             l("You", "Okay, MAYBE I need a little help."),
-            // convergence (25+)
             l("???", "The bell chimes. Your first customer arrives."),
             l("Customer", "Oh! Is this place open? It's so charming!"),
             l("Mochi", "*purrs loudly*"),
@@ -164,9 +160,9 @@ impl CatCafe {
         self.tw_id = engine.get_text_system().add_text(
             full,
             TextSpeed::Fast,
-            60.0,
+            120.0,
             H - 120.0,
-            TextStyle::default(),
+            TextStyle::new(64.0),
             PunctuationConfig::default(),
         );
     }
@@ -200,7 +196,7 @@ impl CatCafe {
             TextSpeed::Instant,
             60.0,
             H - 120.0,
-            TextStyle::default(),
+            TextStyle::new(64.0),
             PunctuationConfig::default(),
         );
     }
@@ -224,7 +220,7 @@ fn main() {
         width: W as u32,
         height: H as u32,
         resizable: true,
-        fullscreen: false,
+        fullscreen: true,
         vsync: true,
         background_color: Color::new(0.12, 0.06, 0.02, 1.0),
     };

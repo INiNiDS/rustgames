@@ -1,3 +1,4 @@
+use std::str::FromStr;
 use crate::graphics::color::Color;
 use crate::text::{FontWeight, TextAttributes};
 
@@ -51,7 +52,7 @@ impl ParseState {
             "sb" => self.weight_stack.push(FontWeight::SemiBold),
             "i" => self.italic_stack.push(true),
             _ if tag.starts_with("color=") => {
-                self.color_stack.push(Color::from_hex(&tag[6..]));
+                self.color_stack.push(Some(Color::from_str(&tag[6..]).unwrap_or(Color::WHITE)));
             }
             _ => {}
         }
@@ -106,10 +107,21 @@ impl RichTextParser {
         let tag_content = Self::read_tag_content(chars);
         state.flush_segment();
 
-        if is_closing {
-            state.apply_close_tag(&tag_content);
+        if Self::is_valid_tag(&tag_content) {
+            state.flush_segment();
+
+            if is_closing {
+                state.apply_close_tag(&tag_content);
+            } else {
+                state.apply_open_tag(&tag_content);
+            }
         } else {
-            state.apply_open_tag(&tag_content);
+            state.current_text.push('[');
+            if is_closing {
+                state.current_text.push('/');
+            }
+            state.current_text.push_str(&tag_content);
+            state.current_text.push(']');
         }
     }
 
@@ -123,5 +135,13 @@ impl RichTextParser {
             tag_content.push(chars.next().unwrap());
         }
         tag_content
+    }
+
+    fn is_valid_tag(tag: &str) -> bool {
+        match tag {
+            "b" | "m" | "sb" | "i" | "color" => true,
+            t if t.starts_with("color=") => true,
+            _ => false,
+        }
     }
 }

@@ -10,6 +10,7 @@ pub struct TypewriterEffect {
     pub y: f32,
     pub(super) chars: Vec<char>,
     pub(super) full_text: String,
+    pub(super) visible_indices: Vec<usize>,
     pub(super) visible_chars: usize,
     pub(super) chars_per_second: f32,
     pub(super) elapsed: f32,
@@ -31,7 +32,7 @@ impl TypewriterEffect {
         punctuation_config: PunctuationConfig,
     ) -> Self {
         let full_text = text.into();
-        let chars: Vec<char> = full_text.chars().collect();
+        let (chars, visible_indices) = Self::parse_tags(&full_text);
         let chars_per_second = speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
         let visible_chars = if complete {
@@ -42,6 +43,7 @@ impl TypewriterEffect {
         Self {
             chars,
             full_text,
+            visible_indices,
             visible_chars,
             chars_per_second,
             elapsed: 0.0,
@@ -75,29 +77,15 @@ impl TypewriterEffect {
         self.advance_chars(delta_time);
     }
 
-    fn advance_chars(&mut self, delta_time: f32) {
-        let seconds_per_char = 1.0 / self.chars_per_second;
-        self.elapsed += delta_time;
-
-        #[allow(clippy::while_float)]
-        while self.elapsed >= seconds_per_char {
-            if !self.while_need_to_update(seconds_per_char, self.chars.len()) {
-                break;
-            }
-        }
-    }
-
     #[must_use]
     pub fn visible_text(&self) -> &str {
         if self.complete {
             &self.full_text
+        } else if self.visible_chars == 0 {
+            ""
         } else {
-            let byte_index = self
-                .full_text
-                .char_indices()
-                .nth(self.visible_chars)
-                .map_or(self.full_text.len(), |(i, _)| i);
-            &self.full_text[..byte_index]
+            let end_byte_index = self.visible_indices[self.visible_chars - 1];
+            &self.full_text[..end_byte_index]
         }
     }
 
@@ -132,8 +120,7 @@ impl TypewriterEffect {
         self.paused
     }
 
-    #[allow(clippy::missing_const_for_fn)]
-    pub fn set_speed(&mut self, speed: TextSpeed) {
+    pub const fn set_speed(&mut self, speed: TextSpeed) {
         self.chars_per_second = speed.chars_per_second();
         if self.chars_per_second.is_infinite() {
             self.skip();
@@ -155,7 +142,58 @@ impl TypewriterEffect {
         }
     }
 
+    fn advance_chars(&mut self, delta_time: f32) {
+        let seconds_per_char = 1.0 / self.chars_per_second;
+        self.elapsed += delta_time;
+
+        #[allow(clippy::while_float)]
+        while self.elapsed >= seconds_per_char {
+            if !self.while_need_to_update(seconds_per_char, self.chars.len()) {
+                break;
+            }
+        }
+    }
+
     pub(crate) fn get_style(&self) -> TextStyle {
         self.style.clone()
+    }
+
+    pub(crate) fn parse_tags(text: &str) -> (Vec<char>, Vec<usize>) {
+        let mut chars = Vec::new();
+        let mut indices = Vec::new();
+        let mut iter = text.char_indices().peekable();
+
+        while let Some((idx, c)) = iter.next() {
+            if c == '[' {
+                let lookahead = iter.clone();
+                let mut tag_content = String::new();
+
+                for (_, tc) in lookahead {
+                    if tc == ']' {
+                        break;
+                    }
+                    tag_content.push(tc);
+                }
+                if Self::is_valid_tag(&tag_content) {
+                    for _ in 0..tag_content.chars().count() + 1 {
+                        iter.next();
+                    }
+                    continue;
+                }
+            }
+
+            chars.push(c);
+            indices.push(idx + c.len_utf8());
+        }
+        (chars, indices)
+    }
+
+    fn is_valid_tag(tag: &str) -> bool {
+        match tag {
+            "b" | "m" | "sb" | "i" | "color" => true,
+            t if t.starts_with("color=") => true,
+            t if t.starts_with('/') => true,
+            _ => false,
+        }
     }
 }

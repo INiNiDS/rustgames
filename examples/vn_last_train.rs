@@ -54,18 +54,14 @@ impl LastTrain {
             l("Conductor", "See? You belong here, just like everyone."),
             l("You", "Where is this train going?"),
             l("Conductor", "Where do you THINK it's going?"),
-            // choice at index 14
-            // trust path (15-18)
             l("You", "I trust you. Take me where I need to go."),
             l("Conductor", "A wise choice. Rest now."),
             l("You", "My eyes grow heavy. The train rocks gently."),
             l("???", "When you wake, sunlight floods the carriage."),
-            // question path (19-22)
             l("You", "I don't trust you. Let me off this train."),
             l("Conductor", "There are no stops until the end."),
             l("You", "Then I'll find my own way."),
             l("???", "You pull the emergency brake. Sparks fly."),
-            // endings
             l("???", "The journey continues... or does it?"),
             l("???", "THE END — Press ESC"),
         ]
@@ -148,7 +144,7 @@ impl LastTrain {
             TextSpeed::Fast,
             60.0,
             H - 120.0,
-            TextStyle::default(),
+            TextStyle::new(64.0),
             PunctuationConfig::default(),
         );
     }
@@ -170,7 +166,7 @@ impl LastTrain {
                 TextSpeed::Instant,
                 60.0,
                 H - 120.0,
-                TextStyle::default(),
+                TextStyle::new(64.0),
                 PunctuationConfig::default(),
             );
             return;
@@ -201,7 +197,7 @@ fn main() {
         width: W as u32,
         height: H as u32,
         resizable: true,
-        fullscreen: false,
+        fullscreen: true,
         vsync: true,
         background_color: Color::new(0.02, 0.02, 0.05, 1.0),
     };
