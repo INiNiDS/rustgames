@@ -14,3 +14,5 @@ mod sprite_tests;
 mod text_tests;
 #[path = "unit/typewriter_tests.rs"]
 mod typewriter_tests;
+#[path = "unit/sprite_animation_tests.rs"]
+mod sprite_animation_tests;
