@@ -4,7 +4,7 @@ use wgpu_text::glyph_brush::{FontId, HorizontalAlign, VerticalAlign};
 
 use crate::prelude::{TextAlignment, VerticalAlignment};
 
-pub(crate) struct QueuedSection {
+pub struct QueuedSection {
     pub text_data: Vec<(String, FontId, [f32; 4])>,
     pub x: f32,
     pub y: f32,
@@ -16,7 +16,7 @@ pub(crate) struct QueuedSection {
     pub wrap_mode: TextWrapMode,
 }
 
-pub(crate) const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
+pub const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> FontId {
     match (attrs.weight, attrs.italic) {
         (_, true) => FontId(2),
         (FontWeight::Bold, _) => FontId(1),
@@ -28,7 +28,7 @@ pub(crate) const fn resolve_font_id(attrs: &crate::text::TextAttributes) -> Font
     }
 }
 
-pub(crate) const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
+pub const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
     match align {
         TextAlignment::Left | TextAlignment::Justify => HorizontalAlign::Left,
         TextAlignment::Center => HorizontalAlign::Center,
@@ -36,7 +36,7 @@ pub(crate) const fn map_h_alignment(align: TextAlignment) -> HorizontalAlign {
     }
 }
 
-pub(crate) const fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
+pub const fn map_v_alignment(align: VerticalAlignment) -> VerticalAlign {
     match align {
         VerticalAlignment::Top => VerticalAlign::Top,
         VerticalAlignment::Middle => VerticalAlign::Center,

@@ -150,7 +150,7 @@ impl TextSystem {
         });
     }
 
-    fn resolve_wrap(q: &QueuedSection) -> (BuiltInLineBreaker, (f32, f32)) {
+    const fn resolve_wrap(q: &QueuedSection) -> (BuiltInLineBreaker, (f32, f32)) {
         match q.wrap_mode {
             TextWrapMode::NoWrap => (
                 BuiltInLineBreaker::AnyCharLineBreaker,
