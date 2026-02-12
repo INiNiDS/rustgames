@@ -1,6 +1,7 @@
 pub mod instance;
 pub(crate) mod pipeline;
 pub mod render_settings;
+mod render_settings_accessors;
 pub mod renderer;
 pub mod sprite_renderer;
 pub mod texture;

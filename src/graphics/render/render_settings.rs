@@ -31,121 +31,37 @@ pub struct RenderSettings {
 impl RenderSettings {
     pub async fn new(window: Arc<Window>) -> Self {
         let (surface, adapter, device, queue) = Self::init_graphics(window.clone()).await;
-
         let size = window.inner_size();
         let device = Arc::new(device);
         let queue = Arc::new(queue);
-
-        let config = surface
-            .get_default_config(&adapter, size.width, size.height)
-            .map(|mut c| {
-                c.present_mode = PresentMode::Fifo;
-                c
-            })
-            .expect("Surface/Adapter mismatch");
-
+        let config = Self::create_config(&surface, &adapter, size);
         surface.configure(&device, &config);
-
         let (camera, text_system, sprite_renderer) =
             Self::configure_inner_modules(size, &device, &config);
-
         Self {
-            window,
-            surface,
-            config,
-            device: device.clone(),
-            queue: queue.clone(),
-            camera,
-            text_system,
-            sprite_renderer,
-            background_color: Color::WHITE,
-            base: VisualState::default(),
-            max_width_text: size.width as f32,
-            max_height_text: size.height as f32,
+            window, surface, config,
+            device: device.clone(), queue: queue.clone(),
+            camera, text_system, sprite_renderer,
+            background_color: Color::WHITE, base: VisualState::default(),
+            max_width_text: size.width as f32, max_height_text: size.height as f32,
             animation_system: AnimationSystem::new(),
             texture_system: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
         }
     }
 
-    pub const fn get_texture_controller(&self) -> &TextureSystem {
-        &self.texture_system
-    }
-
-    pub const fn get_animation_system(&self) -> &AnimationSystem {
-        &self.animation_system
-    }
-
-    pub const fn get_camera(&self) -> &Camera {
-        &self.camera
-    }
-
-    pub const fn get_text_system(&self) -> &TextSystem {
-        &self.text_system
-    }
-
-    pub const fn get_vfx_system(&self) -> &VfxSystem {
-        &self.vfx_system
-    }
-
-    pub const fn get_background_color(&self) -> &Color {
-        &self.background_color
-    }
-
-    pub const fn get_sprite_renderer(&self) -> &SpriteRenderer {
-        &self.sprite_renderer
-    }
-
-    pub const fn get_visual_state(&self) -> &VisualState {
-        &self.base
-    }
-
-    pub const fn get_max_width_text(&self) -> f32 {
-        self.max_width_text
-    }
-
-    pub const fn get_max_height_text(&self) -> f32 {
-        self.max_height_text
-    }
-
-    pub const fn get_surface(&self) -> &Surface<'static> {
-        &self.surface
-    }
-
-    pub const fn get_device(&self) -> &Arc<Device> {
-        &self.device
-    }
-
-    pub const fn get_queue(&self) -> &Arc<Queue> {
-        &self.queue
-    }
-
-    pub const fn get_window(&self) -> &Arc<Window> {
-        &self.window
-    }
-
-    pub const fn get_config(&self) -> &SurfaceConfiguration {
-        &self.config
-    }
-
-    pub const fn get_text_system_mut(&mut self) -> &mut TextSystem {
-        &mut self.text_system
-    }
-
-    pub const fn get_camera_mut(&mut self) -> &mut Camera {
-        &mut self.camera
-    }
-
-    pub const fn get_texture_controller_mut(&mut self) -> &mut TextureSystem {
-        &mut self.texture_system
-    }
-
-    pub const fn get_vfx_system_mut(&mut self) -> &mut VfxSystem {
-        &mut self.vfx_system
-    }
-
-    pub const fn get_animation_system_mut(&mut self) -> &mut AnimationSystem {
-        &mut self.animation_system
+    fn create_config(
+        surface: &Surface<'static>,
+        adapter: &wgpu::Adapter,
+        size: PhysicalSize<u32>,
+    ) -> SurfaceConfiguration {
+        surface
+            .get_default_config(adapter, size.width, size.height)
+            .map(|mut c| {
+                c.present_mode = PresentMode::Fifo;
+                c
+            })
+            .expect("Surface/Adapter mismatch")
     }
 
     pub fn set_window_config(&mut self, config: &WindowConfig) {
@@ -154,34 +70,27 @@ impl RenderSettings {
         } else {
             PresentMode::Immediate
         };
-
         self.surface.configure(&self.device, &self.config);
-
         self.window.set_title(&config.title);
-
         self.window.set_resizable(config.resizable);
-
         self.background_color = config.background_color;
+        Self::apply_fullscreen(&self.window, config);
+        let _ = self.window.request_inner_size(LogicalSize::new(config.width, config.height));
+    }
 
+    fn apply_fullscreen(window: &Window, config: &WindowConfig) {
         if config.fullscreen {
-            self.window
-                .set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
+            window.set_fullscreen(Some(winit::window::Fullscreen::Borderless(None)));
         } else {
-            self.window.set_fullscreen(None);
+            window.set_fullscreen(None);
         }
-
-        let new_size = LogicalSize::new(config.width, config.height);
-        let _ = self.window.request_inner_size(new_size);
     }
 
     async fn init_graphics(
         window: Arc<Window>,
     ) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
         let instance = wgpu::Instance::default();
-        let surface = instance
-            .create_surface(window)
-            .expect("Failed to create surface");
-
+        let surface = instance.create_surface(window).expect("Failed to create surface");
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,
@@ -190,12 +99,10 @@ impl RenderSettings {
             })
             .await
             .expect("No suitable GPU adapter found");
-
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor::default())
             .await
             .expect("Failed to create device");
-
         (surface, adapter, device, queue)
     }
 

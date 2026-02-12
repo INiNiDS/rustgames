@@ -1,4 +1,5 @@
 pub(crate) mod animation_group_ops;
+mod anim_effect_ops;
 pub mod animation_instance;
 pub mod animation_mode;
 pub(crate) mod animation_system;

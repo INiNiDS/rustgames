@@ -1,5 +1,7 @@
 #[path = "unit/animation_tests.rs"]
 mod animation_tests;
+#[path = "unit/camera_tests.rs"]
+mod camera_tests;
 #[path = "unit/color_tests.rs"]
 mod color_tests;
 #[path = "unit/easing_tests.rs"]

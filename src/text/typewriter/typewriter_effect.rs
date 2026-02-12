@@ -8,16 +8,16 @@ pub struct TypewriterEffect {
     pub(crate) id: usize,
     pub x: f32,
     pub y: f32,
-    chars: Vec<char>,
-    full_text: String,
-    visible_chars: usize,
-    chars_per_second: f32,
-    elapsed: f32,
-    paused: bool,
-    complete: bool,
-    style: TextStyle,
-    pause_timer: f32,
-    punctuation_config: PunctuationConfig,
+    pub(super) chars: Vec<char>,
+    pub(super) full_text: String,
+    pub(super) visible_chars: usize,
+    pub(super) chars_per_second: f32,
+    pub(super) elapsed: f32,
+    pub(super) paused: bool,
+    pub(super) complete: bool,
+    pub(super) style: TextStyle,
+    pub(super) pause_timer: f32,
+    pub(super) punctuation_config: PunctuationConfig,
 }
 
 impl TypewriterEffect {
@@ -34,31 +34,16 @@ impl TypewriterEffect {
         let chars: Vec<char> = full_text.chars().collect();
         let chars_per_second = speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
-        let visible_chars = if complete {
-            full_text.chars().count()
-        } else {
-            0
-        };
-
+        let visible_chars = if complete { full_text.chars().count() } else { 0 };
         Self {
-            chars,
-            full_text,
-            visible_chars,
-            chars_per_second,
-            elapsed: 0.0,
-            paused: false,
-            complete,
-            id,
-            x,
-            y,
-            style,
-            pause_timer: 0.0,
-            punctuation_config,
+            chars, full_text, visible_chars, chars_per_second,
+            elapsed: 0.0, paused: false, complete, id, x, y,
+            style, pause_timer: 0.0, punctuation_config,
         }
     }
 
     pub fn update(&mut self, delta_time: f32) {
-        if self.complete {
+        if self.complete || self.paused {
             return;
         }
 
@@ -73,6 +58,10 @@ impl TypewriterEffect {
             return;
         }
 
+        self.advance_chars(delta_time);
+    }
+
+    fn advance_chars(&mut self, delta_time: f32) {
         let seconds_per_char = 1.0 / self.chars_per_second;
         self.elapsed += delta_time;
 
@@ -152,86 +141,7 @@ impl TypewriterEffect {
         }
     }
 
-    pub fn set_text(
-        &mut self,
-        text: impl Into<String>,
-        new_speed: TextSpeed,
-        style: TextStyle,
-        punctuation_config: PunctuationConfig,
-    ) {
-        self.full_text = text.into();
-        self.chars = self.full_text.chars().collect();
-        self.punctuation_config = punctuation_config;
-
-        self.visible_chars = 0;
-        self.elapsed = 0.0;
-        self.complete = false;
-        self.paused = false;
-        self.pause_timer = 0.0;
-
-        self.set_speed(new_speed);
-        self.style = style;
-    }
-
     pub(crate) fn get_style(&self) -> TextStyle {
         self.style.clone()
-    }
-
-    pub fn set_progress(&mut self, progress: f32) -> bool {
-        if self.chars_per_second <= f32::EPSILON {
-            return false;
-        }
-        let progress = progress.clamp(0.0, 1.0);
-        let total_chars = self.chars.len();
-
-        if total_chars == 0 {
-            self.complete = true;
-            return false;
-        }
-
-        #[allow(clippy::cast_sign_loss)]
-        {
-            self.visible_chars = (total_chars as f32 * progress).round() as usize;
-        }
-
-        if self.visible_chars >= total_chars {
-            self.visible_chars = total_chars;
-            self.complete = true;
-        } else {
-            self.complete = false;
-        }
-
-        self.elapsed = 0.0;
-        self.pause_timer = 0.0;
-        true
-    }
-
-    pub const fn set_punctuation_config(&mut self, punctuation_config: PunctuationConfig) {
-        self.punctuation_config = punctuation_config;
-    }
-
-    fn while_need_to_update(&mut self, seconds_per_char: f32, text_len: usize) -> bool {
-        self.elapsed -= seconds_per_char;
-
-        if self.visible_chars >= text_len {
-            self.complete = true;
-            return false;
-        }
-
-        let c = self.chars[self.visible_chars];
-        self.visible_chars += 1;
-
-        let pause_duration = match c {
-            '.' | '!' | '?' => Some(self.punctuation_config.sentence_end),
-            ',' => Some(self.punctuation_config.comma),
-            _ => Some(self.punctuation_config.other),
-        };
-
-        if let Some(duration) = pause_duration {
-            self.pause_timer = duration;
-            false
-        } else {
-            true
-        }
     }
 }
