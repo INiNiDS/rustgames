@@ -71,7 +71,6 @@ impl TypewriterEffect {
         let pause = self.get_pause_for_char(c);
         self.pause_timer = pause;
 
-        // Продолжаем цикл, только если не установлена пауза
         self.pause_timer <= 0.0
     }
 

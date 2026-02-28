@@ -200,6 +200,7 @@ fn main() {
         fullscreen: true,
         vsync: true,
         background_color: Color::new(0.02, 0.02, 0.05, 1.0),
+        language: Language::resolve("en").unwrap(),
     };
     app::run(config, Box::new(game)).expect("Failed to run");
 }

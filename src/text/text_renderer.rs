@@ -1,6 +1,6 @@
-use std::str::FromStr;
 use crate::graphics::color::Color;
 use crate::text::{FontWeight, TextAttributes};
+use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct StyledSegment {
@@ -52,7 +52,8 @@ impl ParseState {
             "sb" => self.weight_stack.push(FontWeight::SemiBold),
             "i" => self.italic_stack.push(true),
             _ if tag.starts_with("color=") => {
-                self.color_stack.push(Some(Color::from_str(&tag[6..]).unwrap_or(Color::WHITE)));
+                self.color_stack
+                    .push(Some(Color::from_str(&tag[6..]).unwrap_or(Color::WHITE)));
             }
             _ => {}
         }

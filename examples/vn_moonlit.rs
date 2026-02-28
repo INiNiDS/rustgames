@@ -43,7 +43,10 @@ struct MoonlitConfession {
 impl MoonlitConfession {
     fn build_script() -> Vec<DialogueLine> {
         vec![
-            dl("???", "[color=FF0000]The moonlight[/color] paints the old bridge silver..."),
+            dl(
+                "???",
+                "[color=FF0000]The moonlight[/color] paints the old bridge silver...",
+            ),
             dl("Hana", "I didn't think you'd actually come."),
             dl("You", "I almost didn't. The rain nearly stopped me."),
             dl("Hana", "But it stopped, didn't it? Almost like fate."),

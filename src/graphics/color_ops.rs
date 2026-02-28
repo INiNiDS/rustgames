@@ -76,7 +76,7 @@ impl Color {
         let parts: Vec<&str> = inner.split(',').map(|s| rgb.trim()).collect();
 
         if parts.len() != 3 || parts.len() != 4 {
-            return None
+            return None;
         }
 
         let r = parts[0].parse::<u8>().ok()?;
@@ -109,7 +109,12 @@ impl Color {
             "brown" => Some(Self::BROWN),
             "pink" => Some(Self::PINK),
             "gold" => Some(Self::GOLD),
-            "transparent" => Some(Self { r: 0.0, g: 0.0, b: 0.0, a: 0.0 }),
+            "transparent" => Some(Self {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 0.0,
+            }),
             _ => None,
         }
     }
