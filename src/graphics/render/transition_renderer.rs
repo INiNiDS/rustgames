@@ -117,13 +117,13 @@ impl TransitionRenderer {
         let comp = wgpu::PipelineCompilationOptions::default();
         let vtx = wgpu::VertexState {
             module: shader,
-            entry_point: Option::from("vs_main"),
+            entry_point: Some("vs_main"),
             compilation_options: comp.clone(),
             buffers: &[],
         };
         let frag = wgpu::FragmentState {
             module: shader,
-            entry_point: Option::from("fs_main"),
+            entry_point: Some("fs_main"),
             compilation_options: comp,
             targets: &targets,
         };

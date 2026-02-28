@@ -6,4 +6,4 @@
 - [ ] Verify texture format compatibility (e.g., sRGB vs linear) during the `create_texture` phase.
 - [ ] Debug depth testing: ensure the depth buffer is properly cleared and depth writes are enabled for opaque geometry.
 
-## 2. Check why effects in examples dont work
+## 2. Check why effects in examples don't work

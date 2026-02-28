@@ -495,7 +495,7 @@ fn sprite_instance_rotation() {
 
 #[test]
 fn sprite_instance_size_alignment() {
-    let size = std::mem::size_of::<SpriteInstance>();
+    let size = size_of::<SpriteInstance>();
     assert_eq!(size, 96);
     assert_eq!(size % 16, 0);
 }

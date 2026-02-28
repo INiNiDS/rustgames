@@ -39,7 +39,7 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     if (params.type_id == 0u) {
         return new_color;
     }
-=
+
     if (params.type_id == 1u) {
         return mix(old_color, new_color, t);
     }

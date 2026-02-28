@@ -94,7 +94,7 @@ impl Renderer {
         device: &wgpu::Device,
         queue: &wgpu::Queue,
         sprites: &SpriteRenderer,
-        batches: &Vec<(&Texture, &[SpriteInstance])>,
+        batches: &[(&Texture, &[SpriteInstance])],
         text: &mut TextSystem,
     ) {
         let mut start_instance_index = 0;
@@ -118,30 +118,10 @@ impl Renderer {
         let max_w = render_settings.get_max_width_text();
         let max_h = render_settings.get_max_height_text();
 
-
         let typewriter_data: Vec<_> = render_settings
             .get_text_system()
             .effects()
-            .map(|tw| {
-                let text_id = tw.text_id;
-                let resolved = if text_id != 0 {
-                    let lang_id = render_settings.language_system
-                        .get_current_language()
-                        .map_or(0, |l| l.id);
-                    render_settings.translation_system
-                        .get_translation(text_id, lang_id)
-                        .map(|t| t.get_translation().to_string())
-                        .or_else(|| {
-                            render_settings.dictionary_system
-                                .get_dictionary(text_id)
-                                .map(|d| d.get_text().to_string())
-                        })
-                        .unwrap_or_else(|| tw.visible_text().to_string())
-                } else {
-                    tw.visible_text().to_string()
-                };
-                (resolved, tw.x, tw.y, tw.get_style())
-            })
+            .map(|tw| Self::resolve_typewriter_text(tw, render_settings))
             .collect();
 
         for (text, x, y, style) in typewriter_data {
@@ -149,6 +129,44 @@ impl Renderer {
                 .get_text_system_mut()
                 .queue_text(&text, x, y, max_w, max_h, &style);
         }
+    }
+
+    /// Resolves the visible text for a single typewriter effect, applying
+    /// translation lookup when a non-zero `text_id` is present.
+    fn resolve_typewriter_text(
+        tw: &crate::text::TypewriterEffect,
+        render_settings: &RenderSettings,
+    ) -> (String, f32, f32, crate::text::TextStyle) {
+        let text = if tw.text_id != 0 {
+            Self::lookup_translation(tw, render_settings)
+        } else {
+            tw.visible_text().to_string()
+        };
+        (text, tw.x, tw.y, tw.get_style())
+    }
+
+    /// Looks up a translation for the given effect; falls back to the dictionary
+    /// entry, then to the raw visible text.
+    fn lookup_translation(
+        tw: &crate::text::TypewriterEffect,
+        render_settings: &RenderSettings,
+    ) -> String {
+        let lang_id = render_settings
+            .language_system
+            .get_current_language()
+            .map_or(0, |l| l.id);
+
+        render_settings
+            .translation_system
+            .get_translation(tw.text_id, lang_id)
+            .map(|t| t.get_translation().to_string())
+            .or_else(|| {
+                render_settings
+                    .dictionary_system
+                    .get_dictionary(tw.text_id)
+                    .map(|d| d.get_text().to_string())
+            })
+            .unwrap_or_else(|| tw.visible_text().to_string())
     }
 
     fn execute_render_pass<F>(

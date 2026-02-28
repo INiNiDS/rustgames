@@ -4,7 +4,7 @@ use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
 
 /// GPU-side representation of a sprite instance for instanced rendering.
 ///
-/// 96 bytes: 4×4 model matrix, UV rectangle, and colour tint.
+/// 96 bytes: 4×4 model matrix, UV rectangle, and color tint.
 #[repr(C)]
 #[derive(Copy, Clone, Debug, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct SpriteInstance {

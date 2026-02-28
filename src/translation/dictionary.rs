@@ -25,10 +25,6 @@ impl Dictionary {
     pub(crate) fn get_text(&self) -> &str {
         &self.text
     }
-
-    pub(crate) fn get_id(&self) -> &u32 {
-        &self.id
-    }
 }
 
 impl PartialEq for Dictionary {

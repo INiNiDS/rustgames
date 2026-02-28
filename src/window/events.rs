@@ -98,6 +98,12 @@ impl EventQueue {
         self.pressed_keys.contains(&key)
     }
 
+    /// Returns `true` while the key is held down (alias for `is_key_pressed`).
+    #[must_use]
+    pub fn is_key_down(&self, key: KeyCode) -> bool {
+        self.pressed_keys.contains(&key)
+    }
+
     #[must_use]
     pub fn was_key_just_pressed(&self, key: KeyCode) -> bool {
         self.events

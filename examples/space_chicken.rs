@@ -517,6 +517,7 @@ impl SpaceChicken {
 // ---------------------------------------------------------------------------
 
 impl SpaceChicken {
+    // Medium complexity 
     fn handle_input(&mut self, engine: &mut Engine) {
         let mut dx: f32 = 0.0;
         let mut dy: f32 = 0.0;
@@ -716,6 +717,7 @@ fn main() {
         fullscreen: false,
         vsync: true,
         background_color: Color::new(0.05, 0.02, 0.15, 1.0),
+        language: Language::resolve("en_us").unwrap(),
     };
 
     app::run(config, Box::new(game)).expect("Failed to run Space Chicken");

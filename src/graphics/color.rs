@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
-/// An RGBA colour stored as four `f32` values in the range `0.0..=1.0`.
+/// An RGBA color stored as four `f32` values in the range `0.0.=1.0`.
 ///
-/// Provides named constants for common colours, conversions from hex strings,
+/// Provides named constants for common colors, conversions from hex strings,
 /// u8 tuples, and linear interpolation.
 #[derive(Clone, Copy, Debug)]
 pub struct Color {

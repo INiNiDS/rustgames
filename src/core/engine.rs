@@ -8,7 +8,7 @@ use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
-use crate::translation::{DictionarySystem, Translation, TranslationSystem};
+use crate::translation::{DictionarySystem, Language, LanguageSystem, Translation, TranslationSystem};
 
 /// Central engine managing the window, renderer, input events, audio, and
 /// per-frame timing. Provides accessor methods for every subsystem controller.
@@ -96,17 +96,21 @@ impl Engine {
 
     fn handle_event(&mut self, event: Event) {
         for handler in &mut self.handler_keys {
-            match event {
-                Event::KeyPressed(key) => handler.on_key_pressed(key),
-                Event::KeyReleased(key) => handler.on_key_released(key),
-                Event::MouseMoved(x, y) => handler.on_mouse_moved(x, y),
-                Event::MousePressed(button) => handler.on_mouse_pressed(button),
-                Event::MouseReleased(button) => handler.on_mouse_released(button),
-                Event::MouseWheel(delta) => handler.on_mouse_wheel(delta),
-                Event::WindowClosed => handler.on_window_closed(),
-                Event::WindowResized(w, h) => handler.on_window_resized(w, h),
-                Event::WindowFocused(f) => handler.on_window_focused(f),
-            }
+            Self::dispatch_event(handler.as_mut(), event);
+        }
+    }
+
+    fn dispatch_event(handler: &mut dyn EventHandler, event: Event) {
+        match event {
+            Event::KeyPressed(key)        => handler.on_key_pressed(key),
+            Event::KeyReleased(key)       => handler.on_key_released(key),
+            Event::MouseMoved(x, y)       => handler.on_mouse_moved(x, y),
+            Event::MousePressed(button)   => handler.on_mouse_pressed(button),
+            Event::MouseReleased(button)  => handler.on_mouse_released(button),
+            Event::MouseWheel(delta)      => handler.on_mouse_wheel(delta),
+            Event::WindowClosed           => handler.on_window_closed(),
+            Event::WindowResized(w, h)    => handler.on_window_resized(w, h),
+            Event::WindowFocused(f)       => handler.on_window_focused(f),
         }
     }
 
@@ -148,5 +152,20 @@ impl Engine {
     }
     pub fn add_dictionary(&mut self, dictionary: DictionarySystem) {
         self.render_settings.dictionary_system += dictionary;
+    }
+
+    /// Register a language so it can be activated via `set_language`.
+    pub fn add_language(&mut self, language: Language) {
+        self.render_settings.language_system.add_language(language);
+    }
+
+    /// Activate a language by its `small_name` (e.g. `"en_us"`, `"ru_ru"`).
+    pub fn set_language(&mut self, small_name: &str) {
+        self.render_settings.language_system.set_current_language_by_name(small_name);
+    }
+
+    /// Access the language system directly.
+    pub const fn get_language_system(&mut self) -> &mut LanguageSystem {
+        &mut self.render_settings.language_system
     }
 }

@@ -72,7 +72,7 @@ impl TransitionState {
         }
     }
 
-    /// Returns normalised progress in `0.0..=1.0`.
+    /// Returns normalized progress in `0.0.=1.0`.
     #[must_use]
     pub fn progress(&self) -> f32 {
         let d = self.transition.duration();

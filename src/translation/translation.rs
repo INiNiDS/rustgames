@@ -8,7 +8,7 @@ pub struct Translation {
 }
 
 impl Translation {
-    pub fn new(text_id: u32, language_id: u32, translation: String) -> Self {
+    pub const fn new(text_id: u32, language_id: u32, translation: String) -> Self {
         Self {
             text_id,
             language_id,
@@ -19,15 +19,9 @@ impl Translation {
     pub(crate) fn get_translation(&self) -> &str {
         &self.translation
     }
-    pub(crate) fn get_language(&self) -> &u32 {
-        &self.language_id
-    }
-    pub(crate) fn get_text(&self) -> &u32 {
-        &self.text_id
-    }
 }
 
-/// Stores translations indexed by (text_id, language_id) for O(1) lookup.
+/// Stores translations indexed by (`text_id`, `language_id`) for O(1) lookup.
 pub struct TranslationSystem {
     translations: HashMap<(u32, u32), Translation>,
 }

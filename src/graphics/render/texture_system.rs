@@ -30,7 +30,7 @@ impl TextureSystem {
     }
 
     pub fn load_texture(&mut self, bytes: &[u8], label: &str) -> usize {
-        let texture = Texture::from_bytes(&self.device, &self.queue, bytes, Option::from(label))
+        let texture = Texture::from_bytes(&self.device, &self.queue, bytes, Some(label))
             .expect("Failed to load texture");
 
         self.textures.insert(label.to_string(), texture);

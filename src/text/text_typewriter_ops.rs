@@ -1,17 +1,7 @@
 use crate::prelude::{TextSpeed, TextStyle, TypewriterEffect};
 use crate::text::{PunctuationConfig, TextSystem};
 use std::slice::Iter;
-
-pub struct TextData {
-    pub text: String,
-    pub text_id: u32,
-    pub speed: TextSpeed,
-    pub x: f32,
-    pub y: f32,
-    pub style: TextStyle,
-    pub punctuation_config: PunctuationConfig,
-}
-
+use super::TextData;
 
 impl TextSystem {
     pub fn add_text(

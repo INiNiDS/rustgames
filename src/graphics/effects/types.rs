@@ -111,7 +111,7 @@ impl EmitterConfig {
     }
 }
 
-/// Tracks the current state of a screen-wide colour flash.
+/// Tracks the current state of a screen-wide color flash.
 #[derive(Debug, Clone)]
 pub struct Flash {
     pub active: bool,
@@ -142,7 +142,7 @@ impl Flash {
     }
 }
 
-/// Tracks a persistent colour overlay applied over the scene.
+/// Tracks a persistent color overlay applied over the scene.
 #[derive(Debug, Clone)]
 pub struct Overlay {
     pub active: bool,

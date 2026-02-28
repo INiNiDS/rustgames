@@ -1,7 +1,7 @@
 use crate::graphics::Color;
 use glam::Vec2;
 
-/// A single particle with position, velocity, remaining lifetime, colour, and
+/// A single particle with position, velocity, remaining lifetime, color, and
 /// size. Updated each frame by its owning `EffectInstance`.
 #[derive(Debug, Clone)]
 pub struct Particle {

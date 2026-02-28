@@ -275,6 +275,7 @@ fn main() {
         fullscreen: true,
         vsync: true,
         background_color: Color::BLACK,
+        language: Language::resolve("en_us").unwrap(),
     };
 
     app::run(window_config, Box::new(game)).expect("Failed to run effects demo");

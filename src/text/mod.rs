@@ -19,3 +19,13 @@ pub use text_wrapper::TextWrapper;
 pub use typewriter::TypewriterEffect;
 pub use typewriter::punctuation_config::PunctuationConfig;
 pub use typewriter::text_speed::TextSpeed;
+
+pub struct TextData {
+    pub text: String,
+    pub text_id: u32,
+    pub speed: TextSpeed,
+    pub x: f32,
+    pub y: f32,
+    pub style: TextStyle,
+    pub punctuation_config: PunctuationConfig,
+}

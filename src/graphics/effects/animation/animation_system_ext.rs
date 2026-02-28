@@ -45,7 +45,7 @@ impl AnimationSystem {
         }
     }
 
-    pub fn stop_by_predicate(&mut self, predicate: fn(&Animation) -> bool) {
+    pub fn stop_by_predicate(&mut self, predicate: impl Fn(&Animation) -> bool) {
         self.animations.retain(|anim| !predicate(&anim.animation));
     }
 
@@ -63,19 +63,19 @@ impl AnimationSystem {
         self.seek_progress(id, 0.0);
     }
 
-    pub fn set_delay(&mut self, delay: f32, ids: Vec<usize>) {
+    pub fn set_delay(&mut self, delay: f32, ids: &[usize]) {
         let delay = delay.max(0.0);
         for id in ids {
-            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
+            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == *id) {
                 anim.set_delay(delay);
             }
         }
     }
 
-    pub fn add_delay(&mut self, delay: f32, ids: Vec<usize>) {
+    pub fn add_delay(&mut self, delay: f32, ids: &[usize]) {
         let delay = delay.max(0.0);
         for id in ids {
-            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == id) {
+            if let Some(anim) = self.animations.iter_mut().find(|a| a.id == *id) {
                 anim.add_delay(delay);
             }
         }
