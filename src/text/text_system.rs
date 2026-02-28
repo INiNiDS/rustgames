@@ -7,7 +7,8 @@ use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
-use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text};
+use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text };
+
 
 /// Manages text rendering including typewriter effects, font loading, and
 /// styled text queueing for GPU draw calls.
@@ -75,16 +76,15 @@ impl TextSystem {
 
     pub fn queue_text(
         &mut self,
-        content: &str,
+        raw_text: &str,
         x: f32,
         y: f32,
         max_w: f32,
         max_h: f32,
         style: &TextStyle,
     ) {
-        let segments = RichTextParser::parse(content);
 
-        let text_data = segments
+        let formatted_segments = RichTextParser::parse(raw_text)
             .into_iter()
             .map(|seg| {
                 let font_id = resolve_font_id(&seg.attrs);
@@ -94,7 +94,7 @@ impl TextSystem {
             .collect();
 
         self.queued_sections.push(QueuedSection {
-            text_data,
+            text_data: formatted_segments,
             x,
             y,
             bounds: (max_w, max_h),

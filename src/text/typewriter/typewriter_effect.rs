@@ -3,12 +3,16 @@ pub use crate::text::{TextSpeed, TextStyle};
 
 /// A character-by-character text reveal with configurable speed and automatic
 /// punctuation pauses.
+///
+/// `text_id = 0` means the text is used as-is (no translation lookup).
+/// Any non-zero `text_id` will be resolved through the translation system at render time.
 #[derive(Debug)]
 pub struct TypewriterEffect {
     pub(crate) id: usize,
     pub x: f32,
     pub y: f32,
     pub(super) chars: Vec<char>,
+    pub(crate) text_id: u32,
     pub(super) full_text: String,
     pub(super) visible_indices: Vec<usize>,
     pub(super) visible_chars: usize,
@@ -22,8 +26,24 @@ pub struct TypewriterEffect {
 }
 
 impl TypewriterEffect {
+    /// Create a new effect with a raw text string (`text_id = 0`, no translation).
     pub fn new(
         text: impl Into<String>,
+        speed: TextSpeed,
+        id: usize,
+        x: f32,
+        y: f32,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> Self {
+        Self::new_with_id(text, 0, speed, id, x, y, style, punctuation_config)
+    }
+
+    /// Create a new effect with a translation key.
+    /// `full_text` is used as fallback when no translation is found.
+    pub fn new_with_id(
+        text: impl Into<String>,
+        text_id: u32,
         speed: TextSpeed,
         id: usize,
         x: f32,
@@ -35,13 +55,10 @@ impl TypewriterEffect {
         let (chars, visible_indices) = Self::parse_tags(&full_text);
         let chars_per_second = speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
-        let visible_chars = if complete {
-            full_text.chars().count()
-        } else {
-            0
-        };
+        let visible_chars = if complete { chars.len() } else { 0 };
         Self {
             chars,
+            text_id,
             full_text,
             visible_indices,
             visible_chars,
@@ -157,7 +174,7 @@ impl TypewriterEffect {
     pub(crate) fn get_style(&self) -> TextStyle {
         self.style.clone()
     }
-
+    // High Complexity
     pub(crate) fn parse_tags(text: &str) -> (Vec<char>, Vec<usize>) {
         let mut chars = Vec::new();
         let mut indices = Vec::new();

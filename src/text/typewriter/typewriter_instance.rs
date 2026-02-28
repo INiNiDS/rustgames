@@ -39,6 +39,33 @@ impl TypewriterInstance {
         self.next_id - 1
     }
 
+    /// Add a typewriter effect that will be resolved via translation system at render time.
+    /// `text` is used as fallback when no translation is found.
+    pub fn add_typewriter_effect_with_id(
+        &mut self,
+        text: impl Into<String>,
+        text_id: u32,
+        speed: TextSpeed,
+        x: f32,
+        y: f32,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> usize {
+        let effect = TypewriterEffect::new_with_id(
+            text,
+            text_id,
+            speed,
+            self.next_id,
+            x,
+            y,
+            style,
+            punctuation_config,
+        );
+        self.typewriter_effects.push(effect);
+        self.next_id += 1;
+        self.next_id - 1
+    }
+
     pub fn update(&mut self, delta_time: f32) {
         for effect in &mut self.typewriter_effects {
             effect.update(delta_time);
@@ -152,6 +179,22 @@ impl TypewriterInstance {
     ) -> bool {
         self.get_effect_mut(id).is_some_and(|effect| {
             effect.set_text(text, speed, style, punctuation_config);
+            true
+        })
+    }
+
+    #[must_use]
+    pub fn set_text_with_id(
+        &mut self,
+        id: usize,
+        text: impl Into<String>,
+        text_id: u32,
+        speed: TextSpeed,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> bool {
+        self.get_effect_mut(id).is_some_and(|effect| {
+            effect.set_text_with_id(text, text_id, speed, style, punctuation_config);
             true
         })
     }

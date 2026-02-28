@@ -8,6 +8,7 @@ use crate::window::{Event, EventHandler, EventQueue, Window, WindowConfig};
 use std::sync::Arc;
 use winit::dpi::PhysicalSize;
 use winit::window::Window as WinitWindow;
+use crate::translation::{DictionarySystem, Translation, TranslationSystem};
 
 /// Central engine managing the window, renderer, input events, audio, and
 /// per-frame timing. Provides accessor methods for every subsystem controller.
@@ -133,7 +134,19 @@ impl Engine {
         self.render_settings.get_animation_system_mut()
     }
 
-    pub const fn vfx_system(&mut self) -> &mut VfxSystem {
+    pub const fn get_vfx_system(&mut self) -> &mut VfxSystem {
         self.render_settings.get_vfx_system_mut()
+    }
+    
+    pub fn save_translations(&mut self, dictionary_system: DictionarySystem, translation: TranslationSystem) {
+        self.render_settings.translation_system += translation;
+        self.render_settings.dictionary_system += dictionary_system;
+    }
+
+    pub fn add_translation(&mut self, translation: Translation) {
+        self.render_settings.translation_system.add_translation(translation);
+    }
+    pub fn add_dictionary(&mut self, dictionary: DictionarySystem) {
+        self.render_settings.dictionary_system += dictionary;
     }
 }

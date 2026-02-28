@@ -1,4 +1,5 @@
 use aam_rs::aaml::AAML;
+use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign};
@@ -54,32 +55,52 @@ impl PartialEq for Language {
 }
 
 pub struct LanguageSystem {
-    languages: Vec<Language>,
+    /// Keyed by language id for O(1) lookup
+    languages: HashMap<u32, Language>,
+    /// Currently active language id (0 = none set)
+    current_language_id: u32,
 }
 
 impl LanguageSystem {
     pub fn new() -> Self {
         Self {
-            languages: Vec::new(),
+            languages: HashMap::new(),
+            current_language_id: 0,
         }
     }
 
     pub fn add_language(&mut self, language: Language) {
-        self.languages.push(language);
+        self.languages.insert(language.id, language);
+    }
+
+    pub fn set_current_language(&mut self, id: u32) {
+        self.current_language_id = id;
+    }
+
+    pub fn set_current_language_by_name(&mut self, small_name: &str) {
+        if let Some(lang) = self.get_language_by_small_name(small_name) {
+            self.current_language_id = lang.id;
+        }
+    }
+
+    pub fn get_current_language(&self) -> Option<&Language> {
+        if self.current_language_id == 0 {
+            None
+        } else {
+            self.languages.get(&self.current_language_id)
+        }
     }
 
     pub fn get_language_by_id(&self, id: u32) -> Option<&Language> {
-        self.languages.iter().find(|lang| lang.id == id)
+        self.languages.get(&id)
     }
 
     pub fn get_language_by_small_name(&self, small_name: &str) -> Option<&Language> {
-        self.languages
-            .iter()
-            .find(|lang| lang.small_name == small_name)
+        self.languages.values().find(|lang| lang.small_name == small_name)
     }
 
     pub fn get_language_by_full_name(&self, full_name: &str) -> Option<&Language> {
-        self.languages.iter().find(|lang| lang.full_name == full_name)
+        self.languages.values().find(|lang| lang.full_name == full_name)
     }
 }
 

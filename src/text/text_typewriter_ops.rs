@@ -2,6 +2,17 @@ use crate::prelude::{TextSpeed, TextStyle, TypewriterEffect};
 use crate::text::{PunctuationConfig, TextSystem};
 use std::slice::Iter;
 
+pub struct TextData {
+    pub text: String,
+    pub text_id: u32,
+    pub speed: TextSpeed,
+    pub x: f32,
+    pub y: f32,
+    pub style: TextStyle,
+    pub punctuation_config: PunctuationConfig,
+}
+
+
 impl TextSystem {
     pub fn add_text(
         &mut self,
@@ -14,6 +25,25 @@ impl TextSystem {
     ) -> usize {
         self.typewriter_instance
             .add_typewriter_effect(text, speed, x, y, style, punctuation_config)
+    }
+
+    /// Add a typewriter effect resolved at render time via translation system.
+    /// `text` is the fallback shown when no translation is found.
+    /// `text_id` is generated via `Dictionary::generate_id_from_name(key)`.
+    pub fn add_text_by_id(
+        &mut self,
+        text_data: TextData
+    ) -> usize {
+        self.typewriter_instance
+            .add_typewriter_effect_with_id(
+                text_data.text,
+                text_data.text_id,
+                text_data.speed,
+                text_data.x,
+                text_data.y,
+                text_data.style,
+                text_data.punctuation_config
+            )
     }
 
     pub fn remove_text(&mut self, id: usize) {
@@ -51,6 +81,20 @@ impl TextSystem {
     ) -> bool {
         self.typewriter_instance
             .set_text(id, text, speed, style, punctuation_config)
+    }
+
+    #[must_use]
+    pub fn set_text_by_id(
+        &mut self,
+        id: usize,
+        text: impl Into<String>,
+        text_id: u32,
+        speed: TextSpeed,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) -> bool {
+        self.typewriter_instance
+            .set_text_with_id(id, text, text_id, speed, style, punctuation_config)
     }
 
     #[must_use]

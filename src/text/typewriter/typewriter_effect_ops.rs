@@ -11,6 +11,33 @@ impl TypewriterEffect {
         style: TextStyle,
         punctuation_config: PunctuationConfig,
     ) {
+        self.text_id = 0;
+        self.full_text = text.into();
+        self.punctuation_config = punctuation_config;
+
+        let (chars, visible_indices) = Self::parse_tags(&self.full_text);
+        self.chars = chars;
+        self.visible_indices = visible_indices;
+
+        self.visible_chars = 0;
+        self.elapsed = 0.0;
+        self.complete = false;
+        self.paused = false;
+        self.pause_timer = 0.0;
+
+        self.set_speed(new_speed);
+        self.style = style;
+    }
+
+    pub fn set_text_with_id(
+        &mut self,
+        text: impl Into<String>,
+        text_id: u32,
+        new_speed: TextSpeed,
+        style: TextStyle,
+        punctuation_config: PunctuationConfig,
+    ) {
+        self.text_id = text_id;
         self.full_text = text.into();
         self.punctuation_config = punctuation_config;
 

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign};
@@ -20,6 +21,14 @@ impl Dictionary {
             text: text.to_string(),
         }
     }
+
+    pub(crate) fn get_text(&self) -> &str {
+        &self.text
+    }
+
+    pub(crate) fn get_id(&self) -> &u32 {
+        &self.id
+    }
 }
 
 impl PartialEq for Dictionary {
@@ -28,29 +37,33 @@ impl PartialEq for Dictionary {
     }
 }
 
+/// Stores fallback display texts indexed by their id for O(1) lookup.
 pub struct DictionarySystem {
-    dictionaries: Vec<Dictionary>,
+    dictionaries: HashMap<u32, Dictionary>,
 }
 
 impl DictionarySystem {
     pub fn new() -> Self {
         Self {
-            dictionaries: Vec::new(),
+            dictionaries: HashMap::new(),
         }
     }
 
     pub fn add_dictionary(&mut self, text: &str) {
-        self.dictionaries.push(Dictionary::new(text));
+        let d = Dictionary::new(text);
+        self.dictionaries.insert(d.id, d);
     }
 
-    pub fn get_dictionaries(&self) -> &Vec<Dictionary> {
-        &self.dictionaries
+    pub fn add_dictionary_entry(&mut self, id: u32, text: &str) {
+        self.dictionaries.insert(id, Dictionary { id, text: text.to_string() });
+    }
+
+    pub fn get_dictionaries(&self) -> impl Iterator<Item = &Dictionary> {
+        self.dictionaries.values()
     }
 
     pub fn get_dictionary(&self, text_id: u32) -> Option<&Dictionary> {
-        self.dictionaries
-            .iter()
-            .find(|d| d.id == text_id)
+        self.dictionaries.get(&text_id)
     }
 }
 

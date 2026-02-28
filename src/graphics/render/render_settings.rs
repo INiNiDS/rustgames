@@ -8,6 +8,7 @@ use std::sync::Arc;
 use wgpu::{Device, PresentMode, Queue, Surface, SurfaceConfiguration};
 use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::window::Window;
+use crate::translation::{DictionarySystem, LanguageSystem, TranslationSystem};
 
 /// Aggregates all GPU resources and controllers needed for rendering a frame.
 pub struct RenderSettings {
@@ -26,6 +27,9 @@ pub struct RenderSettings {
     pub(crate) animation_system: AnimationSystem,
     pub(crate) texture_system: TextureSystem,
     pub(crate) vfx_system: VfxSystem,
+    pub(crate) language_system: LanguageSystem,
+    pub(crate) translation_system: TranslationSystem,
+    pub(crate) dictionary_system: DictionarySystem
 }
 
 impl RenderSettings {
@@ -54,6 +58,9 @@ impl RenderSettings {
             animation_system: AnimationSystem::new(),
             texture_system: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
+            language_system: Default::default(),
+            translation_system: Default::default(),
+            dictionary_system: Default::default(),
         }
     }
 
@@ -85,6 +92,11 @@ impl RenderSettings {
         let _ = self
             .window
             .request_inner_size(LogicalSize::new(config.width, config.height));
+
+        let lang = config.language.clone();
+        let lang_id = lang.id;
+        self.language_system.add_language(lang);
+        self.language_system.set_current_language(lang_id);
     }
 
     fn apply_fullscreen(window: &Window, config: &WindowConfig) {
