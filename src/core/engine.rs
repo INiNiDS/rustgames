@@ -1,5 +1,6 @@
 use crate::audio::audio_system::AudioSystem;
 use crate::core::time::Time;
+use crate::error::GameError;
 use crate::graphics::render::render_settings::RenderSettings;
 use crate::graphics::render::renderer::Renderer;
 use crate::graphics::{AnimationSystem, Camera, TextureSystem, VfxSystem};
@@ -22,20 +23,23 @@ pub struct Engine {
 }
 
 impl Engine {
-    #[must_use]
-    pub fn new(window: Arc<WinitWindow>) -> Self {
+    /// Creates a new [`Engine`] bound to `window`.
+    ///
+    /// # Errors
+    /// Returns [`GameError`] if GPU initialization or the audio backend fail.
+    pub fn new(window: Arc<WinitWindow>) -> Result<Self, GameError> {
         let wrapped = Window::new(window.clone());
 
         let render_settings_future = RenderSettings::new(window);
-        let render_settings = pollster::block_on(render_settings_future);
-        Self {
+        let render_settings = pollster::block_on(render_settings_future)?;
+        Ok(Self {
             window: wrapped,
             render_settings,
             time: Time::new(),
             event_queue: EventQueue::new(),
             handler_keys: Vec::new(),
-            audio_system: AudioSystem::new(),
-        }
+            audio_system: AudioSystem::new()?,
+        })
     }
 
     pub fn resize(&mut self, new_size: PhysicalSize<u32>) {

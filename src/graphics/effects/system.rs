@@ -1,7 +1,7 @@
-pub use crate::graphics::Particle;
 pub use crate::graphics::effects::{EmitterConfig, VfxEffect};
+pub use crate::graphics::Particle;
 use glam::Vec2;
-use rand::Rng;
+use rand::RngExt;
 
 #[derive(Debug)]
 pub struct ActiveEffect {

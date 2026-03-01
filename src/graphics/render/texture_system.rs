@@ -1,3 +1,4 @@
+use crate::error::GraphicsError;
 use crate::graphics::SpriteInstance;
 use crate::graphics::Texture;
 use glam::Vec2;
@@ -29,12 +30,16 @@ impl TextureSystem {
         }
     }
 
-    pub fn load_texture(&mut self, bytes: &[u8], label: &str) -> usize {
+    /// Loads a texture from raw bytes and registers it under `label`.
+    ///
+    /// # Errors
+    /// Returns [`GraphicsError::TextureLoadFailed`] if the bytes cannot be decoded.
+    pub fn load_texture(&mut self, bytes: &[u8], label: &str) -> Result<usize, GraphicsError> {
         let texture = Texture::from_bytes(&self.device, &self.queue, bytes, Some(label))
-            .expect("Failed to load texture");
+            .map_err(|e| GraphicsError::TextureLoadFailed(label.to_string(), e))?;
 
         self.textures.insert(label.to_string(), texture);
-        self.textures.len() - 1
+        Ok(self.textures.len() - 1)
     }
 
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
@@ -89,27 +94,53 @@ impl TextureSystem {
         }
     }
 
+    /// Loads all image files from `dir` (non-recursive).
+    ///
+    /// Errors are printed as diagnostics; loading continues for the remaining files.
     pub fn load_texture_dir(&mut self, dir: &str) {
-        let files: Vec<PathBuf> = fs::read_dir(dir)
-            .unwrap()
-            .filter_map(std::result::Result::ok)
-            .filter(|entry| entry.path().is_file())
-            .map(|e| e.path())
-            .collect();
+        let files = match fs::read_dir(dir) {
+            Ok(rd) => rd
+                .filter_map(Result::ok)
+                .filter(|entry| entry.path().is_file())
+                .map(|e| e.path())
+                .collect::<Vec<_>>(),
+            Err(e) => {
+                eprintln!("{}", GraphicsError::FileReadFailed(PathBuf::from(dir), e));
+                return;
+            }
+        };
         for file in files {
-            let bytes = fs::read(&file).unwrap();
-            self.load_texture(&bytes, file.to_str().unwrap());
+            match fs::read(&file) {
+                Ok(bytes) => {
+                    let label = file.to_string_lossy().into_owned();
+                    if let Err(e) = self.load_texture(&bytes, &label) {
+                        eprintln!("{e}");
+                    }
+                }
+                Err(e) => eprintln!("{}", GraphicsError::FileReadFailed(file, e)),
+            }
         }
     }
 
+    /// Loads all image files from `dir` and all subdirectories (recursive).
+    ///
+    /// Errors are printed as diagnostics; loading continues for the remaining files.
     pub fn load_texture_dir_recursive(&mut self, dir: &str) {
         let files = walkdir::WalkDir::new(dir)
             .into_iter()
             .filter_map(std::result::Result::ok)
             .filter(|entry| entry.path().is_file());
         for entry in files {
-            let bytes = fs::read(entry.path()).unwrap();
-            self.load_texture(&bytes, entry.path().to_str().unwrap());
+            let path = entry.path().to_owned();
+            match fs::read(&path) {
+                Ok(bytes) => {
+                    let label = path.to_string_lossy().into_owned();
+                    if let Err(e) = self.load_texture(&bytes, &label) {
+                        eprintln!("{e}");
+                    }
+                }
+                Err(e) => eprintln!("{}", GraphicsError::FileReadFailed(path, e)),
+            }
         }
     }
 

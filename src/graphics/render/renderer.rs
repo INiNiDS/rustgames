@@ -1,3 +1,4 @@
+use crate::error::GraphicsError;
 use crate::graphics::render::render_settings::RenderSettings;
 use crate::graphics::{SpriteInstance, SpriteRenderer, Texture};
 use crate::prelude::Color;
@@ -41,10 +42,15 @@ impl Renderer {
             .update_camera(&settings.queue, settings.get_camera());
         Self::queue_typewriter_text(settings);
 
-        let output = settings
-            .surface
-            .get_current_texture()
-            .expect("Surface error");
+        let output = match settings.surface.get_current_texture() {
+            Ok(tex) => tex,
+            Err(e) => {
+                if !matches!(e, wgpu::SurfaceError::Outdated) {
+                    eprintln!("{}", GraphicsError::SurfaceAcquireFailed(e));
+                }
+                return;
+            }
+        };
         let view = output
             .texture
             .create_view(&wgpu::TextureViewDescriptor::default());

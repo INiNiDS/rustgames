@@ -70,9 +70,10 @@ impl LastTrain {
 
 impl Game for LastTrain {
     fn init(&mut self, engine: &mut Engine) {
-        engine
+        if let Err(e) = engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/space.png"), "bg");
+            .load_texture(include_bytes!("../src/static/textures/space.png"), "bg")
+        { eprintln!("{e}"); }
         engine.get_camera().set_zoom(1.0);
         self.show(engine, 0);
     }

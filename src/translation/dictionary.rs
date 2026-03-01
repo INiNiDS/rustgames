@@ -13,7 +13,7 @@ impl Dictionary {
     pub fn generate_id_from_name(name: &str) -> u32 {
         let mut s = DefaultHasher::new();
         name.hash(&mut s);
-        u32::try_from(s.finish()).expect("Failed to hash dictionary")
+        s.finish() as u32
     }
 
     #[must_use]

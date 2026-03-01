@@ -57,10 +57,10 @@ impl Game for AnimationDemo {
         println!("  ESC   - Exit");
         println!();
 
-        engine.get_texture_controller().load_texture(
+        if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "animation_sheet",
-        );
+        ) { eprintln!("{e}"); }
 
         engine.get_camera().set_zoom(300.0);
 
@@ -70,10 +70,10 @@ impl Game for AnimationDemo {
         println!();
         self.print_mode_info();
 
-        engine.get_audio_system().load_sound(
+        if let Err(e) = engine.get_audio_system().load_sound(
             "perdej",
             "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
-        );
+        ) { eprintln!("{e}"); }
     }
 
     fn update(&mut self, engine: &mut Engine) {

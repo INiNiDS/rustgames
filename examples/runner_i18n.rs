@@ -251,14 +251,14 @@ impl RunnerI18n {
 impl Game for RunnerI18n {
     fn init(&mut self, engine: &mut Engine) {
         // Load textures
-        engine.get_texture_controller().load_texture(
+        if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "player",
-        );
-        engine.get_texture_controller().load_texture(
+        ) { eprintln!("{e}"); }
+        if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/OIP-475081084.jpg"),
             "bg",
-        );
+        ) { eprintln!("{e}"); }
 
         // Register languages
         engine.add_language(Language::new(LANG_EN.to_string(), "English".to_string()));

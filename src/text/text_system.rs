@@ -1,3 +1,4 @@
+use crate::error::TextError;
 use crate::prelude::{Font, TextStyle};
 use crate::text::font::{
     DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT,
@@ -7,7 +8,7 @@ use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
-use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text };
+use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text};
 
 
 /// Manages text rendering including typewriter effects, font loading, and
@@ -21,7 +22,6 @@ pub struct TextSystem {
 
 impl TextSystem {
     #[must_use]
-    #[allow(clippy::too_many_arguments)]
     pub fn new(
         device: &Device,
         config: &SurfaceConfiguration,
@@ -35,13 +35,27 @@ impl TextSystem {
     ) -> Self {
         let load = |p: Option<&str>, d: &str| -> FontArc {
             Font::load(p.unwrap_or(d))
-                .expect("Failed to load font")
-                .to_font_arc()
+                .map(|f| f.to_font_arc())
+                .unwrap_or_else(|e| {
+                    let diag = TextError::FontLoadFailed(
+                        p.unwrap_or(d).to_string(),
+                        e,
+                    );
+                    eprintln!("{diag}");
+                    Font::default().to_font_arc()
+                })
         };
+        let italic_arc = Font::load(italic_font)
+            .map(|f| f.to_font_arc())
+            .unwrap_or_else(|e| {
+                let diag = TextError::FontLoadFailed(italic_font.to_string(), e);
+                eprintln!("{diag}");
+                Font::default().to_font_arc()
+            });
         let fonts = vec![
             load(normal_font, DEFAULT_NORMAL_FONT),
             load(bold_font, DEFAULT_BOLD_FONT),
-            Font::load(italic_font).expect("Err").to_font_arc(),
+            italic_arc,
             load(medium_font, DEFAULT_MEDIUM_FONT),
             load(semibold_font, DEFAULT_SEMIBOLD_FONT),
             load(light_font, DEFAULT_NORMAL_FONT),
@@ -116,7 +130,10 @@ impl TextSystem {
         for q in &self.queued_sections {
             Self::build_section_pair(&mut all_sections, q);
         }
-        self.brush.queue(device, queue, all_sections).unwrap();
+        self.brush.queue(device, queue, all_sections)
+            .unwrap_or_else(|e| {
+                eprintln!("{}", TextError::GpuQueueFailed(e.to_string()));
+            });
         self.queued_sections.clear();
         self.brush.draw(rpass);
     }

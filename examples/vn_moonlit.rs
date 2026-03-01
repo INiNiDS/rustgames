@@ -85,9 +85,10 @@ fn dl(speaker: &'static str, text: &'static str) -> DialogueLine {
 
 impl Game for MoonlitConfession {
     fn init(&mut self, engine: &mut Engine) {
-        engine
+        if let Err(e) = engine
             .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/sakura.png"), "bg");
+            .load_texture(include_bytes!("../src/static/textures/sakura.png"), "bg")
+        { eprintln!("{e}"); }
         engine.get_camera().set_zoom(1.0);
         self.show_line(engine, 0);
     }

@@ -1,3 +1,4 @@
+use crate::error::TextError;
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 
 pub const DEFAULT_NORMAL_FONT: &str = concat!(
@@ -49,16 +50,15 @@ impl Font {
         })
     }
 
-    pub fn from_bytes(name: impl Into<String>, data: Vec<u8>) -> Self {
+    /// Creates a [`Font`] from raw bytes.
+    ///
+    /// # Errors
+    /// Returns [`TextError::InvalidFontData`] if the bytes are not a valid TTF/OTF.
+    pub fn from_bytes(name: impl Into<String>, data: Vec<u8>) -> Result<Self, TextError> {
+        let name = name.into();
         let font_arc = FontArc::try_from_vec(data.clone())
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
-            .unwrap();
-
-        Self {
-            name: name.into(),
-            data,
-            font_arc,
-        }
+            .map_err(|_| TextError::InvalidFontData(name.clone()))?;
+        Ok(Self { name, data, font_arc })
     }
 
     #[must_use]
@@ -66,23 +66,25 @@ impl Font {
         self.font_arc.clone()
     }
 
-    #[must_use]
-    pub fn default_font() -> Self {
+    /// Returns the default bundled font.
+    ///
+    /// # Errors
+    /// Returns [`TextError`] if the embedded font file cannot be read or parsed.
+    pub fn default_font() -> Result<Self, TextError> {
         let data = std::fs::read(DEFAULT_NORMAL_FONT)
-            .expect("Could not find the default font file at the specified path");
-
-        let font_arc = FontArc::try_from_vec(data.clone()).expect("Default font data is invalid");
-
-        Self {
+            .map_err(|e| TextError::FontLoadFailed(DEFAULT_NORMAL_FONT.to_string(), e))?;
+        let font_arc = FontArc::try_from_vec(data.clone())
+            .map_err(|_| TextError::InvalidFontData("Caveat-Regular".to_string()))?;
+        Ok(Self {
             name: "Caveat".to_string(),
             data,
             font_arc,
-        }
+        })
     }
 }
 
 impl Default for Font {
     fn default() -> Self {
-        Self::default_font()
+        Self::default_font().expect("bundled default font is missing or corrupted")
     }
 }

@@ -64,7 +64,16 @@ impl TextSystem {
         slot: usize,
         path: &str,
     ) {
-        self.fonts[slot] = Font::load(path).expect("Failed to load font").to_font_arc();
-        self.rebuild_brush(device, config);
+        match Font::load(path) {
+            Ok(font) => {
+                self.fonts[slot] = font.to_font_arc();
+                self.rebuild_brush(device, config);
+            }
+            Err(e) => {
+                use crate::error::TextError;
+                let diag = TextError::FontLoadFailed(path.to_string(), e);
+                eprintln!("{diag}");
+            }
+        }
     }
 }

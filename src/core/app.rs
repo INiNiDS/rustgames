@@ -23,14 +23,17 @@ impl ApplicationHandler for App {
         match window_result {
             Ok(window) => {
                 let window = Arc::new(window);
-
-                let mut engine = Engine::new(window);
-
-                engine.set_window_config(&self.window_config);
-
-                self.engine = Some(engine);
-
-                self.game.init(self.engine.as_mut().unwrap());
+                match Engine::new(window) {
+                    Ok(mut engine) => {
+                        engine.set_window_config(&self.window_config);
+                        self.game.init(&mut engine);
+                        self.engine = Some(engine);
+                    }
+                    Err(e) => {
+                        eprintln!("{e}");
+                        event_loop.exit();
+                    }
+                }
             }
             Err(e) => {
                 eprintln!("Failed to create window: {e:?}");

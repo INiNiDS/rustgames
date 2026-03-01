@@ -1,3 +1,4 @@
+use crate::error::GraphicsError;
 use crate::graphics::effects::{AnimationSystem, VisualState};
 use crate::graphics::render::TextureSystem;
 use crate::graphics::{Camera, Color, SpriteRenderer, VfxSystem};
@@ -33,16 +34,20 @@ pub struct RenderSettings {
 }
 
 impl RenderSettings {
-    pub async fn new(window: Arc<Window>) -> Self {
-        let (surface, adapter, device, queue) = Self::init_graphics(window.clone()).await;
+    /// Creates all GPU resources.
+    ///
+    /// # Errors
+    /// Returns [`GraphicsError`] if surface, adapter or device creation fails.
+    pub async fn new(window: Arc<Window>) -> Result<Self, GraphicsError> {
+        let (surface, adapter, device, queue) = Self::init_graphics(window.clone()).await?;
         let size = window.inner_size();
         let device = Arc::new(device);
         let queue = Arc::new(queue);
-        let config = Self::create_config(&surface, &adapter, size);
+        let config = Self::create_config(&surface, &adapter, size)?;
         surface.configure(&device, &config);
         let (camera, text_system, sprite_renderer) =
             Self::configure_inner_modules(size, &device, &config);
-        Self {
+        Ok(Self {
             window,
             surface,
             config,
@@ -58,24 +63,24 @@ impl RenderSettings {
             animation_system: AnimationSystem::new(),
             texture_system: TextureSystem::new(device, queue),
             vfx_system: VfxSystem::new(),
-            language_system: Default::default(),
-            translation_system: Default::default(),
-            dictionary_system: Default::default(),
-        }
+            language_system: LanguageSystem::default(),
+            translation_system: TranslationSystem::default(),
+            dictionary_system: DictionarySystem::default(),
+        })
     }
 
     fn create_config(
         surface: &Surface<'static>,
         adapter: &wgpu::Adapter,
         size: PhysicalSize<u32>,
-    ) -> SurfaceConfiguration {
+    ) -> Result<SurfaceConfiguration, GraphicsError> {
         surface
             .get_default_config(adapter, size.width, size.height)
             .map(|mut c| {
                 c.present_mode = PresentMode::Fifo;
                 c
             })
-            .expect("Surface/Adapter mismatch")
+            .ok_or(GraphicsError::SurfaceConfigMismatch)
     }
 
     pub fn set_window_config(&mut self, config: &WindowConfig) {
@@ -109,11 +114,11 @@ impl RenderSettings {
 
     async fn init_graphics(
         window: Arc<Window>,
-    ) -> (Surface<'static>, wgpu::Adapter, Device, Queue) {
+    ) -> Result<(Surface<'static>, wgpu::Adapter, Device, Queue), GraphicsError> {
         let instance = wgpu::Instance::default();
         let surface = instance
             .create_surface(window)
-            .expect("Failed to create surface");
+            .map_err(GraphicsError::SurfaceCreationFailed)?;
         let adapter = instance
             .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::HighPerformance,
@@ -121,12 +126,12 @@ impl RenderSettings {
                 ..Default::default()
             })
             .await
-            .expect("No suitable GPU adapter found");
-        let (device, queue) = adapter
+            .map_err(|_| GraphicsError::AdapterNotFound)?;
+        let (device, queue): (Device, Queue) = adapter
             .request_device(&wgpu::DeviceDescriptor::default())
             .await
-            .expect("Failed to create device");
-        (surface, adapter, device, queue)
+            .map_err(GraphicsError::DeviceCreationFailed)?;
+        Ok((surface, adapter, device, queue))
     }
 
     fn configure_inner_modules(

@@ -30,7 +30,8 @@ impl Default for WindowConfig {
             fullscreen: false,
             vsync: true,
             background_color: Color::WHITE,
-            language: Language::resolve("en_us").unwrap(),
+            language: Language::resolve("en_us")
+                .unwrap(),
         }
     }
 }

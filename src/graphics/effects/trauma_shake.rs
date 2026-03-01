@@ -1,5 +1,5 @@
 use glam::Vec2;
-use rand::Rng;
+use rand::RngExt;
 
 /// Trauma-based camera shake. Trauma decays linearly and the shake intensity
 /// is proportional to `trauma²`, producing a natural dampening feel.

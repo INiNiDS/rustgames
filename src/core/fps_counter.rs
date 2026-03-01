@@ -51,7 +51,7 @@ impl FpsCounter {
     pub fn min_fps(&self) -> f32 {
         self.frame_times
             .iter()
-            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .max_by(|a, b| a.total_cmp(b))
             .map_or(
                 0.0,
                 |&max_time| if max_time > 0.0 { 1.0 / max_time } else { 0.0 },
@@ -62,7 +62,7 @@ impl FpsCounter {
     pub fn max_fps(&self) -> f32 {
         self.frame_times
             .iter()
-            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .min_by(|a, b| a.total_cmp(b))
             .map_or(
                 0.0,
                 |&min_time| if min_time > 0.0 { 1.0 / min_time } else { 0.0 },

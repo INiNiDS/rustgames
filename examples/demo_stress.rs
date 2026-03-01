@@ -1,5 +1,5 @@
 use glam::{Vec2, Vec4};
-use rand::Rng;
+use rand::RngExt;
 use rustgames::core::app;
 use rustgames::prelude::*;
 
@@ -31,10 +31,10 @@ impl Game for StressDemo {
         println!("  ESC   - Exit");
         println!();
 
-        engine.get_texture_controller().load_texture(
+        if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "stress_sprite",
-        );
+        ) { eprintln!("{e}"); }
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);
@@ -43,10 +43,10 @@ impl Game for StressDemo {
 
         println!("✓ Demo initialized with {} entities", self.entity_count);
 
-        engine.get_audio_system().load_sound(
+        if let Err(e) = engine.get_audio_system().load_sound(
             "perdej",
             "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
-        );
+        ) { eprintln!("{e}"); }
     }
 
     fn update(&mut self, engine: &mut Engine) {

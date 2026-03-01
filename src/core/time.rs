@@ -6,7 +6,7 @@ const MAX_DELTA_TIME: f32 = 0.1;
 /// Frame-level timing: delta time, total elapsed time, FPS limiting, and lag
 /// spike detection.
 pub struct Time {
-    start_time: Instant,
+    start: Instant,
     last_update: Instant,
     delta: Duration,
     frame_count: u64,
@@ -20,7 +20,7 @@ impl Time {
     pub fn new() -> Self {
         let now = Instant::now();
         Self {
-            start_time: now,
+            start: now,
             last_update: now,
             delta: Duration::from_secs_f32(1.0 / 60.0),
             frame_count: 0,
@@ -55,7 +55,7 @@ impl Time {
 
     #[must_use]
     pub fn total_seconds(&self) -> f32 {
-        self.start_time.elapsed().as_secs_f32()
+        self.start.elapsed().as_secs_f32()
     }
 
     #[must_use]
@@ -74,7 +74,7 @@ impl Time {
 
     pub fn reset(&mut self) {
         let now = Instant::now();
-        self.start_time = now;
+        self.start = now;
         self.last_update = now;
         self.delta = Duration::from_secs_f32(1.0 / 60.0);
         self.frame_count = 0;
@@ -84,7 +84,7 @@ impl Time {
     pub fn limit_fps(&self) {
         let frame_time = self.frame_start.elapsed();
         if frame_time < self.target_frame_duration {
-            std::thread::sleep(self.target_frame_duration.checked_sub(frame_time).unwrap());
+            std::thread::sleep(self.target_frame_duration.saturating_sub(frame_time));
         }
     }
 

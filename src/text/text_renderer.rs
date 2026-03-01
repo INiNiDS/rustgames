@@ -36,11 +36,11 @@ impl ParseState {
         self.segments.push(StyledSegment {
             text: std::mem::take(&mut self.current_text),
             attrs: TextAttributes {
-                weight: *self.weight_stack.last().unwrap(),
-                italic: *self.italic_stack.last().unwrap(),
+                weight: self.weight_stack.last().copied().unwrap_or(FontWeight::Normal),
+                italic: self.italic_stack.last().copied().unwrap_or(false),
                 underline: false,
                 strikethrough: false,
-                color: *self.color_stack.last().unwrap(),
+                color: self.color_stack.last().copied().unwrap_or(None),
             },
         });
     }
@@ -133,7 +133,10 @@ impl RichTextParser {
                 chars.next();
                 break;
             }
-            tag_content.push(chars.next().unwrap());
+
+            if let Some(ch) = chars.next() {
+                tag_content.push(ch);
+            }
         }
         tag_content
     }
