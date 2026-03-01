@@ -8,6 +8,7 @@ pub struct Translation {
 }
 
 impl Translation {
+    #[must_use] 
     pub const fn new(text_id: u32, language_id: u32, translation: String) -> Self {
         Self {
             text_id,
@@ -27,6 +28,7 @@ pub struct TranslationSystem {
 }
 
 impl TranslationSystem {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             translations: HashMap::new(),
@@ -41,6 +43,7 @@ impl TranslationSystem {
         self.translations.values()
     }
 
+    #[must_use] 
     pub fn get_translation(&self, text_id: u32, language_id: u32) -> Option<&Translation> {
         self.translations.get(&(text_id, language_id))
     }

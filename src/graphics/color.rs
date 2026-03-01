@@ -142,6 +142,7 @@ impl Color {
         }
     }
 
+    #[must_use] 
     pub fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
         let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
@@ -149,6 +150,7 @@ impl Color {
         Some((r, g, b, 255))
     }
 
+    #[must_use] 
     pub fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
         let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
@@ -165,21 +167,19 @@ impl FromStr for Color {
         let trimmed = s.trim();
 
         if trimmed.starts_with('(') && trimmed.ends_with(')') {
-            return Color::parse_tuple(trimmed)
-                .ok_or_else(|| format!("Unknown color name: '{}'", s));
+            return Self::parse_tuple(trimmed)
+                .ok_or_else(|| format!("Unknown color name: '{s}'"));
         }
 
         if trimmed.contains(',') {
-            return Color::parse_tuple(trimmed)
-                .ok_or_else(|| format!("Unknown color name: '{}'", s));
+            return Self::parse_tuple(trimmed)
+                .ok_or_else(|| format!("Unknown color name: '{s}'"));
         }
 
         if trimmed.starts_with('#') || trimmed.chars().all(|c| c.is_ascii_hexdigit()) {
-            return Ok(
-                Color::from_hex(trimmed).ok_or_else(|| format!("Invalid hex color: '{}'", s))?
-            );
+            return Self::from_hex(trimmed).ok_or_else(|| format!("Invalid hex color: '{s}'"));
         }
 
-        Color::parse_named(trimmed).ok_or_else(|| format!("Unknown color name: '{}'", s))
+        Self::parse_named(trimmed).ok_or_else(|| format!("Unknown color name: '{s}'"))
     }
 }

@@ -9,13 +9,15 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
+    #[must_use]
     pub fn generate_id_from_name(name: &str) -> u32 {
         let mut s = DefaultHasher::new();
         name.hash(&mut s);
-        s.finish() as u32
+        u32::try_from(s.finish()).expect("Failed to hash dictionary")
     }
 
-    pub fn new(text: &str) -> Dictionary {
+    #[must_use]
+    pub fn new(text: &str) -> Self {
         Self {
             id: Self::generate_id_from_name(text),
             text: text.to_string(),
@@ -39,6 +41,7 @@ pub struct DictionarySystem {
 }
 
 impl DictionarySystem {
+    #[must_use] 
     pub fn new() -> Self {
         Self {
             dictionaries: HashMap::new(),
@@ -58,6 +61,7 @@ impl DictionarySystem {
         self.dictionaries.values()
     }
 
+    #[must_use] 
     pub fn get_dictionary(&self, text_id: u32) -> Option<&Dictionary> {
         self.dictionaries.get(&text_id)
     }

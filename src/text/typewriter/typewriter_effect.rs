@@ -150,12 +150,12 @@ impl TypewriterEffect {
     }
 
     #[must_use]
-    pub fn progress(&self) -> f32 {
+    pub const fn progress(&self) -> f64 {
         let total = self.chars.len();
         if total == 0 {
             1.0
         } else {
-            (self.visible_chars as f32) / (total as f32)
+            (self.visible_chars as f64) / (total as f64)
         }
     }
 
@@ -192,7 +192,7 @@ impl TypewriterEffect {
                     tag_content.push(tc);
                 }
                 if Self::is_valid_tag(&tag_content) {
-                    for _ in 0..tag_content.chars().count() + 1 {
+                    for _ in 0..=tag_content.chars().count() {
                         iter.next();
                     }
                     continue;

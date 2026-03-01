@@ -155,7 +155,7 @@ impl TypewriterInstance {
     }
 
     #[must_use]
-    pub fn get_progress(&self, id: usize) -> f32 {
+    pub fn get_progress(&self, id: usize) -> f64 {
         self.get_effect(id).map_or(0.0, TypewriterEffect::progress)
     }
 
