@@ -218,7 +218,7 @@ fn main() {
         width: 2560,
         height: 1440,
         resizable: false,
-        fullscreen: true,
+        fullscreen: false,
         vsync: true,
         background_color: Color::WHITE,
         language: Language::resolve("en_us").unwrap(),
