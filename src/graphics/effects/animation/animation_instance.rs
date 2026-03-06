@@ -145,10 +145,14 @@ impl ActiveAnimation {
     fn calculate_shake(&self, intensity: f32, t: f32) -> AnimEffect {
         let decay = 1.0 - t;
 
-        let shake_x = (self.id as f32)
+        // Casting is allow to create a consistent seed for the shake based on the animation ID, ensuring different animations shake differently.
+        #[allow(clippy::cast_precision_loss)]
+        let seed = (self.id & 0x7F_FFFF) as f32;
+
+        let shake_x = seed
             .mul_add(SHAKE_FREQUENCY_X, self.elapsed)
             .sin();
-        let shake_y = (self.id as f32)
+        let shake_y = seed
             .mul_add(SHAKE_FREQUENCY_Y, self.elapsed)
             .cos();
 

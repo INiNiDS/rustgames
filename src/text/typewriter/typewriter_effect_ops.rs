@@ -67,10 +67,8 @@ impl TypewriterEffect {
             self.complete = true;
             return false;
         }
-        #[allow(clippy::cast_sign_loss)]
-        {
-            self.visible_chars = (total_chars as f32 * progress).round() as usize;
-        }
+        
+        self.visible_chars = Self::calculate_visible(total_chars, progress);
         self.complete = self.visible_chars >= total_chars;
         if self.complete {
             self.visible_chars = total_chars;
@@ -107,5 +105,15 @@ impl TypewriterEffect {
             ',' => self.punctuation_config.comma,
             _ => self.punctuation_config.other,
         }
+    }
+
+    #[allow(
+        clippy::cast_sign_loss,
+        clippy::cast_possible_truncation,
+        clippy::cast_precision_loss
+    )]
+    #[inline]
+    fn calculate_visible(total: usize, progress: f32) -> usize {
+        (total as f32 * progress.clamp(0.0, 1.0)) as usize
     }
 }

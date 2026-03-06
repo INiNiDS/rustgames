@@ -1,8 +1,6 @@
 use crate::error::TextError;
 use crate::prelude::{Font, TextStyle};
-use crate::text::font::{
-    DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT,
-};
+use crate::text::font::{FontConfig, DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT};
 use crate::text::text_section::{QueuedSection, map_h_alignment, map_v_alignment, resolve_font_id};
 use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
@@ -21,52 +19,42 @@ pub struct TextSystem {
 }
 
 impl TextSystem {
+    /// Creates a new `TextSystem` with the specified font configuration and GPU resources.
+    /// Loads fonts from the provided paths or falls back to defaults, and initializes the text brush.
+    ///
+    /// # Panics
+    ///  if the italic font path is not provided in the configuration, as it is required for proper text rendering.
     #[must_use]
-    pub fn new(
-        device: &Device,
-        config: &SurfaceConfiguration,
-        italic_font: &str,
-        bold_font: Option<&str>,
-        medium_font: Option<&str>,
-        semibold_font: Option<&str>,
-        normal_font: Option<&str>,
-        light_font: Option<&str>,
-        extrabold_font: Option<&str>,
-    ) -> Self {
-        let load = |p: Option<&str>, d: &str| -> FontArc {
-            Font::load(p.unwrap_or(d))
-                .map(|f| f.to_font_arc())
-                .unwrap_or_else(|e| {
-                    let diag = TextError::FontLoadFailed(
-                        p.unwrap_or(d).to_string(),
-                        e,
-                    );
-                    eprintln!("{diag}");
+    pub fn new(device: &Device, config: &SurfaceConfiguration, fc: &FontConfig) -> Self {
+        fn load_font(path: &str) -> FontArc {
+            Font::load(path).map_or_else(
+                |e| {
+                    eprintln!("{}", TextError::FontLoadFailed(path.to_string(), e));
                     Font::default().to_font_arc()
-                })
-        };
-        let italic_arc = Font::load(italic_font)
-            .map(|f| f.to_font_arc())
-            .unwrap_or_else(|e| {
-                let diag = TextError::FontLoadFailed(italic_font.to_string(), e);
-                eprintln!("{diag}");
-                Font::default().to_font_arc()
-            });
+                },
+                |f| f.to_font_arc()
+            )
+        }
+
+        let italic_path = fc.italic.as_deref().unwrap_or(DEFAULT_NORMAL_FONT);
+
         let fonts = vec![
-            load(normal_font, DEFAULT_NORMAL_FONT),
-            load(bold_font, DEFAULT_BOLD_FONT),
-            italic_arc,
-            load(medium_font, DEFAULT_MEDIUM_FONT),
-            load(semibold_font, DEFAULT_SEMIBOLD_FONT),
-            load(light_font, DEFAULT_NORMAL_FONT),
-            load(extrabold_font, DEFAULT_BOLD_FONT),
+            load_font(if fc.normal.is_empty() { DEFAULT_NORMAL_FONT } else { &fc.normal }),
+            load_font(fc.bold.as_deref().unwrap_or(DEFAULT_BOLD_FONT)),
+            load_font(italic_path),
+            load_font(fc.medium.as_deref().unwrap_or(DEFAULT_MEDIUM_FONT)),
+            load_font(fc.semibold.as_deref().unwrap_or(DEFAULT_SEMIBOLD_FONT)),
+            load_font(fc.light.as_deref().unwrap_or(DEFAULT_NORMAL_FONT)),
+            load_font(fc.extrabold.as_deref().unwrap_or(DEFAULT_BOLD_FONT)),
         ];
+
         let brush = wgpu_text::BrushBuilder::using_fonts(fonts.clone()).build(
             device,
             config.width,
             config.height,
             config.format,
         );
+
         Self {
             brush,
             fonts,
@@ -84,6 +72,8 @@ impl TextSystem {
         );
     }
 
+    // Explicitly allowed the precision loss lint for standard screen coordinates
+    #[allow(clippy::cast_precision_loss)]
     pub fn resize(&mut self, width: u32, height: u32, queue: &Queue) {
         self.brush.resize_view(width as f32, height as f32, queue);
     }

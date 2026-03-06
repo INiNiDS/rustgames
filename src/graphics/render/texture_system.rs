@@ -110,15 +110,7 @@ impl TextureSystem {
             }
         };
         for file in files {
-            match fs::read(&file) {
-                Ok(bytes) => {
-                    let label = file.to_string_lossy().into_owned();
-                    if let Err(e) = self.load_texture(&bytes, &label) {
-                        eprintln!("{e}");
-                    }
-                }
-                Err(e) => eprintln!("{}", GraphicsError::FileReadFailed(file, e)),
-            }
+            self.load_file(file);
         }
     }
 
@@ -128,24 +120,28 @@ impl TextureSystem {
     pub fn load_texture_dir_recursive(&mut self, dir: &str) {
         let files = walkdir::WalkDir::new(dir)
             .into_iter()
-            .filter_map(std::result::Result::ok)
+            .filter_map(Result::ok)
             .filter(|entry| entry.path().is_file());
         for entry in files {
             let path = entry.path().to_owned();
-            match fs::read(&path) {
-                Ok(bytes) => {
-                    let label = path.to_string_lossy().into_owned();
-                    if let Err(e) = self.load_texture(&bytes, &label) {
-                        eprintln!("{e}");
-                    }
-                }
-                Err(e) => eprintln!("{}", GraphicsError::FileReadFailed(path, e)),
-            }
+            self.load_file(path);
         }
     }
 
     #[must_use]
     pub fn get_texture(&self, label: &str) -> Option<&Texture> {
         self.textures.get(label)
+    }
+
+    pub fn load_file(&mut self, path: PathBuf) {
+        match fs::read(&path) {
+            Ok(bytes) => {
+                let label = path.to_string_lossy().into_owned();
+                if let Err(e) = self.load_texture(&bytes, &label) {
+                    eprintln!("{e}");
+                }
+            }
+            Err(e) => eprintln!("{}", GraphicsError::FileReadFailed(path, e)),
+        }
     }
 }

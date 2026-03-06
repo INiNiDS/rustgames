@@ -8,14 +8,14 @@ print_step() {
 
 print_step "Checking formatting (cargo fmt)..."
 if ! cargo fmt -- --check; then
-    echo -e "\033[0;33m[!] Обнаружены ошибки форматирования.\033[0m"
+    echo -e "\033[0;33m[!] Found formatting errors\033[0m"
     # shellcheck disable=SC2162
-    read -p "Исправить автоматически? (y/n): " confirm
+    read -p "Apply suggestions? (y/n): " confirm
     if [[ "$confirm" == [yY] || "$confirm" == [yY][eE][sS] ]]; then
         cargo fmt
-        echo -e "\033[0;32mФорматирование исправлено.\033[0m"
+        echo -e "\033[0;32mSuggestions applied\033[0m"
     else
-        echo -e "\033[0;31mПроверка прервана пользователем.\033[0m"
+        echo -e "\033[0;31m Checking was closed by user\033[0m"
         exit 1
     fi
 fi

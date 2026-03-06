@@ -40,7 +40,7 @@ impl Game for EffectsDemo {
         engine.get_camera().set_zoom(1.0);
 
         self.text_id = engine.get_text_system().add_text(
-            "Привет! Я Луна! Как твои дела?",
+            "Hello! I'm Luna! How are you?",
             TextSpeed::Slow,
             50.0,
             50.0,
@@ -85,99 +85,94 @@ impl Game for EffectsDemo {
 
 impl EffectsDemo {
     fn handle_input(&mut self, engine: &mut Engine) {
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Digit1)
-        {
-            self.renderer_alpha.add_effect(VfxEffect::Flash {
-                color: Color::WHITE,
-                duration: 0.5,
+        let eq = engine.get_event_queue();
+        let k1 = eq.was_key_just_pressed(KeyCode::Digit1);
+        let k2 = eq.was_key_just_pressed(KeyCode::Digit2);
+        let k3 = eq.was_key_just_pressed(KeyCode::Digit3);
+        let k4 = eq.was_key_just_pressed(KeyCode::Digit4);
+        let k5 = eq.was_key_just_pressed(KeyCode::Digit5);
+        let space = eq.was_key_just_pressed(KeyCode::Space);
+        let enter = eq.was_key_just_pressed(KeyCode::Enter);
+        let esc = eq.was_key_just_pressed(KeyCode::Escape);
+
+        if k1 { self.on_flash(engine); }
+        if k2 { self.on_shake(engine); }
+        if k3 { self.on_sparkles(engine); }
+        if k4 { self.on_overlay_toggle(engine); }
+        if k5 { self.on_explosion(engine); }
+        if space { self.on_clear(engine); }
+        if enter { self.on_pulse(engine); }
+        if esc { std::process::exit(0); }
+    }
+
+    fn on_flash(&mut self, _engine: &mut Engine) {
+        self.renderer_alpha.add_effect(VfxEffect::Flash {
+            color: Color::WHITE,
+            duration: 0.5,
+        });
+        println!("Flash!");
+    }
+
+    fn on_shake(&mut self, engine: &mut Engine) {
+        engine.get_camera().add_trauma(0.6);
+        println!("Shake!");
+    }
+
+    fn on_sparkles(&mut self, _engine: &mut Engine) {
+        self.renderer_alpha
+            .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::ZERO)));
+        println!("Sparkles!");
+    }
+
+    fn on_overlay_toggle(&mut self, _engine: &mut Engine) {
+        if self.renderer_alpha.overlay_state().active {
+            self.renderer_alpha.clear_overlay();
+            println!("Overlay removed");
+        } else {
+            self.renderer_alpha.add_effect(VfxEffect::Overlay {
+                color: Color::BLUE,
+                alpha: 0.25,
             });
-            println!("Flash!");
+            println!("Blue overlay applied");
         }
+    }
 
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Digit2)
-        {
-            engine.get_camera().add_trauma(0.6);
-            println!("Shake!");
-        }
+    fn on_explosion(&mut self, _engine: &mut Engine) {
+        self.renderer_alpha
+            .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(Vec2::ZERO)));
+        println!("Explosion!");
+    }
 
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Digit3)
-        {
-            self.renderer_alpha
-                .add_effect(VfxEffect::Emitter(EmitterConfig::sparkles(Vec2::ZERO)));
-            println!("Sparkles!");
-        }
+    fn on_clear(&mut self, _engine: &mut Engine) {
+        self.renderer_alpha.clear_all();
+        println!("All effects cleared");
+    }
 
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Digit4)
-        {
-            if self.renderer_alpha.overlay_state().active {
-                self.renderer_alpha.clear_overlay();
-                println!("Overlay removed");
-            } else {
-                self.renderer_alpha.add_effect(VfxEffect::Overlay {
-                    color: Color::BLUE,
-                    alpha: 0.25,
-                });
-                println!("Blue overlay applied");
-            }
-        }
+    fn on_pulse(&mut self, engine: &mut Engine) {
+        let pulse = Self::build_pulse_timeline();
+        engine.get_animation_system().start_timeline(pulse);
+        println!("Pulse animation!");
+    }
 
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Digit5)
-        {
-            self.renderer_alpha
-                .add_effect(VfxEffect::Emitter(EmitterConfig::explosion(Vec2::ZERO)));
-            println!("Explosion!");
-        }
-
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Space)
-        {
-            self.renderer_alpha.clear_all();
-            println!("All effects cleared");
-        }
-
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Enter)
-        {
-            let pulse = TimelineBuilder::new()
-                .single(
-                    Animation::Scale {
-                        from: 1.0,
-                        to: 1.5,
-                        duration: 0.2,
-                    },
-                    Easing::EaseOut,
-                )
-                .single(
-                    Animation::Scale {
-                        from: 1.5,
-                        to: 1.0,
-                        duration: 0.4,
-                    },
-                    Easing::Bounce,
-                )
-                .build();
-            engine.get_animation_system().start_timeline(pulse);
-            println!("Pulse animation!");
-        }
-
-        if engine
-            .get_event_queue()
-            .was_key_just_pressed(KeyCode::Escape)
-        {
-            std::process::exit(0);
-        }
+    fn build_pulse_timeline() -> Vec<TimelineStep> {
+        TimelineBuilder::new()
+            .single(
+                Animation::Scale {
+                    from: 1.0,
+                    to: 1.5,
+                    duration: 0.2,
+                },
+                Easing::EaseOut,
+            )
+            .single(
+                Animation::Scale {
+                    from: 1.5,
+                    to: 1.0,
+                    duration: 0.4,
+                },
+                Easing::Bounce,
+            )
+            .build()
     }
 
     fn update_scene(&mut self, engine: &mut Engine) {
@@ -223,7 +218,7 @@ impl EffectsDemo {
             self.is_aggressive = true;
             let _ = engine.get_text_system().set_text(
                 self.text_id,
-                "Я тебя убью...",
+                "I'll kill you...",
                 TextSpeed::Slow,
                 TextStyle::new(64.0).with_color(Color::RED),
                 PunctuationConfig::INSTANT,
@@ -234,7 +229,7 @@ impl EffectsDemo {
         {
             let _ = engine.get_text_system().set_text(
                 self.text_id,
-                "Привет! Я Луна! Как твои дела?",
+                "Hello! I'm Luna! How are you?",
                 TextSpeed::Slow,
                 TextStyle::new(64.0).with_color(Color::YELLOW),
                 PunctuationConfig::default(),

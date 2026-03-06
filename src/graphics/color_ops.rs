@@ -1,4 +1,4 @@
-use super::color::Color;
+use super::color::{Color, NAMED_COLORS};
 
 impl Color {
     #[must_use]
@@ -17,12 +17,11 @@ impl Color {
     }
 
     #[must_use]
-    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     pub fn to_u32(&self) -> u32 {
-        let r = (self.r * 255.0) as u32;
-        let g = (self.g * 255.0) as u32;
-        let b = (self.b * 255.0) as u32;
-        let a = (self.a * 255.0) as u32;
+        let [r, g, b, a] =
+            [self.r, self.g, self.b, self.a].map(|v| (v.clamp(0.0, 1.0) * 255.0) as u32);
+
         (r << 24) | (g << 16) | (b << 8) | a
     }
 
@@ -54,8 +53,15 @@ impl Color {
 
     #[must_use]
     pub fn get_name(&self) -> Option<&'static str> {
-        self.primary_color_name()
-            .or_else(|| self.secondary_color_name())
+        if self.a == 0.0 && self.r == 0.0 && self.g == 0.0 && self.b == 0.0 {
+            return Some("Transparent");
+        }
+        
+        NAMED_COLORS.iter().find_map(
+            |(color, name)| {
+                if *self == *color { Some(*name) } else { None }
+            },
+        )
     }
 
     #[must_use]
@@ -71,12 +77,13 @@ impl Color {
         Some(Self::from_rgba_u8(r, g, b, a))
     }
 
-    #[must_use] 
+    // TODO: Medium Complexity
+    #[must_use]
     pub fn parse_tuple(rgb: &str) -> Option<Self> {
         let inner = rgb.trim_matches(|c| c == '(' || c == ')');
-        let parts: Vec<&str> = inner.split(',').map(|_s| rgb.trim()).collect();
+        let parts: Vec<&str> = inner.split(',').map(str::trim).collect();
 
-        if parts.len() != 3 || parts.len() != 4 {
+        if parts.len() != 3 && parts.len() != 4 {
             return None;
         }
 
@@ -92,7 +99,7 @@ impl Color {
         Some(Self::from_rgba_u8(r, g, b, a))
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn parse_named(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "white" => Some(Self::WHITE),
@@ -120,73 +127,13 @@ impl Color {
             _ => None,
         }
     }
-
-    fn primary_color_name(&self) -> Option<&'static str> {
-        if *self == Self::WHITE {
-            return Some("White");
-        }
-        if *self == Self::BLACK {
-            return Some("Black");
-        }
-        if *self == Self::RED {
-            return Some("Red");
-        }
-        if *self == Self::GREEN {
-            return Some("Green");
-        }
-        if *self == Self::BLUE {
-            return Some("Blue");
-        }
-        if *self == Self::YELLOW {
-            return Some("Yellow");
-        }
-        if *self == Self::CYAN {
-            return Some("Cyan");
-        }
-        if *self == Self::MAGENTA {
-            return Some("Magenta");
-        }
-        None
-    }
-
-    fn secondary_color_name(&self) -> Option<&'static str> {
-        if *self == Self::GRAY {
-            return Some("Gray");
-        }
-        if *self == Self::DARK_GRAY {
-            return Some("Dark Gray");
-        }
-        if *self == Self::LIGHT_GRAY {
-            return Some("Light Gray");
-        }
-        if *self == Self::ORANGE {
-            return Some("Orange");
-        }
-        if *self == Self::PURPLE {
-            return Some("Purple");
-        }
-        if *self == Self::BROWN {
-            return Some("Brown");
-        }
-        if *self == Self::PINK {
-            return Some("Pink");
-        }
-        if *self == Self::GOLD {
-            return Some("Gold");
-        }
-        if self.a == 0.0 && self.r == 0.0 && self.g == 0.0 && self.b == 0.0 {
-            return Some("Transparent");
-        }
-        None
-    }
 }
 
 impl PartialEq for Color {
     fn eq(&self, other: &Self) -> bool {
-        self.r == other.r && self.g == other.g && self.b == other.b
+        self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
     }
 }
-
 impl From<(f32, f32, f32)> for Color {
     fn from((r, g, b): (f32, f32, f32)) -> Self {
         Self::rgb(r, g, b)

@@ -12,6 +12,7 @@ use winit::dpi::PhysicalSize;
 pub struct Renderer;
 
 impl Renderer {
+    #[allow(clippy::cast_precision_loss)]
     pub fn resize(render_settings: &mut RenderSettings, new_size: PhysicalSize<u32>) {
         if new_size.width > 0 && new_size.height > 0 {
             render_settings.config.width = new_size.width;
@@ -106,7 +107,8 @@ impl Renderer {
         let mut start_instance_index = 0;
 
         for (texture, instances) in batches {
-            let count = instances.len() as u32;
+            let count = u32::try_from(instances.len())
+                .unwrap_or_else(|_| panic!("{}", GraphicsError::InstanceCountOverflow(instances.len())));
             if count > 0 {
                 sprites.render(pass, device, texture, count, start_instance_index);
                 start_instance_index += count;

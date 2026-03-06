@@ -1,10 +1,8 @@
-//! # error_demo — пример намеренных ошибок
+//! # error_demo — example of engine error diagnostics
 //!
-//! Этот пример демонстрирует, как выглядят ошибки движка на практике.
-//! Каждая операция намеренно делается неправильно, чтобы показать красивый
-//! вывод диагностики вместо паники.
+//! This example intentionally triggers various engine errors to demonstrate the error handling and diagnostics system in RsGames. Each step is designed to fail in a different way, showcasing how the engine reports errors without panicking.
 //!
-//! Запуск:  cargo run --example error_demo
+//! Run: cargo run --example error_demo
 
 use rustgames::core::app;
 use rustgames::prelude::*;
@@ -39,13 +37,13 @@ impl Game for ErrorDemo {
             .get_texture_controller()
             .load_texture(garbage, "broken_texture")
         {
-            // Код G006
+            // Code G006
             eprintln!("{e}");
         }
 
         println!("── [Step 3] Playing a sound that was never loaded…");
         if let Err(e) = engine.get_audio_system().play("missing_sound") {
-            // Код A002
+            // Code A002
             eprintln!("{e}");
         }
 
@@ -58,7 +56,7 @@ impl Game for ErrorDemo {
 
         println!("── [Step 5] Creating a font from invalid bytes…");
         if let Err(e) = Font::from_bytes("bad_font", b"not a ttf file at all".to_vec()) {
-            // Код T002
+            // Code T002
             eprintln!("{e}");
         }
 
@@ -67,7 +65,7 @@ impl Game for ErrorDemo {
             .get_audio_system()
             .load_sound_dir("/tmp/no_audio_dir_here")
         {
-            // Код A004
+            // Code A004
             eprintln!("{e}");
         }
 

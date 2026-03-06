@@ -3,7 +3,7 @@ use crate::graphics::effects::{AnimationSystem, VisualState};
 use crate::graphics::render::TextureSystem;
 use crate::graphics::{Camera, Color, SpriteRenderer, VfxSystem};
 use crate::prelude::WindowConfig;
-use crate::text::font::DEFAULT_NORMAL_FONT;
+use crate::text::font::{FontConfig, DEFAULT_NORMAL_FONT};
 use crate::text::text_system::TextSystem;
 use std::sync::Arc;
 use wgpu::{Device, PresentMode, Queue, Surface, SurfaceConfiguration};
@@ -41,24 +41,33 @@ impl RenderSettings {
     pub async fn new(window: Arc<Window>) -> Result<Self, GraphicsError> {
         let (surface, adapter, device, queue) = Self::init_graphics(window.clone()).await?;
         let size = window.inner_size();
+
+        // Wrap early for shared ownership
         let device = Arc::new(device);
         let queue = Arc::new(queue);
+
         let config = Self::create_config(&surface, &adapter, size)?;
         surface.configure(&device, &config);
+
+        // Grouping related logic
         let (camera, text_system, sprite_renderer) =
             Self::configure_inner_modules(size, &device, &config);
+
         Ok(Self {
             window,
             surface,
             config,
-            device: device.clone(),
-            queue: queue.clone(),
+            device: Arc::clone(&device),
+            queue: Arc::clone(&queue),
             camera,
             text_system,
             sprite_renderer,
             background_color: Color::WHITE,
             base: VisualState::default(),
+            // Casting allow here monitors, so it's not a problem.
+            #[allow(clippy::cast_precision_loss)]
             max_width_text: size.width as f32,
+            #[allow(clippy::cast_precision_loss)]
             max_height_text: size.height as f32,
             animation_system: AnimationSystem::new(),
             texture_system: TextureSystem::new(device, queue),
@@ -144,13 +153,15 @@ impl RenderSettings {
         let text_system = TextSystem::new(
             device,
             config,
-            DEFAULT_NORMAL_FONT,
-            None,
-            None,
-            None,
-            None,
-            None,
-            None,
+            &FontConfig {
+                normal: DEFAULT_NORMAL_FONT.to_string(),
+                bold: None,
+                italic: None,
+                medium: None,
+                semibold: None,
+                light: None,
+                extrabold: None,
+            },
         );
         (camera, text_system, sprite_renderer)
     }

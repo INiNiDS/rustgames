@@ -1,6 +1,7 @@
 use crate::prelude::{TextSpeed, TextStyle, TypewriterEffect};
 use crate::text::{PunctuationConfig, TextSystem};
 use std::slice::Iter;
+use crate::text::typewriter::TypewriterBuilder;
 use super::TextData;
 
 impl TextSystem {
@@ -26,13 +27,15 @@ impl TextSystem {
     ) -> usize {
         self.typewriter_instance
             .add_typewriter_effect_with_id(
-                text_data.text,
-                text_data.text_id,
-                text_data.speed,
-                text_data.x,
-                text_data.y,
-                text_data.style,
-                text_data.punctuation_config
+                TypewriterBuilder {
+                    text: text_data.text,
+                    text_id: Some(text_data.text_id),
+                    speed: text_data.speed,
+                    x: text_data.x,
+                    y: text_data.y,
+                    style: text_data.style,
+                    punctuation_config: text_data.punctuation_config,
+                }
             )
     }
 
@@ -107,7 +110,7 @@ impl TextSystem {
     }
 
     #[must_use]
-    pub fn get_progress(&self, id: usize) -> f64 {
+    pub fn get_progress(&self, id: usize) -> f32 {
         self.typewriter_instance
             .get_effect(id)
             .map_or(0.0, TypewriterEffect::progress)

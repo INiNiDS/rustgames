@@ -149,6 +149,7 @@ impl Game for SingleDemo {
             .get_event_queue()
             .was_key_just_pressed(KeyCode::Enter)
         {
+            // duplicate
             let pulse = TimelineBuilder::new()
                 .single(
                     Animation::Scale {

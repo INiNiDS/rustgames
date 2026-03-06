@@ -60,7 +60,7 @@ impl AudioSystem {
 
     /// Loads all supported audio files from a directory tree (recursive).
     ///
-    /// # Errors
+    /// # Panics
     /// Propagates [`AudioError`] from [`Self::load_sound_dir`].
     pub fn load_sound_dir_recursive(&mut self, dir_path: &str) -> Result<(), AudioError> {
         for entry in walkdir::WalkDir::new(dir_path) {
@@ -68,18 +68,18 @@ impl AudioSystem {
                 AudioError::DirectoryReadFailed(
                     PathBuf::from(dir_path),
                     e.into_io_error().unwrap_or_else(|| {
-                        std::io::Error::new(std::io::ErrorKind::Other, "walkdir error")
+                        std::io::Error::other("walkdir entry failed with non-io error")
                     }),
                 )
             })?;
-            if entry.file_type().is_dir() {
-                if let Some(path) = entry.path().to_str() {
-                    self.load_sound_dir(path)?;
-                }
+            if entry.file_type().is_dir() && entry.path().to_str().is_some() {
+                let path = entry.path().to_str().unwrap();
+                self.load_sound_dir(path)?;
             }
         }
         Ok(())
     }
+
 
     /// Plays a previously loaded sound by name.
     ///
@@ -119,8 +119,6 @@ impl AudioSystem {
             } else {
                 Tween::default()
             };
-            // Arc may have extra references from callers; try_unwrap gives back
-            // the handle only when we hold the last Arc — otherwise we just drop it.
             if let Ok(mut h) = Arc::try_unwrap(handle) {
                 h.stop(tween);
             }

@@ -4,6 +4,7 @@ use crate::graphics::render::pipeline;
 use crate::graphics::render::texture::Texture;
 use crate::graphics::sprite::{QUAD_INDICES, QUAD_VERTICES};
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
+use crate::error::GraphicsError;
 
 /// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
 /// and instance buffers, and camera/texture bind groups.
@@ -113,8 +114,8 @@ impl SpriteRenderer {
     }
 
     fn resize_instance_buffer(&mut self, device: &wgpu::Device, new_capacity: usize) {
-        #[allow(clippy::cast_sign_loss)]
-        let new_capacity = (new_capacity as f32 * 1.5) as usize;
+        let new_capacity = new_capacity + (new_capacity / 2);
+
         self.instance_buffer = Self::create_instance_buffer(device, new_capacity);
         self.instance_capacity = new_capacity;
     }
@@ -163,7 +164,8 @@ impl SpriteRenderer {
             contents: bytemuck::cast_slice(QUAD_INDICES),
             usage: wgpu::BufferUsages::INDEX,
         });
-        (vb, ib, QUAD_INDICES.len() as u32)
+        (vb, ib, u32::try_from(QUAD_INDICES.len())
+            .unwrap_or_else(|_| panic!("{}", GraphicsError::InstanceCountOverflow(QUAD_INDICES.len()))))
     }
 
     fn create_texture_bind_group(

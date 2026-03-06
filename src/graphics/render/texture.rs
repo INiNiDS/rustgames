@@ -78,7 +78,7 @@ impl Texture {
             texture,
             view,
             sampler,
-            size: Vec2::new(dimensions.0 as f32, dimensions.1 as f32),
+            size: glam::uvec2(dimensions.0, dimensions.1).as_vec2(),
         })
     }
 }

@@ -127,3 +127,13 @@ pub struct TextAttributes {
     pub strikethrough: bool,
     pub color: Option<Color>,
 }
+
+impl PartialEq for TextAttributes {
+    fn eq(&self, other: &Self) -> bool {
+        self.weight == other.weight
+            && self.italic == other.italic
+            && self.underline == other.underline
+            && self.strikethrough == other.strikethrough
+            && self.color == other.color
+    }
+}

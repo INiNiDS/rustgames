@@ -117,42 +117,43 @@ impl AnimationDemo {
             AnimationModeDemo::PingPong => &mut self.ping_pong_animation,
         }
     }
-
     fn handle_input(&mut self, engine: &mut Engine) {
-        let event_queue = engine.get_event_queue();
+        let eq = engine.get_event_queue();
+        let k1 = eq.was_key_just_pressed(KeyCode::Digit1);
+        let k2 = eq.was_key_just_pressed(KeyCode::Digit2);
+        let k3 = eq.was_key_just_pressed(KeyCode::Digit3);
+        let kr = eq.was_key_just_pressed(KeyCode::KeyR);
+        let space = eq.was_key_just_pressed(KeyCode::Space);
+        let esc = eq.was_key_just_pressed(KeyCode::Escape);
 
-        if event_queue.was_key_just_pressed(KeyCode::Digit1) {
-            self.switch_mode(AnimationModeDemo::Loop);
-        }
-        if event_queue.was_key_just_pressed(KeyCode::Digit2) {
-            self.switch_mode(AnimationModeDemo::PlayOnce);
-        }
-        if event_queue.was_key_just_pressed(KeyCode::Digit3) {
-            self.switch_mode(AnimationModeDemo::PingPong);
-        }
+        if k1 { self.switch_mode(AnimationModeDemo::Loop); }
+        if k2 { self.switch_mode(AnimationModeDemo::PlayOnce); }
+        if k3 { self.switch_mode(AnimationModeDemo::PingPong); }
+        if kr { self.reset_animation(); }
+        if space { self.toggle_pause(); }
+        if esc { self.on_exit(); }
+    }
 
-        if event_queue.was_key_just_pressed(KeyCode::KeyR) {
-            let current_anim = self.get_current_animation_mut();
-            current_anim.reset();
-            println!("→ Animation reset to frame 0");
-        }
+    fn reset_animation(&mut self) {
+        self.get_current_animation_mut().reset();
+        println!("→ Animation reset to frame 0");
+    }
 
-        if event_queue.was_key_just_pressed(KeyCode::Space) {
-            self.is_paused = !self.is_paused;
-            if self.is_paused {
-                self.get_current_animation_mut().pause();
-                println!("⏸ Animation paused");
-            } else {
-                self.get_current_animation_mut().resume();
-                println!("▶ Animation resumed");
-            }
+    fn toggle_pause(&mut self) {
+        self.is_paused = !self.is_paused;
+        if self.is_paused {
+            self.get_current_animation_mut().pause();
+            println!("⏸ Animation paused");
+        } else {
+            self.get_current_animation_mut().resume();
+            println!("▶ Animation resumed");
         }
+    }
 
-        if event_queue.was_key_just_pressed(KeyCode::Escape) {
-            println!();
-            println!("Animation demo ended.");
-            std::process::exit(0);
-        }
+    fn on_exit(&self) {
+        println!();
+        println!("Animation demo ended.");
+        std::process::exit(0);
     }
 
     fn switch_mode(&mut self, new_mode: AnimationModeDemo) {

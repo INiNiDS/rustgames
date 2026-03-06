@@ -97,17 +97,7 @@ impl Game for LastTrain {
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
-        let space;
-        let k1;
-        let k2;
-        let esc;
-        {
-            let eq = engine.get_event_queue();
-            space = eq.was_key_just_pressed(KeyCode::Space);
-            k1 = eq.was_key_just_pressed(KeyCode::Digit1);
-            k2 = eq.was_key_just_pressed(KeyCode::Digit2);
-            esc = eq.was_key_just_pressed(KeyCode::Escape);
-        }
+        let (space, k1, k2, esc) = read_vn_inputs(engine);
         if esc {
             std::process::exit(0);
         }
@@ -179,6 +169,16 @@ impl LastTrain {
         };
         self.show(engine, next);
     }
+}
+
+fn read_vn_inputs(engine: &mut Engine) -> (bool, bool, bool, bool) {
+    let eq = engine.get_event_queue();
+    (
+        eq.was_key_just_pressed(KeyCode::Space),
+        eq.was_key_just_pressed(KeyCode::Digit1),
+        eq.was_key_just_pressed(KeyCode::Digit2),
+        eq.was_key_just_pressed(KeyCode::Escape),
+    )
 }
 
 fn main() {

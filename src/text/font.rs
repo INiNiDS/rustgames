@@ -18,6 +18,16 @@ pub const DEFAULT_SEMIBOLD_FONT: &str = concat!(
     "/src/static/font/Caveat-SemiBold.ttf"
 );
 
+pub struct FontConfig {
+    pub normal: String,
+    pub bold: Option<String>,
+    pub italic: Option<String>,
+    pub medium: Option<String>,
+    pub semibold: Option<String>,
+    pub light: Option<String>,
+    pub extrabold: Option<String>,
+}
+
 /// A loaded font with raw byte data and a `FontArc` handle for GPU text
 /// rendering.
 pub struct Font {

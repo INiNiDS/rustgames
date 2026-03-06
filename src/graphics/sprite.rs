@@ -2,6 +2,7 @@ use crate::graphics::color::Color;
 use glam::Vec2;
 use std::sync::Arc;
 use wgpu::{BufferAddress, VertexBufferLayout};
+use crate::utils;
 
 /// A textured 2D sprite with position, size, rotation, color tint, anchor
 /// point, and per-axis flip support.
@@ -20,12 +21,14 @@ pub struct Sprite {
 impl Sprite {
     #[must_use]
     pub fn new(texture: Arc<wgpu::Texture>) -> Self {
-        let w = texture.size().width as f32;
-        let h = texture.size().height as f32;
+        let size = texture.size();
+
+        let size = glam::uvec2(size.width, size.height).as_vec2();
+
         Self {
             texture,
+            size,
             position: Vec2::ZERO,
-            size: Vec2::new(w, h),
             rotation: 0.0,
             scale: Vec2::ONE,
             color: Color::WHITE,
@@ -103,16 +106,12 @@ pub struct Vertex {
 }
 
 impl Vertex {
-    const ATTRIBS: [wgpu::VertexAttribute; 2] =
+    pub const ATTRIBS: [wgpu::VertexAttribute; 2] =
         wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2];
 
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        VertexBufferLayout {
-            array_stride: size_of::<Self>() as BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &Self::ATTRIBS,
-        }
+        utils::render_utils::desc(&Self::ATTRIBS, size_of::<Self>() as BufferAddress)
     }
 }
 

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::graphics::Transition;
 
 #[repr(C)]
@@ -32,7 +33,7 @@ impl TransitionRenderer {
     fn create_uniform_buffer(device: &wgpu::Device) -> wgpu::Buffer {
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Transition Uniform"),
-            size: std::mem::size_of::<TransitionUniform>() as u64,
+            size: size_of::<TransitionUniform>() as u64,
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         })

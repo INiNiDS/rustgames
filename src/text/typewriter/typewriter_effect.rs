@@ -1,5 +1,6 @@
 use crate::text::PunctuationConfig;
 pub use crate::text::{TextSpeed, TextStyle};
+use crate::text::typewriter::TypewriterBuilder;
 
 /// A character-by-character text reveal with configurable speed and automatic
 /// punctuation pauses.
@@ -30,48 +31,53 @@ impl TypewriterEffect {
     pub fn new(
         text: impl Into<String>,
         speed: TextSpeed,
-        id: usize,
         x: f32,
         y: f32,
         style: TextStyle,
         punctuation_config: PunctuationConfig,
     ) -> Self {
-        Self::new_with_id(text, 0, speed, id, x, y, style, punctuation_config)
+        let builder = TypewriterBuilder {
+            text: text.into(),
+            text_id: None,
+            speed,
+            x,
+            y,
+            style,
+            punctuation_config,
+        };
+        Self::new_with_id(builder, 0)
     }
 
     /// Create a new effect with a translation key.
     /// `full_text` is used as fallback when no translation is found.
+    ///
+    /// # Panics
+    /// Panics if `text_id` is `None` in the builder, since a translation key is required.
+    #[must_use]
     pub fn new_with_id(
-        text: impl Into<String>,
-        text_id: u32,
-        speed: TextSpeed,
+        tb: TypewriterBuilder,
         id: usize,
-        x: f32,
-        y: f32,
-        style: TextStyle,
-        punctuation_config: PunctuationConfig,
     ) -> Self {
-        let full_text = text.into();
-        let (chars, visible_indices) = Self::parse_tags(&full_text);
-        let chars_per_second = speed.chars_per_second();
+        let (chars, visible_indices) = Self::parse_tags(&tb.text);
+        let chars_per_second = tb.speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
         let visible_chars = if complete { chars.len() } else { 0 };
         Self {
+            id,
             chars,
-            text_id,
-            full_text,
+            text_id: tb.text_id.unwrap_or(0),
+            full_text: tb.text,
             visible_indices,
             visible_chars,
             chars_per_second,
             elapsed: 0.0,
             paused: false,
             complete,
-            id,
-            x,
-            y,
-            style,
+            x: tb.x,
+            y: tb.y,
+            style: tb.style,
             pause_timer: 0.0,
-            punctuation_config,
+            punctuation_config: tb.punctuation_config,
         }
     }
 
@@ -150,12 +156,13 @@ impl TypewriterEffect {
     }
 
     #[must_use]
-    pub const fn progress(&self) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    pub const fn progress(&self) -> f32 {
         let total = self.chars.len();
         if total == 0 {
             1.0
         } else {
-            (self.visible_chars as f64) / (total as f64)
+            (self.visible_chars as f32) / (total as f32)
         }
     }
 
@@ -174,7 +181,6 @@ impl TypewriterEffect {
     pub(crate) fn get_style(&self) -> TextStyle {
         self.style.clone()
     }
-    // High Complexity
     pub(crate) fn parse_tags(text: &str) -> (Vec<char>, Vec<usize>) {
         let mut chars = Vec::new();
         let mut indices = Vec::new();
@@ -182,27 +188,41 @@ impl TypewriterEffect {
 
         while let Some((idx, c)) = iter.next() {
             if c == '[' {
-                let lookahead = iter.clone();
-                let mut tag_content = String::new();
-
-                for (_, tc) in lookahead {
-                    if tc == ']' {
-                        break;
-                    }
-                    tag_content.push(tc);
-                }
+                let tag_content = Self::collect_tag_content(&iter);
                 if Self::is_valid_tag(&tag_content) {
-                    for _ in 0..=tag_content.chars().count() {
-                        iter.next();
-                    }
+                    Self::skip_tag_chars(&mut iter, tag_content.chars().count());
                     continue;
                 }
             }
-
             chars.push(c);
             indices.push(idx + c.len_utf8());
         }
         (chars, indices)
+    }
+
+    /// Lookahead-collects the text inside `[...]` without advancing `iter`.
+    fn collect_tag_content<I>(iter: &std::iter::Peekable<I>) -> String
+    where
+        I: Iterator<Item=(usize, char)> + Clone,
+    {
+        let mut tag_content = String::new();
+        for (_, tc) in iter.clone() {
+            if tc == ']' {
+                break;
+            }
+            tag_content.push(tc);
+        }
+        tag_content
+    }
+
+    /// Advances `iter` past `tag_len` characters plus the closing `]`.
+    fn skip_tag_chars<I>(iter: &mut std::iter::Peekable<I>, tag_len: usize)
+    where
+        I: Iterator<Item=(usize, char)>,
+    {
+        for _ in 0..=tag_len {
+            iter.next();
+        }
     }
 
     fn is_valid_tag(tag: &str) -> bool {

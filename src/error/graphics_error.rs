@@ -1,6 +1,6 @@
 //! Graphics-related errors for [`crate::graphics::render::RenderSettings`] and [`crate::graphics::render::TextureSystem`].
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 use super::Diagnostic;
 
@@ -27,6 +27,9 @@ pub enum GraphicsError {
 
     #[error("{}", Self::fmt_file(_0, _1))]
     FileReadFailed(PathBuf, #[source] std::io::Error),
+
+    #[error("{}", Self::fmt_instance_overflow(0))]
+    InstanceCountOverflow(usize),
 }
 
 impl GraphicsError {
@@ -123,7 +126,7 @@ impl GraphicsError {
         .to_string()
     }
 
-    fn fmt_file(path: &PathBuf, source: &std::io::Error) -> String {
+    fn fmt_file(path: &Path, source: &std::io::Error) -> String {
         let p = path.display();
         Diagnostic {
             code: "G007",
@@ -136,5 +139,17 @@ impl GraphicsError {
         }
         .to_string()
     }
-}
 
+    fn fmt_instance_overflow(count: usize) -> String {
+        Diagnostic {
+            code: "G008",
+            title: "Sprite instance count exceeds u32 limit",
+            location: "Renderer::draw_scene_layers() / SpriteRenderer::create_quad_buffers()",
+            what: &format!("cannot cast instance count `{count}` to u32"),
+            why:  "the number of sprite instances in a single batch exceeds u32::MAX (4 294 967 295)",
+            fix:  "split the batch into smaller chunks before passing to the renderer",
+            note: None,
+        }
+        .to_string()
+    }
+}

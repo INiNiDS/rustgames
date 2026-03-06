@@ -141,17 +141,7 @@ impl MoonlitConfession {
     }
 
     fn handle_input(&mut self, engine: &mut Engine) {
-        let space;
-        let key1;
-        let key2;
-        let esc;
-        {
-            let eq = engine.get_event_queue();
-            space = eq.was_key_just_pressed(KeyCode::Space);
-            key1 = eq.was_key_just_pressed(KeyCode::Digit1);
-            key2 = eq.was_key_just_pressed(KeyCode::Digit2);
-            esc = eq.was_key_just_pressed(KeyCode::Escape);
-        }
+        let (space, key1, key2, esc) = read_vn_inputs(engine);
         if esc {
             std::process::exit(0);
         }
@@ -206,6 +196,16 @@ impl MoonlitConfession {
         };
         self.show_line(engine, next);
     }
+}
+
+fn read_vn_inputs(engine: &mut Engine) -> (bool, bool, bool, bool) {
+    let eq = engine.get_event_queue();
+    (
+        eq.was_key_just_pressed(KeyCode::Space),
+        eq.was_key_just_pressed(KeyCode::Digit1),
+        eq.was_key_just_pressed(KeyCode::Digit2),
+        eq.was_key_just_pressed(KeyCode::Escape),
+    )
 }
 
 fn main() {

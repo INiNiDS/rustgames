@@ -33,7 +33,7 @@ pub enum Event {
     WindowFocused(bool),
     KeyPressed(KeyCode),
     KeyReleased(KeyCode),
-    MouseMoved(f32, f32),
+    MouseMoved(f64, f64),
     MousePressed(MouseButton),
     MouseReleased(MouseButton),
     MouseWheel(f32),
@@ -43,7 +43,7 @@ pub enum Event {
 pub trait EventHandler {
     fn on_key_pressed(&mut self, _key: KeyCode) {}
     fn on_key_released(&mut self, _key: KeyCode) {}
-    fn on_mouse_moved(&mut self, _x: f32, _y: f32) {}
+    fn on_mouse_moved(&mut self, _x: f64, _y: f64) {}
     fn on_mouse_pressed(&mut self, _button: MouseButton) {}
     fn on_mouse_released(&mut self, _button: MouseButton) {}
     fn on_mouse_wheel(&mut self, _delta: f32) {}
@@ -141,7 +141,7 @@ fn convert_input_event(event: &WinitWindowEvent) -> Option<Event> {
     match event {
         WinitWindowEvent::KeyboardInput { event, .. } => convert_keyboard_event(event),
         WinitWindowEvent::CursorMoved { position, .. } => {
-            Some(Event::MouseMoved(position.x as f32, position.y as f32))
+            Some(Event::MouseMoved(position.x, position.y))
         }
         WinitWindowEvent::MouseInput { state, button, .. } => {
             Some(convert_mouse_button_event(*state, *button))
@@ -170,10 +170,14 @@ fn convert_mouse_button_event(state: ElementState, button: WinitMouseButton) -> 
     }
 }
 
+
+#[allow(clippy::cast_possible_truncation)]
 fn convert_mouse_wheel_event(delta: &winit::event::MouseScrollDelta) -> Event {
     let delta_y = match delta {
         winit::event::MouseScrollDelta::LineDelta(_, y) => *y,
-        winit::event::MouseScrollDelta::PixelDelta(pos) => pos.y as f32 / 100.0,
+        winit::event::MouseScrollDelta::PixelDelta(pos) => {
+            (pos.y / 100.0) as f32
+        },
     };
     Event::MouseWheel(delta_y)
 }

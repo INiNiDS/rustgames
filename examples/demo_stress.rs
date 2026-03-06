@@ -48,60 +48,17 @@ impl Game for StressDemo {
             "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
         ) { eprintln!("{e}"); }
     }
-
     fn update(&mut self, engine: &mut Engine) {
         let delta = engine.delta_time();
 
         self.fps_counter.update(delta);
         self.time += delta;
 
-        self.shake_timer += delta;
-        if self.shake_timer >= 3.0 {
-            self.shake_timer = 0.0;
-            engine.get_camera().add_trauma(0.4);
-        }
-
-        for anim in &mut self.animations {
-            anim.update(delta);
-        }
-
-        let bounds = 300.0;
-        for i in 0..self.positions.len() {
-            self.positions[i] += self.velocities[i] * delta;
-
-            if self.positions[i].x.abs() > bounds {
-                self.velocities[i].x *= -1.0;
-                self.positions[i].x = self.positions[i].x.clamp(-bounds, bounds);
-            }
-            if self.positions[i].y.abs() > bounds {
-                self.velocities[i].y *= -1.0;
-                self.positions[i].y = self.positions[i].y.clamp(-bounds, bounds);
-            }
-        }
-
-        let texture_controller = engine.get_texture_controller();
-
-        for i in 0..self.entity_count {
-            let uv = self.animations[i].current_uv();
-
-            let instance =
-                SpriteInstance::new(self.positions[i], Vec2::new(20.0, 20.0), 0.0, uv, Vec4::ONE);
-
-            texture_controller.add_instance("stress_sprite", instance);
-        }
-
-        if self.time >= 0.1 {
-            self.time = 0.0;
-            let title = format!(
-                "Stress Test | Entities: {} (ALL RENDERED) | FPS: {:.0} | Frame: {:.1}ms | Min: {:.0} | Max: {:.0}",
-                self.entity_count,
-                self.fps_counter.fps(),
-                self.fps_counter.frame_time_ms(),
-                self.fps_counter.min_fps(),
-                self.fps_counter.max_fps()
-            );
-            engine.set_title(&title);
-        }
+        self.tick_camera_shake(delta, engine);
+        self.update_animations(delta);
+        self.update_physics(delta);
+        self.render_sprites(engine);
+        self.update_title(engine);
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
@@ -142,6 +99,66 @@ impl Game for StressDemo {
 }
 
 impl StressDemo {
+    fn tick_camera_shake(&mut self, delta: f32, engine: &mut Engine) {
+        self.shake_timer += delta;
+        if self.shake_timer >= 3.0 {
+            self.shake_timer = 0.0;
+            engine.get_camera().add_trauma(0.4);
+        }
+    }
+
+    fn update_animations(&mut self, delta: f32) {
+        for anim in &mut self.animations {
+            anim.update(delta);
+        }
+    }
+
+    fn update_physics(&mut self, delta: f32) {
+        const BOUNDS: f32 = 300.0;
+        for i in 0..self.positions.len() {
+            self.positions[i] += self.velocities[i] * delta;
+
+            if self.positions[i].x.abs() > BOUNDS {
+                self.velocities[i].x *= -1.0;
+                self.positions[i].x = self.positions[i].x.clamp(-BOUNDS, BOUNDS);
+            }
+            if self.positions[i].y.abs() > BOUNDS {
+                self.velocities[i].y *= -1.0;
+                self.positions[i].y = self.positions[i].y.clamp(-BOUNDS, BOUNDS);
+            }
+        }
+    }
+
+    fn render_sprites(&mut self, engine: &mut Engine) {
+        let texture_controller = engine.get_texture_controller();
+        for i in 0..self.entity_count {
+            let uv = self.animations[i].current_uv();
+            let instance = SpriteInstance::new(
+                self.positions[i],
+                Vec2::new(20.0, 20.0),
+                0.0,
+                uv,
+                Vec4::ONE,
+            );
+            texture_controller.add_instance("stress_sprite", instance);
+        }
+    }
+
+    fn update_title(&mut self, engine: &mut Engine) {
+        if self.time >= 0.1 {
+            self.time = 0.0;
+            let title = format!(
+                "Stress Test | Entities: {} (ALL RENDERED) | FPS: {:.0} | Frame: {:.1}ms | Min: {:.0} | Max: {:.0}",
+                self.entity_count,
+                self.fps_counter.fps(),
+                self.fps_counter.frame_time_ms(),
+                self.fps_counter.min_fps(),
+                self.fps_counter.max_fps()
+            );
+            engine.set_title(&title);
+        }
+    }
+
     fn spawn_entities(&mut self, count: usize) {
         let mut rng = rand::rng();
 

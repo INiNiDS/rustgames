@@ -23,6 +23,14 @@ pub struct SpriteAnimation {
 }
 
 impl SpriteAnimation {
+    /// Creates a new `SpriteAnimation` with the given frames, FPS, and mode.
+    /// Panics if `frames` is empty or if `fps` is not positive.
+    /// The `frames` should be UV rectangles (x, y, width, height) for each frame in the animation.
+    /// The `fps` determines how fast the animation plays (frames per second).
+    ///
+    /// # Panics
+    /// - If `frames` is empty.
+    /// - If `fps` is not positive.
     #[must_use]
     pub fn new(frames: Vec<Vec4>, fps: f32, mode: AnimationMode) -> Self {
         assert!(!frames.is_empty(), "Animation must have at least one frame");
@@ -40,6 +48,15 @@ impl SpriteAnimation {
         }
     }
 
+    /// Creates a `SpriteAnimation` from a grid of frames in a texture atlas.
+    /// The grid is defined by the number of `columns` and `rows`, and the
+    /// `frame_count` specifies how many frames to use from the grid (starting from the top-left).
+    /// The `fps` determines how fast the animation plays (frames per second).
+    /// The `mode` specifies the playback mode (`PlayOnce`, Loop, `PingPong`)
+    ///
+    /// # Panics
+    /// - If `columns` or `rows` is zero.
+    /// - If `frame_count` is zero or exceeds the total number of frames in the grid.
     #[must_use]
     pub fn from_grid(
         columns: usize,
@@ -55,12 +72,19 @@ impl SpriteAnimation {
             "Frame count exceeds grid size"
         );
 
+        // These values are small (e.g., 8, 16, 64). Casting here allowed
+        #[allow(clippy::cast_precision_loss)]
         let fw = 1.0 / columns as f32;
+        #[allow(clippy::cast_precision_loss)]
         let fh = 1.0 / rows as f32;
 
         let frames: Vec<Vec4> = (0..frame_count)
             .map(|i| {
+                // We perform the modulo/division on usize FIRST,
+                // then cast the smaller result to f32.
+                #[allow(clippy::cast_precision_loss)]
                 let col = (i % columns) as f32;
+                #[allow(clippy::cast_precision_loss)]
                 let row = (i / columns) as f32;
                 Vec4::new(col * fw, row * fh, fw, fh)
             })
@@ -75,16 +99,20 @@ impl SpriteAnimation {
         }
         self.elapsed += delta_time;
         if self.frame_duration > f32::EPSILON {
-            #[allow(clippy::while_float)]
-            while self.elapsed >= self.frame_duration {
-                self.elapsed -= self.frame_duration;
-                if self.step() {
-                    self.finished = true;
-                    break;
-                }
-            }
+            self.advance_frames();
         } else {
             self.elapsed = 0.0;
+        }
+    }
+
+    fn advance_frames(&mut self) {
+        #[allow(clippy::while_float)]
+        while self.elapsed >= self.frame_duration {
+            self.elapsed -= self.frame_duration;
+            if self.step() {
+                self.finished = true;
+                break;
+            }
         }
     }
 

@@ -7,7 +7,6 @@ fn basic_effect_starts_empty() {
     let mut tw = TypewriterEffect::new(
         "Hello",
         TextSpeed::Fast,
-        0,
         0.0,
         0.0,
         TextStyle::default(),
@@ -24,7 +23,6 @@ fn instant_speed_shows_all() {
     let tw = TypewriterEffect::new(
         "Hello",
         TextSpeed::Instant,
-        0,
         0.0,
         0.0,
         TextStyle::default(),
@@ -39,7 +37,6 @@ fn skip_completes_immediately() {
     let mut tw = TypewriterEffect::new(
         "Hello World",
         TextSpeed::Slow,
-        0,
         0.0,
         0.0,
         TextStyle::default(),
@@ -55,7 +52,6 @@ fn reset_clears_progress() {
     let mut tw = TypewriterEffect::new(
         "Hello",
         TextSpeed::Fast,
-        0,
         0.0,
         0.0,
         TextStyle::default(),
@@ -72,7 +68,6 @@ fn instant_progress_is_one() {
     let tw = TypewriterEffect::new(
         "Hello",
         TextSpeed::Instant,
-        0,
         0.0,
         0.0,
         TextStyle::default(),

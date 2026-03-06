@@ -284,7 +284,6 @@ fn make_typewriter(text: &str, speed: TextSpeed) -> TypewriterEffect {
     TypewriterEffect::new(
         text,
         speed,
-        0,
         0.0,
         0.0,
         TextStyle::default(),

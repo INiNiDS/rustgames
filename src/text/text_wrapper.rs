@@ -1,25 +1,32 @@
+#![allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
 use crate::prelude::{TextAlignment, VerticalAlignment};
 use crate::text::StyledSegment;
 use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 
-/// Utilities for word-wrapping plain and rich text and measuring text bounds.
 pub struct TextWrapper;
 
 impl TextWrapper {
+    const CHAR_WIDTH_RATIO: f64 = 0.55;
+    const LINE_HEIGHT_RATIO: f64 = 1.2;
+
     #[must_use]
     pub fn wrap_text(text: &str, max_width: f32, char_width: f32) -> Vec<String> {
         let mut lines = Vec::new();
         let mut current_line = String::new();
-        let mut current_width = 0.0;
+        let mut current_width = 0.0_f64;
+        let max_w = f64::from(max_width);
+        let char_w = f64::from(char_width);
 
-        Self::wrap_words(
-            text,
-            max_width,
-            char_width,
-            &mut lines,
-            &mut current_line,
-            &mut current_width,
-        );
+        for word in text.split_whitespace() {
+            Self::fit_word_into_line(
+                word,
+                char_w,
+                max_w,
+                &mut current_line,
+                &mut current_width,
+                &mut lines,
+            );
+        }
 
         if !current_line.is_empty() {
             lines.push(current_line);
@@ -28,49 +35,25 @@ impl TextWrapper {
         lines
     }
 
-    fn wrap_words(
-        text: &str,
-        max_width: f32,
-        char_width: f32,
-        lines: &mut Vec<String>,
-        current_line: &mut String,
-        current_width: &mut f32,
-    ) {
-        for word in text.split_whitespace() {
-            let word_width = word.len() as f32 * char_width;
-            Self::append_word(
-                word,
-                word_width,
-                max_width,
-                char_width,
-                lines,
-                current_line,
-                current_width,
-            );
-        }
-    }
-
-    fn append_word(
+    fn fit_word_into_line(
         word: &str,
-        word_width: f32,
-        max_width: f32,
-        char_width: f32,
-        lines: &mut Vec<String>,
+        char_w: f64,
+        max_w: f64,
         current_line: &mut String,
-        current_width: &mut f32,
+        current_width: &mut f64,
+        lines: &mut Vec<String>,
     ) {
-        if *current_width + word_width <= max_width {
-            if !current_line.is_empty() {
-                current_line.push(' ');
-                *current_width += char_width;
-            }
+        let word_width = word.len() as f64 * char_w;
+
+        if !current_line.is_empty() && *current_width + char_w + word_width <= max_w {
+            current_line.push(' ');
             current_line.push_str(word);
-            *current_width += word_width;
+            *current_width += char_w + word_width;
         } else {
             if !current_line.is_empty() {
                 lines.push(std::mem::take(current_line));
             }
-            *current_line = word.to_string();
+            current_line.push_str(word);
             *current_width = word_width;
         }
     }
@@ -83,36 +66,21 @@ impl TextWrapper {
     ) -> Vec<Vec<StyledSegment>> {
         let mut lines = Vec::new();
         let mut current_line: Vec<StyledSegment> = Vec::new();
-        let mut current_width = 0.0;
+        let mut current_width = 0.0_f64;
+        let max_w = f64::from(max_width);
+        let char_w_factor = f64::from(font_size) * Self::CHAR_WIDTH_RATIO;
 
         for segment in segments {
-            let words: Vec<&str> = segment.text.split_inclusive(' ').collect();
-
-            for word in words {
-                let word_width = word.len() as f32 * font_size * 0.55;
-
-                if current_width + word_width > max_width && !current_line.is_empty() {
-                    lines.push(current_line);
-                    current_line = Vec::new();
-                    current_width = 0.0;
-                }
-
-                let word_text = word.to_string();
-                current_width += word_width;
-
-                if let Some(last_seg) = current_line.last_mut()
-                    && last_seg.attrs.weight == segment.attrs.weight
-                    && last_seg.attrs.italic == segment.attrs.italic
-                    && last_seg.attrs.color == segment.attrs.color
-                {
-                    last_seg.text.push_str(&word_text);
-                    continue;
-                }
-
-                current_line.push(StyledSegment {
-                    text: word_text,
-                    attrs: segment.attrs.clone(),
-                });
+            for word in segment.text.split_inclusive(' ') {
+                Self::fit_rich_word_into_line(
+                    word,
+                    &segment,
+                    char_w_factor,
+                    max_w,
+                    &mut current_line,
+                    &mut current_width,
+                    &mut lines,
+                );
             }
         }
 
@@ -121,6 +89,50 @@ impl TextWrapper {
         }
 
         lines
+    }
+    
+    // Medium Complexity
+    fn fit_rich_word_into_line(
+        word: &str,
+        segment: &StyledSegment,
+        char_w_factor: f64,
+        max_w: f64,
+        current_line: &mut Vec<StyledSegment>,
+        current_width: &mut f64,
+        lines: &mut Vec<Vec<StyledSegment>>,
+    ) {
+        let word_width = word.len() as f64 * char_w_factor;
+
+        if *current_width + word_width > max_w && !current_line.is_empty() {
+            lines.push(std::mem::take(current_line));
+            *current_width = 0.0;
+        }
+
+        *current_width += word_width;
+
+        if let Some(last_seg) = current_line.last_mut() && last_seg.attrs == segment.attrs {
+            last_seg.text.push_str(word);
+            return;
+        }
+
+        current_line.push(StyledSegment {
+            text: word.to_string(),
+            attrs: segment.attrs.clone(),
+        });
+    }
+
+    pub fn measure_text(text: &str, font_size: f32) -> (f32, f32) {
+        let lines: Vec<&str> = text.lines().collect();
+        let fs = f64::from(font_size);
+
+        let max_width = lines
+            .iter()
+            .map(|line| line.len() as f64 * fs * 0.6)
+            .fold(0.0, f64::max);
+
+        let height = lines.len() as f64 * fs * Self::LINE_HEIGHT_RATIO;
+
+        (max_width as f32, height as f32)
     }
 
     #[must_use]
@@ -139,16 +151,5 @@ impl TextWrapper {
             VerticalAlignment::Middle => VerticalAlign::Center,
             VerticalAlignment::Bottom => VerticalAlign::Bottom,
         }
-    }
-
-    pub fn measure_text(text: &str, font_size: f32) -> (f32, f32) {
-        let lines: Vec<&str> = text.lines().collect();
-        let max_width = lines
-            .iter()
-            .map(|line| line.len() as f32 * font_size * 0.6)
-            .fold(0.0_f32, f32::max);
-        let height = lines.len() as f32 * font_size * 1.2;
-
-        (max_width, height)
     }
 }

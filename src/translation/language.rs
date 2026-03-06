@@ -1,7 +1,6 @@
+use crate::translation::generate_id_from_name;
 use aam_rs::aaml::AAML;
 use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign};
 
 #[derive(Debug, Clone)]
@@ -13,38 +12,35 @@ pub struct Language {
 
 
 impl Language {
-    #[must_use] 
-    pub fn generate_id_from_name(name: &str) -> u32 {
-        let mut s = DefaultHasher::new();
-        name.hash(&mut s);
-        s.finish() as u32
-    }
 
-    #[must_use] 
+
+    #[must_use]
     pub fn resolve(name: &str) -> Option<Self> {
         let translations = AAML::load("src/static/translation.aam").ok()?;
 
         if name.contains('_') {
             let full = translations.find_obj(name)?;
             Some(Self {
-                id: Self::generate_id_from_name(name),
+                id: generate_id_from_name(name),
                 small_name: name.to_string(),
                 full_name: full.to_string(),
             })
         } else {
             let small = translations.find_obj(name)?;
             Some(Self {
-                id: Self::generate_id_from_name(&small),
+                id: generate_id_from_name(&small),
                 small_name: small.to_string(),
                 full_name: name.to_string(),
             })
         }
     }
 
-    #[must_use] 
+    /// # Errors
+    /// Returns [`TextError::HashIdOverflow`] if the hash of `small_name` exceeds `u32::MAX`.
+    #[must_use]
     pub fn new(small_name: String, full_name: String) -> Self {
         Self {
-            id: Self::generate_id_from_name(&small_name),
+            id: generate_id_from_name(&small_name),
             small_name,
             full_name,
         }

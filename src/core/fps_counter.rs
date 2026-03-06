@@ -30,6 +30,7 @@ impl FpsCounter {
     }
 
     #[must_use]
+    #[allow(clippy::cast_precision_loss)]
     pub fn fps(&self) -> f32 {
         if self.frame_times.is_empty() || self.total_time == 0.0 {
             return 0.0;
@@ -39,6 +40,7 @@ impl FpsCounter {
     }
 
     #[must_use]
+    #[allow(clippy::cast_precision_loss)]
     pub fn frame_time_ms(&self) -> f32 {
         if self.frame_times.is_empty() {
             return 0.0;

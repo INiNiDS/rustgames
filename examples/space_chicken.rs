@@ -517,41 +517,94 @@ impl SpaceChicken {
 // ---------------------------------------------------------------------------
 
 impl SpaceChicken {
-    // Medium complexity 
     fn handle_input(&mut self, engine: &mut Engine) {
-        let mut dx: f32 = 0.0;
-        let mut dy: f32 = 0.0;
-        let space_pressed;
-        let escape_pressed;
-
-        {
-            let eq = engine.get_event_queue();
-            if eq.is_key_pressed(KeyCode::KeyW) || eq.is_key_pressed(KeyCode::ArrowUp) {
-                dy += 1.0;
-            }
-            if eq.is_key_pressed(KeyCode::KeyS) || eq.is_key_pressed(KeyCode::ArrowDown) {
-                dy -= 1.0;
-            }
-            if eq.is_key_pressed(KeyCode::KeyA) || eq.is_key_pressed(KeyCode::ArrowLeft) {
-                dx -= 1.0;
-            }
-            if eq.is_key_pressed(KeyCode::KeyD) || eq.is_key_pressed(KeyCode::ArrowRight) {
-                dx += 1.0;
-            }
-            space_pressed = eq.was_key_just_pressed(KeyCode::Space);
-            escape_pressed = eq.was_key_just_pressed(KeyCode::Escape);
-        }
-
-        let dir = Vec2::new(dx, dy).normalize_or_zero();
-        self.player_vel = dir * MOVE_SPEED;
-
-        if space_pressed && self.phase == Phase::Intro {
-            self.advance_intro(engine);
-        }
-
-        if escape_pressed {
+        let eq = engine.get_event_queue();
+        if eq.is_key_pressed(KeyCode::Escape) {
             std::process::exit(0);
         }
+
+        // Delegate to phase-specific handlers
+        match self.phase {
+            Phase::Intro => self.handle_intro_input(engine),
+            Phase::Explore => self.handle_explore_input(engine),
+            Phase::BossFight => self.handle_boss_input(engine),
+            Phase::Ending => self.handle_ending_input(engine),
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Phase-Specific Handlers
+    // -----------------------------------------------------------------------
+
+    fn handle_intro_input(&mut self, engine: &mut Engine) {
+        let eq = engine.get_event_queue();
+        if eq.is_key_pressed(KeyCode::Space) {
+            self.story_step += 1;
+
+            // Hypothetical transition logic
+            if self.story_step > 3 {
+                self.phase = Phase::Explore;
+                engine.get_text_system().remove_text(self.dialogue_id);
+            } else {
+                self.show_dialogue(engine, "More clucking space adventures await!");
+            }
+        }
+    }
+
+    fn handle_explore_input(&mut self, engine: &mut Engine) {
+        self.handle_movement_input(engine);
+
+        let eq = engine.get_event_queue();
+
+        // Interaction
+        if eq.is_key_pressed(KeyCode::Space) {
+            println!("Captain Feathers interacts!");
+        }
+    } // Immutable borrow ends here
+
+    fn handle_boss_input(&mut self, engine: &mut Engine) {
+        self.handle_movement_input(engine);
+
+        let eq = engine.get_event_queue();
+
+        // Boss fight specific actions
+        if eq.is_key_pressed(KeyCode::Space) {
+            // E.g., Use a power-up, shoot, or dodge
+        }
+    }
+
+    fn handle_ending_input(&mut self, engine: &mut Engine) {
+        let eq = engine.get_event_queue();
+        if eq.is_key_pressed(KeyCode::Enter) {
+            // Confirm choice to restart or close
+            println!("Returning to main menu...");
+            std::process::exit(0);
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Shared Input Logic
+    // -----------------------------------------------------------------------
+
+    /// Extracts movement logic so it can be reused in Explore and Boss phases
+    fn handle_movement_input(&mut self, engine: &mut Engine) {
+        let eq = engine.get_event_queue();
+        let mut dir = Vec2::ZERO;
+
+        if eq.is_key_down(KeyCode::KeyW) || eq.is_key_down(KeyCode::ArrowUp) {
+            dir.y -= 1.0;
+        }
+        if eq.is_key_down(KeyCode::KeyS) || eq.is_key_down(KeyCode::ArrowDown) {
+            dir.y += 1.0;
+        }
+        if eq.is_key_down(KeyCode::KeyA) || eq.is_key_down(KeyCode::ArrowLeft) {
+            dir.x -= 1.0;
+        }
+        if eq.is_key_down(KeyCode::KeyD) || eq.is_key_down(KeyCode::ArrowRight) {
+            dir.x += 1.0;
+        }
+
+        self.player_vel = dir.normalize_or_zero() * MOVE_SPEED;
     }
 
     fn move_player(&mut self, dt: f32) {
@@ -567,7 +620,6 @@ impl SpaceChicken {
         self.flash_cooldown = (self.flash_cooldown - 0.016).max(0.0);
     }
 }
-
 // ---------------------------------------------------------------------------
 // Animation helpers
 // ---------------------------------------------------------------------------

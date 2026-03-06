@@ -2,6 +2,16 @@ use crate::prelude::{TextStyle, TypewriterEffect};
 use crate::text::{PunctuationConfig, TextSpeed};
 use std::slice::{Iter, IterMut};
 
+pub struct TypewriterBuilder {
+    pub text: String,
+    pub text_id: Option<u32>,
+    pub speed: TextSpeed,
+    pub x: f32,
+    pub y: f32,
+    pub style: TextStyle,
+    pub punctuation_config: PunctuationConfig,
+}
+
 /// Manages a collection of `TypewriterEffect` instances by ID.
 pub struct TypewriterInstance {
     typewriter_effects: Vec<TypewriterEffect>,
@@ -33,7 +43,7 @@ impl TypewriterInstance {
         punctuation_config: PunctuationConfig,
     ) -> usize {
         let effect =
-            TypewriterEffect::new(text, speed, self.next_id, x, y, style, punctuation_config);
+            TypewriterEffect::new(text, speed,  x, y, style, punctuation_config);
         self.typewriter_effects.push(effect);
         self.next_id += 1;
         self.next_id - 1
@@ -43,23 +53,11 @@ impl TypewriterInstance {
     /// `text` is used as fallback when no translation is found.
     pub fn add_typewriter_effect_with_id(
         &mut self,
-        text: impl Into<String>,
-        text_id: u32,
-        speed: TextSpeed,
-        x: f32,
-        y: f32,
-        style: TextStyle,
-        punctuation_config: PunctuationConfig,
+        typewriter_builder: TypewriterBuilder,
     ) -> usize {
         let effect = TypewriterEffect::new_with_id(
-            text,
-            text_id,
-            speed,
+            typewriter_builder,
             self.next_id,
-            x,
-            y,
-            style,
-            punctuation_config,
         );
         self.typewriter_effects.push(effect);
         self.next_id += 1;
@@ -155,7 +153,7 @@ impl TypewriterInstance {
     }
 
     #[must_use]
-    pub fn get_progress(&self, id: usize) -> f64 {
+    pub fn get_progress(&self, id: usize) -> f32 {
         self.get_effect(id).map_or(0.0, TypewriterEffect::progress)
     }
 

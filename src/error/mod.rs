@@ -1,10 +1,10 @@
-//! # Модуль ошибок RsGames
+//! # Errors module `rustgames`
 //!
-//! Типизированные ошибки с подробными описаниями и советами по исправлению.
-//! Формат сообщений вдохновлён `cargo check` — каждая ошибка содержит:
-//! - `what`  — что именно пошло не так
-//! - `why`   — возможная причина
-//! - `fix`   — как исправить (и программное исправление где возможно)
+//! Types of errors:
+//! Every error includes:
+//! - `what` — what going wrong
+//! - `why` — reason
+//! - `fix` — how to fix
 
 mod audio_error;
 mod graphics_error;
@@ -17,9 +17,9 @@ pub use text_error::TextError;
 use std::fmt;
 use thiserror::Error;
 
-/// Main error type for RsGames, encompassing all subsystems (audio, graphics, text, IO).
+/// Main error type for `RsGames`, encompassing all subsystems (audio, graphics, text, IO).
 ///
-/// # Примеры
+/// # EXAMPLES
 /// ```rust,ignore
 /// match err {
 ///     GameError::Audio(e)    => eprintln!("{e}"),

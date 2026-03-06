@@ -1,5 +1,24 @@
 use std::str::FromStr;
 
+pub(crate) const NAMED_COLORS: &[(Color, &str)] = &[
+    (Color::WHITE, "White"),
+    (Color::BLACK, "Black"),
+    (Color::RED, "Red"),
+    (Color::GREEN, "Green"),
+    (Color::BLUE, "Blue"),
+    (Color::YELLOW, "Yellow"),
+    (Color::CYAN, "Cyan"),
+    (Color::MAGENTA, "Magenta"),
+    (Color::GRAY, "Gray"),
+    (Color::DARK_GRAY, "Dark Gray"),
+    (Color::LIGHT_GRAY, "Light Gray"),
+    (Color::ORANGE, "Orange"),
+    (Color::PURPLE, "Purple"),
+    (Color::BROWN, "Brown"),
+    (Color::PINK, "Pink"),
+    (Color::GOLD, "Gold"),
+];
+
 /// An RGBA color stored as four `f32` values in the range `0.0.=1.0`.
 ///
 /// Provides named constants for common colors, conversions from hex strings,
@@ -142,20 +161,20 @@ impl Color {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
-        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
-        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
-        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
+        let r = u8::from_str_radix(hex.get(0..2)?, 16).ok()?;
+        let g = u8::from_str_radix(hex.get(2..4)?, 16).ok()?;
+        let b = u8::from_str_radix(hex.get(4..6)?, 16).ok()?;
         Some((r, g, b, 255))
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
-        let r = u8::from_str_radix(&hex[0..2], 16).ok()?;
-        let g = u8::from_str_radix(&hex[2..4], 16).ok()?;
-        let b = u8::from_str_radix(&hex[4..6], 16).ok()?;
-        let a = u8::from_str_radix(&hex[6..8], 16).ok()?;
+        let r = u8::from_str_radix(hex.get(0..2)?, 16).ok()?;
+        let g = u8::from_str_radix(hex.get(2..4)?, 16).ok()?;
+        let b = u8::from_str_radix(hex.get(4..6)?, 16).ok()?;
+        let a = u8::from_str_radix(hex.get(6..8)?, 16).ok()?;
         Some((r, g, b, a))
     }
 }

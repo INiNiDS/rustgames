@@ -20,6 +20,7 @@ pub struct Camera {
 
 impl Camera {
     #[must_use]
+    #[allow(clippy::cast_precision_loss)] // Screen dimensions will never exceed 16,777,216
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             position: Vec3::ZERO,
@@ -36,7 +37,8 @@ impl Camera {
             viewport_height: height as f32,
         }
     }
-
+    
+    #[allow(clippy::cast_precision_loss)]
     pub fn resize(&mut self, width: u32, height: u32) {
         if height > 0 {
             self.aspect = width as f32 / height as f32;

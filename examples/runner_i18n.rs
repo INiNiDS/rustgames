@@ -12,7 +12,7 @@ use glam::Vec2;
 use rustgames::core::app;
 use rustgames::prelude::*;
 use rustgames::text::TextData;
-use rustgames::translation::{Dictionary, DictionarySystem, Translation, TranslationSystem};
+use rustgames::translation::{generate_id_from_name, DictionarySystem, Translation, TranslationSystem};
 
 // ── screen size ──────────────────────────────────────────────────────────────
 const W: f32 = 2560.0;
@@ -82,15 +82,15 @@ impl RunnerI18n {
             (KEY_HINT, "WASD/Arrows=Move  L=Lang  ESC=Quit"),
         ];
         for (key, fallback) in entries {
-            dict.add_dictionary(key);
+            dict.add_dictionary(key).expect("U32 overflow for language id");
             // Also add the English text as a real dictionary entry so the
             // fallback shows something useful before any language is set.
-            dict.add_dictionary_entry(Dictionary::generate_id_from_name(key), fallback);
+            dict.add_dictionary_entry(generate_id_from_name(key), fallback);
         }
 
         // English translations
-        let en_id = Language::generate_id_from_name(LANG_EN);
-        let ru_id = Language::generate_id_from_name(LANG_RU);
+        let en_id = generate_id_from_name(LANG_EN);
+        let ru_id = generate_id_from_name(LANG_RU);
 
         let en_translations: &[(&str, &str)] = &[
             (KEY_TITLE, "Runner i18n Demo"),
@@ -107,11 +107,11 @@ impl RunnerI18n {
         ];
 
         for (key, text) in en_translations {
-            let tid = Dictionary::generate_id_from_name(key);
+            let tid = generate_id_from_name(key);
             trans.add_translation(Translation::new(tid, en_id, text.to_string()));
         }
         for (key, text) in ru_translations {
-            let tid = Dictionary::generate_id_from_name(key);
+            let tid = generate_id_from_name(key);
             trans.add_translation(Translation::new(tid, ru_id, text.to_string()));
         }
 
@@ -138,7 +138,7 @@ impl RunnerI18n {
         // Title — resolved via translation system
         self.tw_title = ts.add_text_by_id(TextData {
             text: "Runner i18n Demo".to_string(),
-            text_id: Dictionary::generate_id_from_name(KEY_TITLE),
+            text_id: generate_id_from_name(KEY_TITLE),
             speed: TextSpeed::Instant,
             x: 40.0,
             y: 20.0,
@@ -150,7 +150,7 @@ impl RunnerI18n {
         let score_fallback = format!("Score: {}", self.score);
         self.tw_score = ts.add_text_by_id(TextData {
             text: score_fallback,
-            text_id: Dictionary::generate_id_from_name(KEY_SCORE),
+            text_id: generate_id_from_name(KEY_SCORE),
             speed: TextSpeed::Instant,
             x: 40.0,
             y: 80.0,
@@ -161,7 +161,7 @@ impl RunnerI18n {
         // Language label
         self.tw_lang = ts.add_text_by_id(TextData {
             text: "Language: English".to_string(),
-            text_id: Dictionary::generate_id_from_name(KEY_LANG),
+            text_id: generate_id_from_name(KEY_LANG),
             speed: TextSpeed::Instant,
             x: 40.0,
             y: 120.0,
@@ -172,7 +172,7 @@ impl RunnerI18n {
         // Hint at bottom
         self.tw_hint = ts.add_text_by_id(TextData {
             text: "WASD/Arrows=Move  L=Lang  ESC=Quit".to_string(),
-            text_id: Dictionary::generate_id_from_name(KEY_HINT),
+            text_id: generate_id_from_name(KEY_HINT),
             speed: TextSpeed::Instant,
             x: 40.0,
             y: H - 50.0,
@@ -184,39 +184,23 @@ impl RunnerI18n {
     }
 
     // ── movement ─────────────────────────────────────────────────────────────
-    // Medium complexity 
+
     fn handle_movement(&mut self, engine: &mut Engine, dt: f32) {
         let eq = engine.get_event_queue();
         let mut vel = Vec2::ZERO;
 
-        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) {
-            vel.x -= 1.0;
-        }
-        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) {
-            vel.x += 1.0;
-        }
-        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) {
-            vel.y += 1.0;
-        }
-        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) {
-            vel.y -= 1.0;
-        }
+        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) { vel.x -= 1.0; }
+        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) { vel.x += 1.0; }
+        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) { vel.y += 1.0; }
+        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) { vel.y -= 1.0; }
 
-        if vel.length_squared() > 0.0 {
-            vel = vel.normalize() * PLAYER_SPEED * dt;
-            self.player_pos += vel;
+        if vel != Vec2::ZERO {
+            self.player_pos += vel.normalize() * PLAYER_SPEED * dt;
             self.score += 1;
         }
 
-        // Clamp to screen
-        self.player_pos.x = self
-            .player_pos
-            .x
-            .clamp(PLAYER_SIZE / 2.0, W - PLAYER_SIZE / 2.0);
-        self.player_pos.y = self
-            .player_pos
-            .y
-            .clamp(PLAYER_SIZE / 2.0, H - PLAYER_SIZE / 2.0);
+        let margin = Vec2::splat(PLAYER_SIZE / 2.0);
+        self.player_pos = self.player_pos.clamp(margin, Vec2::new(W, H) - margin);
     }
 
     // ── language toggle ──────────────────────────────────────────────────────
@@ -307,13 +291,13 @@ impl Game for RunnerI18n {
 
         self.handle_movement(engine, dt);
 
-        let toggle_lang;
-        let quit;
-        {
+        let (toggle_lang, quit) = {
             let eq = engine.get_event_queue();
-            toggle_lang = eq.was_key_just_pressed(KeyCode::KeyL);
-            quit = eq.was_key_just_pressed(KeyCode::Escape);
-        }
+            (
+                eq.was_key_just_pressed(KeyCode::KeyL),
+                eq.was_key_just_pressed(KeyCode::Escape)
+            )
+        };
 
         if toggle_lang {
             self.toggle_language(engine);

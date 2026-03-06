@@ -1,7 +1,7 @@
+use crate::error::TextError;
 use std::collections::HashMap;
-use std::collections::hash_map::DefaultHasher;
-use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign};
+use crate::translation::generate_id_from_name;
 
 pub struct Dictionary {
     id: u32,
@@ -9,19 +9,14 @@ pub struct Dictionary {
 }
 
 impl Dictionary {
-    #[must_use]
-    pub fn generate_id_from_name(name: &str) -> u32 {
-        let mut s = DefaultHasher::new();
-        name.hash(&mut s);
-        s.finish() as u32
-    }
 
-    #[must_use]
-    pub fn new(text: &str) -> Self {
-        Self {
-            id: Self::generate_id_from_name(text),
+    /// # Errors
+    /// Returns [`TextError::HashIdOverflow`] if the hash of `text` exceeds `u32::MAX`.
+    pub fn new(text: &str) -> Result<Self, TextError> {
+        Ok(Self {
+            id: generate_id_from_name(text),
             text: text.to_string(),
-        }
+        })
     }
 
     pub(crate) fn get_text(&self) -> &str {
@@ -48,9 +43,12 @@ impl DictionarySystem {
         }
     }
 
-    pub fn add_dictionary(&mut self, text: &str) {
-        let d = Dictionary::new(text);
+    /// # Errors
+    /// Returns [`TextError::HashIdOverflow`] if the hash of `text` exceeds `u32::MAX`.
+    pub fn add_dictionary(&mut self, text: &str) -> Result<(), TextError> {
+        let d = Dictionary::new(text)?;
         self.dictionaries.insert(d.id, d);
+        Ok(())
     }
 
     pub fn add_dictionary_entry(&mut self, id: u32, text: &str) {

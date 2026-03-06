@@ -1,5 +1,6 @@
 use glam::Vec2;
 
+use crate::utils::blend_utils::{blend_val, blend_vec2};
 use super::visual::{AnimEffect, CombinedMode, CustomCombinedMode, VisualState};
 
 impl AnimEffect {
@@ -59,39 +60,17 @@ impl AnimEffect {
 
     #[must_use]
     pub fn apply_to_default(&self, state: VisualState) -> VisualState {
-        VisualState {
-            opacity: state.opacity * self.opacity_mul,
-            position: state.position + self.offset_add,
-            scale: state.scale * self.scale_mul,
-            rotation: state.rotation + self.rotation_add,
-            anchor: state.anchor,
-        }
+        self.apply_to_config(state, CustomCombinedMode::default())
     }
 
     #[must_use]
     pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
-            opacity: Self::apply_val(state.opacity, self.opacity_mul, config.opacity),
-            position: Self::apply_vec2(state.position, self.offset_add, config.position),
-            scale: Self::apply_vec2(state.scale, self.scale_mul, config.scale),
-            rotation: Self::apply_val(state.rotation, self.rotation_add, config.rotation),
+            opacity: blend_val(state.opacity, self.opacity_mul, config.opacity, CombinedMode::Mul),
+            position: blend_vec2(state.position, self.offset_add, config.position, CombinedMode::Add),
+            scale: blend_vec2(state.scale, self.scale_mul, config.scale, CombinedMode::Mul),
+            rotation: blend_val(state.rotation, self.rotation_add, config.rotation, CombinedMode::Add),
             anchor: state.anchor,
-        }
-    }
-
-    fn apply_val(base: f32, delta: f32, mode: CombinedMode) -> f32 {
-        match mode {
-            CombinedMode::Default | CombinedMode::Mul => base * delta,
-            CombinedMode::Add => base + delta,
-            CombinedMode::Override => delta,
-        }
-    }
-
-    fn apply_vec2(base: Vec2, delta: Vec2, mode: CombinedMode) -> Vec2 {
-        match mode {
-            CombinedMode::Default | CombinedMode::Add => base + delta,
-            CombinedMode::Mul => base * delta,
-            CombinedMode::Override => delta,
         }
     }
 }
