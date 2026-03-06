@@ -255,10 +255,6 @@ impl Game for RunnerI18n {
             include_bytes!("../src/static/textures/mistral.png"),
             "player",
         );
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
-            "bg",
-        );
 
         // Register languages
         engine.add_language(Language::new(LANG_EN.to_string(), "English".to_string()));
@@ -281,11 +277,6 @@ impl Game for RunnerI18n {
         let dt = engine.delta_time();
         self.fps.update(dt);
         self.title_timer += dt;
-
-        // Draw background
-        engine
-            .get_texture_controller()
-            .use_texture("bg", Vec2::new(W, H), Vec2::ZERO, 0.0, 0.3);
 
         // Draw player sprite
         self.draw_player(engine);

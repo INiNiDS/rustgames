@@ -27,10 +27,6 @@ impl Game for EffectsDemo {
         println!("  ENTER - Entrance animation");
         println!("  ESC   - Exit");
 
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
-            "background",
-        );
 
         engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
@@ -188,14 +184,6 @@ impl EffectsDemo {
                 self.texture_size = tex.size;
                 self.texture_size
             });
-
-        engine.get_texture_controller().use_texture(
-            "background",
-            Vec2::new(2560.0, 1440.0),
-            Vec2::ZERO,
-            0.0,
-            1.0,
-        );
 
         let visual = engine
             .get_animation_system()

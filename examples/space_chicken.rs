@@ -139,10 +139,6 @@ impl Game for SpaceChicken {
             include_bytes!("../src/static/textures/mistral.png"),
             "chicken",
         );
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
-            "bg",
-        );
 
         engine.get_camera().set_zoom(1.0);
         self.show_dialogue(engine, "Cluck cluck! I am Captain Feathers!");
@@ -414,13 +410,6 @@ impl SpaceChicken {
 
 impl SpaceChicken {
     fn draw_scene(&mut self, engine: &mut Engine) {
-        engine.get_texture_controller().use_texture(
-            "bg",
-            Vec2::new(SCREEN_W * 2.0, SCREEN_H * 2.0),
-            Vec2::ZERO,
-            0.0,
-            1.0,
-        );
 
         self.draw_nuggets(engine);
         self.draw_enemies(engine);

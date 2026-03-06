@@ -25,10 +25,6 @@ impl Game for SingleDemo {
             "demo_sprite",
         );
 
-        engine.get_texture_controller().load_texture(
-            include_bytes!("../src/static/textures/OIP-475081084.jpg"),
-            "background",
-        );
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);
@@ -103,13 +99,6 @@ impl Game for SingleDemo {
 
         let bg_world_size = Vec2::new(window_width / camera_zoom, window_height / camera_zoom);
 
-        engine.get_texture_controller().use_texture(
-            "background",
-            bg_world_size,
-            Vec2::ZERO,
-            0.0_f32.to_radians(),
-            1.0,
-        );
 
         let visual = engine
             .get_animation_system()
