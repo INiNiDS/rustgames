@@ -184,7 +184,7 @@ impl RunnerI18n {
     }
 
     // ── movement ─────────────────────────────────────────────────────────────
-    // Medium complexity 
+    // Medium complexity
     fn handle_movement(&mut self, engine: &mut Engine, dt: f32) {
         let eq = engine.get_event_queue();
         let mut vel = Vec2::ZERO;

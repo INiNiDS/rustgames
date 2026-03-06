@@ -517,7 +517,7 @@ impl SpaceChicken {
 // ---------------------------------------------------------------------------
 
 impl SpaceChicken {
-    // Medium complexity 
+    // Medium complexity
     fn handle_input(&mut self, engine: &mut Engine) {
         let mut dx: f32 = 0.0;
         let mut dy: f32 = 0.0;

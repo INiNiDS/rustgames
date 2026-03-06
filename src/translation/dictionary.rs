@@ -41,7 +41,7 @@ pub struct DictionarySystem {
 }
 
 impl DictionarySystem {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             dictionaries: HashMap::new(),
@@ -54,14 +54,20 @@ impl DictionarySystem {
     }
 
     pub fn add_dictionary_entry(&mut self, id: u32, text: &str) {
-        self.dictionaries.insert(id, Dictionary { id, text: text.to_string() });
+        self.dictionaries.insert(
+            id,
+            Dictionary {
+                id,
+                text: text.to_string(),
+            },
+        );
     }
 
     pub fn get_dictionaries(&self) -> impl Iterator<Item = &Dictionary> {
         self.dictionaries.values()
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_dictionary(&self, text_id: u32) -> Option<&Dictionary> {
         self.dictionaries.get(&text_id)
     }

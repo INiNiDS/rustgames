@@ -11,16 +11,15 @@ pub struct Language {
     pub full_name: String,
 }
 
-
 impl Language {
-    #[must_use] 
+    #[must_use]
     pub fn generate_id_from_name(name: &str) -> u32 {
         let mut s = DefaultHasher::new();
         name.hash(&mut s);
         s.finish() as u32
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn resolve(name: &str) -> Option<Self> {
         let translations = AAML::load("src/static/translation.aam").ok()?;
 
@@ -41,7 +40,7 @@ impl Language {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn new(small_name: String, full_name: String) -> Self {
         Self {
             id: Self::generate_id_from_name(&small_name),
@@ -65,7 +64,7 @@ pub struct LanguageSystem {
 }
 
 impl LanguageSystem {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             languages: HashMap::new(),
@@ -87,7 +86,7 @@ impl LanguageSystem {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_current_language(&self) -> Option<&Language> {
         if self.current_language_id == 0 {
             None
@@ -96,19 +95,23 @@ impl LanguageSystem {
         }
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_language_by_id(&self, id: u32) -> Option<&Language> {
         self.languages.get(&id)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_language_by_small_name(&self, small_name: &str) -> Option<&Language> {
-        self.languages.values().find(|lang| lang.small_name == small_name)
+        self.languages
+            .values()
+            .find(|lang| lang.small_name == small_name)
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_language_by_full_name(&self, full_name: &str) -> Option<&Language> {
-        self.languages.values().find(|lang| lang.full_name == full_name)
+        self.languages
+            .values()
+            .find(|lang| lang.full_name == full_name)
     }
 }
 

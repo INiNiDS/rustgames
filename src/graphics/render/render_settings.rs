@@ -4,11 +4,11 @@ use crate::graphics::{Camera, Color, SpriteRenderer, VfxSystem};
 use crate::prelude::WindowConfig;
 use crate::text::font::DEFAULT_NORMAL_FONT;
 use crate::text::text_system::TextSystem;
+use crate::translation::{DictionarySystem, LanguageSystem, TranslationSystem};
 use std::sync::Arc;
 use wgpu::{Device, PresentMode, Queue, Surface, SurfaceConfiguration};
 use winit::dpi::{LogicalSize, PhysicalSize};
 use winit::window::Window;
-use crate::translation::{DictionarySystem, LanguageSystem, TranslationSystem};
 
 /// Aggregates all GPU resources and controllers needed for rendering a frame.
 pub struct RenderSettings {
@@ -29,7 +29,7 @@ pub struct RenderSettings {
     pub(crate) vfx_system: VfxSystem,
     pub(crate) language_system: LanguageSystem,
     pub(crate) translation_system: TranslationSystem,
-    pub(crate) dictionary_system: DictionarySystem
+    pub(crate) dictionary_system: DictionarySystem,
 }
 
 impl RenderSettings {

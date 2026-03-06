@@ -8,7 +8,7 @@ pub struct Translation {
 }
 
 impl Translation {
-    #[must_use] 
+    #[must_use]
     pub const fn new(text_id: u32, language_id: u32, translation: String) -> Self {
         Self {
             text_id,
@@ -28,7 +28,7 @@ pub struct TranslationSystem {
 }
 
 impl TranslationSystem {
-    #[must_use] 
+    #[must_use]
     pub fn new() -> Self {
         Self {
             translations: HashMap::new(),
@@ -36,19 +36,19 @@ impl TranslationSystem {
     }
 
     pub fn add_translation(&mut self, translation: Translation) {
-        self.translations.insert((translation.text_id, translation.language_id), translation);
+        self.translations
+            .insert((translation.text_id, translation.language_id), translation);
     }
 
     pub fn get_translations(&self) -> impl Iterator<Item = &Translation> {
         self.translations.values()
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn get_translation(&self, text_id: u32, language_id: u32) -> Option<&Translation> {
         self.translations.get(&(text_id, language_id))
     }
 }
-
 
 impl Default for TranslationSystem {
     fn default() -> Self {

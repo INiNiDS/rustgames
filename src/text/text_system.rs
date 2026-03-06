@@ -7,8 +7,7 @@ use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
-use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text };
-
+use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text};
 
 /// Manages text rendering including typewriter effects, font loading, and
 /// styled text queueing for GPU draw calls.
@@ -83,7 +82,6 @@ impl TextSystem {
         max_h: f32,
         style: &TextStyle,
     ) {
-
         let formatted_segments = RichTextParser::parse(raw_text)
             .into_iter()
             .map(|seg| {

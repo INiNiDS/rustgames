@@ -71,7 +71,7 @@ impl Color {
         Some(Self::from_rgba_u8(r, g, b, a))
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn parse_tuple(rgb: &str) -> Option<Self> {
         let inner = rgb.trim_matches(|c| c == '(' || c == ')');
         let parts: Vec<&str> = inner.split(',').map(|_s| rgb.trim()).collect();
@@ -92,7 +92,7 @@ impl Color {
         Some(Self::from_rgba_u8(r, g, b, a))
     }
 
-    #[must_use] 
+    #[must_use]
     pub fn parse_named(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "white" => Some(Self::WHITE),

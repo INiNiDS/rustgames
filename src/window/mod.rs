@@ -1,11 +1,11 @@
 pub mod events;
 
 use crate::graphics::Color;
+use crate::translation::language::Language;
 pub use events::*;
 use std::sync::Arc;
 use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
-use crate::translation::language::Language;
 
 /// Configuration used to create and customize the application window.
 #[derive(Debug, Clone)]
@@ -17,7 +17,7 @@ pub struct WindowConfig {
     pub fullscreen: bool,
     pub vsync: bool,
     pub background_color: Color,
-    pub language: Language
+    pub language: Language,
 }
 
 impl Default for WindowConfig {
