@@ -3,14 +3,22 @@ pub use crate::graphics::Particle;
 use glam::Vec2;
 use rand::RngExt;
 
+/// An individual effect that is currently running, together with its
+/// elapsed time and any live particles it owns.
 #[derive(Debug)]
 pub struct ActiveEffect {
+    /// The effect configuration driving this instance.
     pub config: VfxEffect,
+    /// Time in seconds since this effect was spawned.
     pub elapsed: f32,
+    /// Live particles owned by this effect (only populated for `Emitter`).
     pub particles: Vec<Particle>,
 }
 
 impl ActiveEffect {
+    /// Creates a new [`ActiveEffect`] from `effect`.
+    /// If `effect` is an `Emitter`, the initial particle burst is spawned
+    /// immediately.
     #[must_use]
     pub fn new(effect: VfxEffect) -> Self {
         let emitter_cfg = if let VfxEffect::Emitter(ref cfg) = effect {
@@ -32,6 +40,8 @@ impl ActiveEffect {
         instance
     }
 
+    /// Returns the total duration of this effect in seconds.
+    /// Returns `f32::INFINITY` for persistent effects (vignette, overlay).
     #[must_use]
     pub const fn duration(&self) -> f32 {
         match &self.config {
@@ -41,6 +51,8 @@ impl ActiveEffect {
         }
     }
 
+    /// Advances the effect by `delta_time` seconds, updating particles if
+    /// this is an `Emitter`.
     pub fn update(&mut self, delta_time: f32) {
         self.elapsed += delta_time;
 
@@ -53,6 +65,8 @@ impl ActiveEffect {
         }
     }
 
+    /// Returns `true` when the effect has exceeded its duration and all
+    /// particles have expired.
     #[must_use]
     pub fn is_finished(&self) -> bool {
         let duration = self.duration();
@@ -89,6 +103,7 @@ pub struct VfxSystem {
 }
 
 impl VfxSystem {
+    /// Creates a new, empty [`VfxSystem`].
     #[must_use]
     pub const fn new() -> Self {
         Self {
@@ -96,10 +111,13 @@ impl VfxSystem {
         }
     }
 
+    /// Adds a new effect to the system. It begins updating immediately.
     pub fn push(&mut self, effect: VfxEffect) {
         self.effects.push(ActiveEffect::new(effect));
     }
 
+    /// Advances all active effects by `delta_time` seconds and removes any
+    /// that have finished.
     pub fn update(&mut self, delta_time: f32) {
         for effect in &mut self.effects {
             effect.update(delta_time);
@@ -108,15 +126,18 @@ impl VfxSystem {
         self.effects.retain(|e| !e.is_finished());
     }
 
+    /// Removes all active effects.
     pub fn clear(&mut self) {
         self.effects.clear();
     }
 
+    /// Returns a slice of all currently active effects.
     #[must_use]
     pub fn active_effects(&self) -> &[ActiveEffect] {
         &self.effects
     }
 
+    /// Returns the number of currently active effects.
     #[must_use]
     pub const fn count(&self) -> usize {
         self.effects.len()

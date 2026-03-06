@@ -6,15 +6,23 @@ const D1: f32 = 2.75;
 /// Easing functions controlling animation interpolation curves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Easing {
+    /// No easing — constant rate of change.
     Linear,
+    /// Starts slow, accelerates toward the end.
     EaseIn,
+    /// Starts fast, decelerates toward the end.
     EaseOut,
+    /// Slow at both ends, fast in the middle.
     EaseInOut,
+    /// Bounces at the end of the animation.
     Bounce,
+    /// Overshoots then snaps back, mimicking an elastic band.
     Elastic,
 }
 
 impl Easing {
+    /// Applies the easing function to normalised time `t` (clamped 0.0–1.0)
+    /// and returns the eased value in 0.0–1.0.
     #[must_use]
     pub fn apply(&self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);

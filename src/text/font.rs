@@ -18,13 +18,24 @@ pub const DEFAULT_SEMIBOLD_FONT: &str = concat!(
     "/src/static/font/Caveat-SemiBold.ttf"
 );
 
+/// Font configuration passed to [`TextSystem`] during initialization.
+/// Each field holds an optional file path; missing entries fall back to the
+/// bundled Caveat typeface.
 pub struct FontConfig {
+    /// Path to the regular weight font file. Required — if empty the default
+    /// bundled font is used.
     pub normal: String,
+    /// Path to the bold weight font file.
     pub bold: Option<String>,
+    /// Path to the italic font file.
     pub italic: Option<String>,
+    /// Path to the medium weight font file.
     pub medium: Option<String>,
+    /// Path to the semi-bold weight font file.
     pub semibold: Option<String>,
+    /// Path to the light weight font file.
     pub light: Option<String>,
+    /// Path to the extra-bold weight font file.
     pub extrabold: Option<String>,
 }
 
@@ -71,6 +82,7 @@ impl Font {
         Ok(Self { name, data, font_arc })
     }
 
+    /// Returns a cloned [`FontArc`] handle suitable for use with `wgpu_text`.
     #[must_use]
     pub fn to_font_arc(&self) -> FontArc {
         self.font_arc.clone()

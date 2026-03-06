@@ -74,10 +74,15 @@ impl TextSystem {
 
     // Explicitly allowed the precision loss lint for standard screen coordinates
     #[allow(clippy::cast_precision_loss)]
+    /// Notifies the GPU text brush of a new viewport size.
     pub fn resize(&mut self, width: u32, height: u32, queue: &Queue) {
         self.brush.resize_view(width as f32, height as f32, queue);
     }
 
+    /// Queues a styled text section to be rendered this frame.
+    ///
+    /// Rich-text markup (`<b>`, `<i>`, `<color=…>` etc.) is parsed automatically.
+    /// The section is flushed to the GPU during [`draw`][Self::draw].
     pub fn queue_text(
         &mut self,
         raw_text: &str,
@@ -110,6 +115,8 @@ impl TextSystem {
         });
     }
 
+    /// Submits all queued text sections to the GPU and issues the draw call
+    /// into `rpass`. Also renders the active shadow pass if configured.
     pub fn draw(&mut self, device: &Device, queue: &Queue, rpass: &mut RenderPass) {
         if self.queued_sections.is_empty() {
             self.brush.draw(rpass);

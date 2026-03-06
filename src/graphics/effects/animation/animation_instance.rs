@@ -17,6 +17,8 @@ pub struct ActiveAnimation {
 }
 
 impl ActiveAnimation {
+    /// Creates a new [`ActiveAnimation`] with the given id, animation,
+    /// easing, and initial `delay` before playback starts.
     #[must_use]
     pub const fn new(id: usize, animation: Animation, easing: Easing, delay: f32) -> Self {
         Self {
@@ -30,6 +32,7 @@ impl ActiveAnimation {
         }
     }
 
+    /// Returns the total duration of the wrapped animation in seconds.
     #[must_use]
     pub const fn duration(&self) -> f32 {
         match &self.animation {
@@ -43,6 +46,7 @@ impl ActiveAnimation {
         }
     }
 
+    /// Returns linear progress in `0.0..=1.0`, ignoring easing.
     #[must_use]
     pub fn progress(&self) -> f32 {
         let duration = self.duration();
@@ -54,6 +58,8 @@ impl ActiveAnimation {
         }
     }
 
+    /// Advances the animation by `delta_time` seconds. Respects `paused` flag,
+    /// initial delay, and `playback` speed/direction.
     pub fn update(&mut self, delta_time: f32) {
         if self.paused {
             return;
@@ -75,6 +81,8 @@ impl ActiveAnimation {
         self.elapsed = self.elapsed.clamp(0.0, self.duration());
     }
 
+    /// Returns `true` when the animation has reached its natural end point
+    /// (or start point if playing in reverse).
     #[must_use]
     pub fn is_finished(&self) -> bool {
         if self.playback >= 0.0 {
@@ -84,11 +92,14 @@ impl ActiveAnimation {
         }
     }
 
+    /// Returns progress with the configured easing function applied.
     #[must_use]
     pub fn eased_progress(&self) -> f32 {
         self.easing.apply(self.progress())
     }
 
+    /// Computes the [`AnimEffect`] delta for `size`-scaled rendering at the
+    /// current playback position.
     #[must_use]
     pub fn effect(&self, size: Vec2) -> AnimEffect {
         let t = self.eased_progress();
@@ -125,15 +136,18 @@ impl ActiveAnimation {
         }
     }
 
+    /// Pauses the animation at its current position.
     pub const fn stop(&mut self) {
         self.paused = true;
     }
 
+    /// Replaces the initial delay with `delay` seconds and resets elapsed to 0.
     pub const fn set_delay(&mut self, delay: f32) {
         self.delay = delay.max(0.0);
         self.elapsed = 0.0;
     }
 
+    /// Adds `delay` seconds to the remaining delay.
     pub fn add_delay(&mut self, delay: f32) {
         self.delay += delay;
     }

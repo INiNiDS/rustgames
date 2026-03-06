@@ -136,21 +136,25 @@ impl Color {
         a: 1.0,
     };
 
+    /// Creates a new [`Color`] from four `f32` components.
     #[must_use]
     pub const fn new(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self { r, g, b, a }
     }
 
+    /// Creates an opaque [`Color`] from three `f32` components (`alpha = 1.0`).
     #[must_use]
     pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
         Self { r, g, b, a: 1.0 }
     }
 
+    /// Creates a [`Color`] from four `f32` components (alias for [`new`][Self::new]).
     #[must_use]
     pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self { r, g, b, a }
     }
 
+    /// Creates an opaque [`Color`] from three `u8` channel values.
     #[must_use]
     pub fn from_rgb_u8(r: u8, g: u8, b: u8) -> Self {
         Self {
@@ -161,6 +165,8 @@ impl Color {
         }
     }
 
+    /// Parses a 6-character hex string (without `#`) into `(r, g, b, 255)`.
+    /// Returns `None` if the string is too short or contains non-hex characters.
     #[must_use]
     pub fn parse_rgb_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(hex.get(0..2)?, 16).ok()?;
@@ -169,6 +175,8 @@ impl Color {
         Some((r, g, b, 255))
     }
 
+    /// Parses an 8-character hex string (without `#`) into `(r, g, b, a)`.
+    /// Returns `None` if the string is too short or contains non-hex characters.
     #[must_use]
     pub fn parse_rgba_hex(hex: &str) -> Option<(u8, u8, u8, u8)> {
         let r = u8::from_str_radix(hex.get(0..2)?, 16).ok()?;

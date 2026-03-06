@@ -9,6 +9,8 @@ use winit::event::WindowEvent;
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::window::{Window, WindowAttributes, WindowId};
 
+/// Top-level application driver. Owns the [`Engine`] and the user's [`Game`]
+/// implementation, and delegates `winit` events to the appropriate subsystems.
 pub struct App {
     engine: Option<Engine>,
     window_attributes: Option<WindowAttributes>,

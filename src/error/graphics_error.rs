@@ -28,7 +28,7 @@ pub enum GraphicsError {
     #[error("{}", Self::fmt_file(_0, _1))]
     FileReadFailed(PathBuf, #[source] std::io::Error),
 
-    #[error("{}", Self::fmt_instance_overflow(0))]
+    #[error("{}", Self::fmt_instance_overflow(*_0))]
     InstanceCountOverflow(usize),
 }
 

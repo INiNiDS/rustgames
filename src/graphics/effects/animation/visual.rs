@@ -27,9 +27,13 @@ impl Default for VisualState {
 /// `VisualState` value.
 #[derive(Debug, Clone, Copy)]
 pub enum CombinedMode {
+    /// Use the subsystem's default combination rule for this field.
     Default,
+    /// Add the effect value to the base value.
     Add,
+    /// Multiply the base value by the effect value.
     Mul,
+    /// Replace the base value with the effect value entirely.
     Override,
 }
 
@@ -43,6 +47,8 @@ pub struct CustomCombinedMode {
 }
 
 impl CustomCombinedMode {
+    /// Creates a [`CustomCombinedMode`] with explicit combination rules for
+    /// each visual field.
     #[must_use]
     pub const fn new(
         opacity: CombinedMode,
@@ -58,6 +64,8 @@ impl CustomCombinedMode {
         }
     }
 
+    /// Creates a [`CustomCombinedMode`] with a custom opacity rule and
+    /// defaults for the other fields.
     #[must_use]
     pub fn with_opacity(opacity: CombinedMode) -> Self {
         Self {
@@ -65,6 +73,9 @@ impl CustomCombinedMode {
             ..Default::default()
         }
     }
+
+    /// Creates a [`CustomCombinedMode`] with a custom rotation rule and
+    /// defaults for the other fields.
     #[must_use]
     pub fn with_rotation(rotation: CombinedMode) -> Self {
         Self {
@@ -73,6 +84,8 @@ impl CustomCombinedMode {
         }
     }
 
+    /// Creates a [`CustomCombinedMode`] with a custom scale rule and defaults
+    /// for the other fields.
     #[must_use]
     pub fn with_scale(scale: CombinedMode) -> Self {
         Self {
@@ -81,6 +94,8 @@ impl CustomCombinedMode {
         }
     }
 
+    /// Creates a [`CustomCombinedMode`] with a custom position rule and
+    /// defaults for the other fields.
     #[must_use]
     pub fn with_position(position: CombinedMode) -> Self {
         Self {

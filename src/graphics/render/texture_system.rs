@@ -19,6 +19,8 @@ pub struct TextureSystem {
 }
 
 impl TextureSystem {
+    /// Creates an empty [`TextureSystem`] backed by the given GPU device and
+    /// queue.
     #[must_use]
     pub fn new(device: Arc<Device>, queue: Arc<Queue>) -> Self {
         Self {
@@ -42,6 +44,8 @@ impl TextureSystem {
         Ok(self.textures.len() - 1)
     }
 
+    /// Appends a pre-built [`SpriteInstance`] to the per-texture batch for
+    /// `texture_label`. Creates the batch if it does not yet exist.
     pub fn add_instance(&mut self, texture_label: &str, instance: SpriteInstance) {
         if !self.instances_per_texture.contains_key(texture_label) {
             self.frame_draw_order.push(texture_label.to_string());
@@ -54,6 +58,8 @@ impl TextureSystem {
         }
     }
 
+    /// Convenience method: builds a simple sprite instance from `size`,
+    /// `position`, `rotation`, and `opacity` and enqueues it for `label`.
     pub fn use_texture(
         &mut self,
         label: &str,
@@ -66,6 +72,7 @@ impl TextureSystem {
         self.add_instance(label, instance);
     }
 
+    /// Returns texture-instance pairs in draw order, ready for the GPU render pass.
     #[must_use]
     pub fn get_batched_instances(&self) -> Vec<(&Texture, &[SpriteInstance])> {
         self.frame_draw_order
@@ -78,6 +85,8 @@ impl TextureSystem {
             .collect()
     }
 
+    /// Clears all per-frame instance batches, preserving loaded textures.
+    /// Called automatically at the end of each frame.
     pub fn clear_instances(&mut self) {
         for instances in self.instances_per_texture.values_mut() {
             instances.clear();
@@ -86,6 +95,7 @@ impl TextureSystem {
         self.frame_draw_order.clear();
     }
 
+    /// Removes the texture registered under `label` and discards its batched instances.
     pub fn unload_texture(&mut self, label: &str) {
         self.textures.remove(label);
         self.instances_per_texture.remove(label);
@@ -128,11 +138,15 @@ impl TextureSystem {
         }
     }
 
+    /// Returns a reference to the [`Texture`] registered under `label`, or
+    /// `None` if no such texture has been loaded.
     #[must_use]
     pub fn get_texture(&self, label: &str) -> Option<&Texture> {
         self.textures.get(label)
     }
 
+    /// Reads the file at `path` from disk and loads it as a texture, using
+    /// the full path string as the label. Errors are printed to `stderr`.
     pub fn load_file(&mut self, path: PathBuf) {
         match fs::read(&path) {
             Ok(bytes) => {

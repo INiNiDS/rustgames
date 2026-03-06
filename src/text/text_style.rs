@@ -77,30 +77,35 @@ impl TextStyle {
         self
     }
 
+    /// Builder: sets the vertical alignment within the bounding box.
     #[must_use]
     pub const fn with_vertical_alignment(mut self, alignment: VerticalAlignment) -> Self {
         self.vertical_alignment = alignment;
         self
     }
 
+    /// Builder: sets the line spacing multiplier (default `1.2`).
     #[must_use]
     pub const fn with_line_spacing(mut self, spacing: f32) -> Self {
         self.line_spacing = spacing;
         self
     }
 
+    /// Builder: sets additional space added between each character in pixels.
     #[must_use]
     pub const fn with_letter_spacing(mut self, spacing: f32) -> Self {
         self.letter_spacing = spacing;
         self
     }
 
+    /// Builder: attaches a drop shadow to the text.
     #[must_use]
     pub const fn with_shadow(mut self, shadow: TextShadow) -> Self {
         self.shadow = Some(shadow);
         self
     }
 
+    /// Builder: sets the word-wrap mode for this text block.
     #[must_use]
     pub const fn with_wrap(mut self, mode: TextWrapMode) -> Self {
         self.wrap_mode = mode;
@@ -108,23 +113,36 @@ impl TextStyle {
     }
 }
 
+/// The weight (thickness) of a rendered font.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum FontWeight {
+    /// Thin / light weight.
     Light,
+    /// Standard body weight (default).
     #[default]
     Normal,
+    /// Mid-weight between normal and semi-bold.
     Medium,
+    /// Between medium and bold.
     SemiBold,
+    /// Heavy weight.
     Bold,
+    /// Heaviest available weight.
     ExtraBold,
 }
 
+/// Inline text style attributes parsed from rich-text markup tags.
 #[derive(Debug, Clone, Default)]
 pub struct TextAttributes {
+    /// Font weight for this segment.
     pub weight: FontWeight,
+    /// Whether the segment is rendered in italics.
     pub italic: bool,
+    /// Whether the segment has an underline decoration.
     pub underline: bool,
+    /// Whether the segment has a strikethrough decoration.
     pub strikethrough: bool,
+    /// Optional per-segment color override; falls back to the [`TextStyle`] color.
     pub color: Option<Color>,
 }
 

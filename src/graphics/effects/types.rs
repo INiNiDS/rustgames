@@ -5,27 +5,43 @@ use glam::Vec2;
 /// `RendererAlpha`.
 #[derive(Debug, Clone)]
 pub enum VfxEffect {
+    /// A full-screen color flash that fades out over `duration` seconds.
     Flash { color: Color, duration: f32 },
+    /// A particle burst defined by an [`EmitterConfig`].
     Emitter(EmitterConfig),
+    /// A darkened vignette around the screen edges at the given `intensity`.
     Vignette { intensity: f32 },
+    /// A persistent semi-transparent color layer drawn over the scene.
     Overlay { color: Color, alpha: f32 },
 }
 
 /// Configuration for a particle effect. Use the named constructors such as
-/// `sparkles`, `explosion`, `snow`, `rain`, or `smoke` for common presets.
+/// [`sparkles`][EmitterConfig::sparkles], [`explosion`][EmitterConfig::explosion],
+/// [`snow`][EmitterConfig::snow], [`rain`][EmitterConfig::rain], or
+/// [`smoke`][EmitterConfig::smoke] for common presets.
 #[derive(Debug, Clone)]
 pub struct EmitterConfig {
+    /// World-space origin of the emitter.
     pub position: Vec2,
+    /// Number of particles spawned in a single burst.
     pub count: u32,
+    /// Time in seconds before each particle is considered dead.
     pub lifetime: f32,
+    /// Minimum random velocity applied to each particle (px/s).
     pub velocity_min: Vec2,
+    /// Maximum random velocity applied to each particle (px/s).
     pub velocity_max: Vec2,
+    /// Starting color of every particle.
     pub color: Color,
+    /// Radius of each particle in pixels.
     pub size: f32,
+    /// Gravity acceleration added to particle velocity each second (px/s²).
     pub gravity: Vec2,
 }
 
 impl EmitterConfig {
+    /// Creates a generic emitter at `position` with sensible defaults:
+    /// 10 particles, 1 s lifetime, ±50 px/s velocity, white, 5 px, gravity 98 px/s².
     #[must_use]
     pub const fn new(position: Vec2) -> Self {
         Self {
@@ -40,6 +56,7 @@ impl EmitterConfig {
         }
     }
 
+    /// Preset: small yellow sparks radiating outward with no gravity.
     #[must_use]
     pub const fn sparkles(position: Vec2) -> Self {
         Self {
@@ -54,6 +71,7 @@ impl EmitterConfig {
         }
     }
 
+    /// Preset: fiery orange burst with heavy outward velocity.
     #[must_use]
     pub fn explosion(position: Vec2) -> Self {
         Self {
@@ -68,6 +86,7 @@ impl EmitterConfig {
         }
     }
 
+    /// Preset: slow white snowflakes drifting downward.
     #[must_use]
     pub const fn snow(position: Vec2, _width: f32) -> Self {
         Self {
@@ -82,6 +101,7 @@ impl EmitterConfig {
         }
     }
 
+    /// Preset: semi-transparent blue streaks falling fast.
     #[must_use]
     pub fn rain(position: Vec2) -> Self {
         Self {
@@ -96,6 +116,7 @@ impl EmitterConfig {
         }
     }
 
+    /// Preset: gray semi-transparent puffs rising upward.
     #[must_use]
     pub fn smoke(position: Vec2) -> Self {
         Self {

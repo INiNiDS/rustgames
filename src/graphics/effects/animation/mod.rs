@@ -24,32 +24,42 @@ pub use visual::{AnimEffect, CustomCombinedMode, VisualState};
 /// A named animation that can be played through `AnimationController`.
 #[derive(Debug, Clone)]
 pub enum Animation {
+    /// Fade opacity from 0 to 1 over `duration` seconds.
     FadeIn {
         duration: f32,
     },
+    /// Fade opacity from 1 to 0 over `duration` seconds.
     FadeOut {
         duration: f32,
     },
+    /// Slide the element into view from `from` by `distance` pixels over
+    /// `duration` seconds.
     SlideIn {
         from: Direction,
         distance: f32,
         duration: f32,
     },
+    /// Slide the element out of view toward `to` by `distance` pixels over
+    /// `duration` seconds.
     SlideOut {
         to: Direction,
         distance: f32,
         duration: f32,
     },
+    /// Animate scale from `from` to `to` over `duration` seconds.
     Scale {
         from: f32,
         to: f32,
         duration: f32,
     },
+    /// Animate rotation from `from` to `to` radians over `duration` seconds.
     Rotate {
         from: f32,
         to: f32,
         duration: f32,
     },
+    /// Apply a random positional shake of `intensity` pixels for `duration`
+    /// seconds.
     Shake {
         intensity: f32,
         duration: f32,
@@ -63,21 +73,25 @@ pub struct AnimationGroupID {
 }
 
 impl AnimationGroupID {
+    /// Creates a new group wrapping `ids`.
     #[must_use]
     pub const fn new(ids: Vec<usize>) -> Self {
         Self { ids }
     }
 
+    /// Creates an empty group (no animations).
     #[must_use]
     pub const fn empty() -> Self {
         Self { ids: vec![] }
     }
 
+    /// Returns `true` when the group contains no animation IDs.
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.ids.is_empty()
     }
 
+    /// Returns the number of animation IDs in the group.
     #[must_use]
     pub const fn len(&self) -> usize {
         self.ids.len()

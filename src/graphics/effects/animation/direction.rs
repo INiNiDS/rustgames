@@ -14,6 +14,7 @@ pub enum Direction {
 }
 
 impl Direction {
+    /// Returns the direction exactly opposite to `self`.
     #[must_use]
     pub const fn opposite(&self) -> Self {
         match self {
@@ -28,6 +29,7 @@ impl Direction {
         }
     }
 
+    /// Returns a normalised unit vector pointing in this direction.
     #[must_use]
     pub fn to_vector(&self) -> Vec2 {
         let v = match self {

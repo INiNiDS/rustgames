@@ -42,34 +42,46 @@ impl Engine {
         })
     }
 
+    /// Resizes the swap-chain and camera viewport to `new_size`.
+    ///
+    /// Called automatically by the windowing layer on `WindowEvent::Resized`.
     pub fn resize(&mut self, new_size: PhysicalSize<u32>) {
         Renderer::resize(&mut self.render_settings, new_size);
     }
 
+    /// Encodes and submits the current frame to the GPU.
     pub fn draw(&mut self) {
         Renderer::draw(&mut self.render_settings);
     }
 
+    /// Returns the elapsed time between the last two frames in seconds.
     pub const fn delta_time(&self) -> f32 {
         self.time.delta_seconds()
     }
 
+    /// Returns a reference to the per-frame [`Time`] tracker.
     pub const fn time(&self) -> &Time {
         &self.time
     }
 
+    /// Asks the operating system to schedule a redraw for the window.
     pub fn request_redraw(&self) {
         self.window.request_redraw();
     }
 
+    /// Registers an [`EventHandler`] that will receive input callbacks each
+    /// frame.
     pub fn add_handler<T: EventHandler + 'static>(&mut self, key: T) {
         self.handler_keys.push(Box::new(key));
     }
 
+    /// Updates the title bar of the window.
     pub fn set_title(&self, title: &str) {
         self.window.set_title(title);
     }
 
+    /// Advances all subsystems for the current frame: timing, event
+    /// dispatching, text, camera, animations, and VFX.
     pub fn update(&mut self) {
         self.time.begin_frame();
         self.time.update();
@@ -90,10 +102,13 @@ impl Engine {
         self.render_settings.get_vfx_system_mut().update(dt);
     }
 
+    /// Pushes a raw [`Event`] into the event queue to be dispatched this frame.
     pub fn push_event(&mut self, event: Event) {
         self.event_queue.push(event);
     }
 
+    /// Applies display settings (vsync, background colour, etc.) from
+    /// `window_config` to the renderer.
     pub fn set_window_config(&mut self, window_config: &WindowConfig) {
         self.render_settings.set_window_config(window_config);
     }
@@ -118,42 +133,58 @@ impl Engine {
         }
     }
 
+    /// Returns a mutable reference to the [`TextSystem`] for queuing and
+    /// rendering text.
     pub const fn get_text_system(&mut self) -> &mut TextSystem {
         self.render_settings.get_text_system_mut()
     }
 
+    /// Returns a mutable reference to the [`Camera`] for 2D view control.
     pub const fn get_camera(&mut self) -> &mut Camera {
         self.render_settings.get_camera_mut()
     }
 
+    /// Returns a shared reference to the [`EventQueue`] for polling input state.
     pub const fn get_event_queue(&self) -> &EventQueue {
         &self.event_queue
     }
 
+    /// Returns a mutable reference to the [`TextureSystem`] for loading and
+    /// drawing textures.
     pub const fn get_texture_controller(&mut self) -> &mut TextureSystem {
         self.render_settings.get_texture_controller_mut()
     }
 
+    /// Returns a mutable reference to the [`AudioSystem`] for sound playback.
     pub const fn get_audio_system(&mut self) -> &mut AudioSystem {
         &mut self.audio_system
     }
 
+    /// Returns a mutable reference to the [`AnimationSystem`] for managing
+    /// sprite and property animations.
     pub const fn get_animation_system(&mut self) -> &mut AnimationSystem {
         self.render_settings.get_animation_system_mut()
     }
 
+    /// Returns a mutable reference to the [`VfxSystem`] for particle and
+    /// screen-space visual effects.
     pub const fn get_vfx_system(&mut self) -> &mut VfxSystem {
         self.render_settings.get_vfx_system_mut()
     }
-    
+
+    /// Stores a complete [`DictionarySystem`] and [`TranslationSystem`] in the
+    /// renderer, merging them with any previously saved data.
     pub fn save_translations(&mut self, dictionary_system: DictionarySystem, translation: TranslationSystem) {
         self.render_settings.translation_system += translation;
         self.render_settings.dictionary_system += dictionary_system;
     }
 
+    /// Adds a single [`Translation`] entry to the translation system.
     pub fn add_translation(&mut self, translation: Translation) {
         self.render_settings.translation_system.add_translation(translation);
     }
+
+    /// Merges an entire [`DictionarySystem`] into the engine's dictionary.
     pub fn add_dictionary(&mut self, dictionary: DictionarySystem) {
         self.render_settings.dictionary_system += dictionary;
     }

@@ -15,6 +15,13 @@ pub struct SpriteInstance {
 }
 
 impl SpriteInstance {
+    /// Creates a [`SpriteInstance`] from explicit transformation components.
+    ///
+    /// * `position` — world-space centre of the sprite.
+    /// * `size` — pixel dimensions of the sprite quad.
+    /// * `rotation` — counter-clockwise rotation in radians.
+    /// * `uv_rect` — UV sub-rectangle `(u, v, w, h)` into the texture atlas.
+    /// * `color` — RGBA tint applied during shading.
     #[must_use]
     pub fn new(position: Vec2, size: Vec2, rotation: f32, uv_rect: Vec4, color: Vec4) -> Self {
         let translation = Mat4::from_translation(position.extend(0.0));
@@ -30,6 +37,7 @@ impl SpriteInstance {
         }
     }
 
+    /// Convenience constructor: full UV rect, white tint with `opacity` alpha.
     #[must_use]
     pub fn simple(position: Vec2, size: Vec2, rotation: f32, opacity: f32) -> Self {
         let mut color = Color::WHITE;
@@ -76,8 +84,10 @@ impl SpriteInstance {
         },
     ];
 
+    /// Returns the wgpu [`VertexBufferLayout`] that describes the per-instance
+    /// data layout to the GPU pipeline.
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        utils::render_utils::desc(&Self::INSTANCE_ATTRIBUTES, size_of::<Self>() as BufferAddress)
+        utils::render_utils::desc(&Self::INSTANCE_ATTRIBUTES, size_of::<Self>() as BufferAddress, wgpu::VertexStepMode::Instance)
     }
 }

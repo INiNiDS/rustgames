@@ -230,7 +230,7 @@ impl SpaceChicken {
     fn update_explore(&mut self, engine: &mut Engine, dt: f32) {
         self.move_player(dt);
         self.update_nuggets(dt);
-        self.update_enemies(engine, dt);
+        self.update_enemies(dt);
         self.check_nugget_collection(engine);
         self.check_enemy_collision(engine);
 
@@ -273,7 +273,7 @@ impl SpaceChicken {
         }
     }
 
-    fn update_enemies(&mut self, engine: &mut Engine, dt: f32) {
+    fn update_enemies(&mut self, dt: f32) {
         for enemy in &mut self.enemies {
             if !enemy.alive {
                 continue;
@@ -286,7 +286,6 @@ impl SpaceChicken {
                 enemy.dir.y = -enemy.dir.y;
             }
         }
-        let _ = engine;
     }
 
     fn check_nugget_collection(&mut self, engine: &mut Engine) {
@@ -519,11 +518,10 @@ impl SpaceChicken {
 impl SpaceChicken {
     fn handle_input(&mut self, engine: &mut Engine) {
         let eq = engine.get_event_queue();
-        if eq.is_key_pressed(KeyCode::Escape) {
+        if eq.was_key_just_pressed(KeyCode::Escape) {
             std::process::exit(0);
         }
 
-        // Delegate to phase-specific handlers
         match self.phase {
             Phase::Intro => self.handle_intro_input(engine),
             Phase::Explore => self.handle_explore_input(engine),
@@ -532,22 +530,10 @@ impl SpaceChicken {
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Phase-Specific Handlers
-    // -----------------------------------------------------------------------
-
     fn handle_intro_input(&mut self, engine: &mut Engine) {
         let eq = engine.get_event_queue();
-        if eq.is_key_pressed(KeyCode::Space) {
-            self.story_step += 1;
-
-            // Hypothetical transition logic
-            if self.story_step > 3 {
-                self.phase = Phase::Explore;
-                engine.get_text_system().remove_text(self.dialogue_id);
-            } else {
-                self.show_dialogue(engine, "More clucking space adventures await!");
-            }
+        if eq.was_key_just_pressed(KeyCode::Space) {
+            self.advance_intro(engine);
         }
     }
 
@@ -555,38 +541,28 @@ impl SpaceChicken {
         self.handle_movement_input(engine);
 
         let eq = engine.get_event_queue();
-
-        // Interaction
-        if eq.is_key_pressed(KeyCode::Space) {
+        if eq.was_key_just_pressed(KeyCode::Space) {
             println!("Captain Feathers interacts!");
         }
-    } // Immutable borrow ends here
+    }
 
     fn handle_boss_input(&mut self, engine: &mut Engine) {
         self.handle_movement_input(engine);
 
         let eq = engine.get_event_queue();
-
-        // Boss fight specific actions
         if eq.is_key_pressed(KeyCode::Space) {
-            // E.g., Use a power-up, shoot, or dodge
+            // Место для механики уворота или стрельбы
         }
     }
 
     fn handle_ending_input(&mut self, engine: &mut Engine) {
         let eq = engine.get_event_queue();
         if eq.is_key_pressed(KeyCode::Enter) {
-            // Confirm choice to restart or close
             println!("Returning to main menu...");
             std::process::exit(0);
         }
     }
 
-    // -----------------------------------------------------------------------
-    // Shared Input Logic
-    // -----------------------------------------------------------------------
-
-    /// Extracts movement logic so it can be reused in Explore and Boss phases
     fn handle_movement_input(&mut self, engine: &mut Engine) {
         let eq = engine.get_event_queue();
         let mut dir = Vec2::ZERO;
@@ -620,6 +596,7 @@ impl SpaceChicken {
         self.flash_cooldown = (self.flash_cooldown - 0.016).max(0.0);
     }
 }
+
 // ---------------------------------------------------------------------------
 // Animation helpers
 // ---------------------------------------------------------------------------

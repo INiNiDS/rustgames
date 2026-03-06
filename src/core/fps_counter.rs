@@ -9,6 +9,7 @@ pub struct FpsCounter {
 }
 
 impl FpsCounter {
+    /// Creates a new [`FpsCounter`] with a 60-sample rolling window.
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -18,6 +19,8 @@ impl FpsCounter {
         }
     }
 
+    /// Records `delta_time` (in seconds) for the current frame and evicts the
+    /// oldest sample when the window is full.
     pub fn update(&mut self, delta_time: f32) {
         self.frame_times.push_back(delta_time);
         self.total_time += delta_time;
@@ -29,6 +32,8 @@ impl FpsCounter {
         }
     }
 
+    /// Returns the average FPS over the current sample window.
+    /// Returns `0.0` if no frames have been recorded yet.
     #[must_use]
     #[allow(clippy::cast_precision_loss)]
     pub fn fps(&self) -> f32 {
@@ -39,6 +44,8 @@ impl FpsCounter {
         self.frame_times.len() as f32 / self.total_time
     }
 
+    /// Returns the average frame time in milliseconds over the current window.
+    /// Returns `0.0` if no frames have been recorded yet.
     #[must_use]
     #[allow(clippy::cast_precision_loss)]
     pub fn frame_time_ms(&self) -> f32 {
@@ -49,6 +56,7 @@ impl FpsCounter {
         (self.total_time / self.frame_times.len() as f32) * 1000.0
     }
 
+    /// Returns the lowest FPS recorded within the current sample window.
     #[must_use]
     pub fn min_fps(&self) -> f32 {
         self.frame_times
@@ -60,6 +68,7 @@ impl FpsCounter {
             )
     }
 
+    /// Returns the highest FPS recorded within the current sample window.
     #[must_use]
     pub fn max_fps(&self) -> f32 {
         self.frame_times

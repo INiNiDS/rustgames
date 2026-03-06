@@ -82,7 +82,7 @@ impl RunnerI18n {
             (KEY_HINT, "WASD/Arrows=Move  L=Lang  ESC=Quit"),
         ];
         for (key, fallback) in entries {
-            dict.add_dictionary(key).expect("U32 overflow for language id");
+            dict.add_dictionary(key);
             // Also add the English text as a real dictionary entry so the
             // fallback shows something useful before any language is set.
             dict.add_dictionary_entry(generate_id_from_name(key), fallback);
@@ -186,13 +186,9 @@ impl RunnerI18n {
     // ── movement ─────────────────────────────────────────────────────────────
 
     fn handle_movement(&mut self, engine: &mut Engine, dt: f32) {
-        let eq = engine.get_event_queue();
         let mut vel = Vec2::ZERO;
 
-        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) { vel.x -= 1.0; }
-        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) { vel.x += 1.0; }
-        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) { vel.y += 1.0; }
-        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) { vel.y -= 1.0; }
+        self.keyboard_input(engine, &mut vel);
 
         if vel != Vec2::ZERO {
             self.player_pos += vel.normalize() * PLAYER_SPEED * dt;
@@ -201,6 +197,14 @@ impl RunnerI18n {
 
         let margin = Vec2::splat(PLAYER_SIZE / 2.0);
         self.player_pos = self.player_pos.clamp(margin, Vec2::new(W, H) - margin);
+    }
+
+    fn keyboard_input(&mut self, engine: &mut Engine, vel: &mut Vec2) {
+        let eq = engine.get_event_queue();
+        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) { vel.x -= 1.0; }
+        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) { vel.x += 1.0; }
+        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) { vel.y += 1.0; }
+        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) { vel.y -= 1.0; }
     }
 
     // ── language toggle ──────────────────────────────────────────────────────

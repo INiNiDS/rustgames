@@ -62,6 +62,9 @@ impl AudioSystem {
     ///
     /// # Panics
     /// Propagates [`AudioError`] from [`Self::load_sound_dir`].
+    /// # Errors
+    /// Returns [`AudioError::DirectoryReadFailed`] if any directory cannot be opened,
+    /// or propagates per-entry errors.
     pub fn load_sound_dir_recursive(&mut self, dir_path: &str) -> Result<(), AudioError> {
         for entry in walkdir::WalkDir::new(dir_path) {
             let entry = entry.map_err(|e| {

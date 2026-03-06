@@ -3,12 +3,15 @@ use crate::prelude::{TextAlignment, VerticalAlignment};
 use crate::text::StyledSegment;
 use wgpu_text::glyph_brush::{HorizontalAlign, VerticalAlign};
 
+/// Utility for wrapping plain or rich text at a maximum pixel width.
 pub struct TextWrapper;
 
 impl TextWrapper {
     const CHAR_WIDTH_RATIO: f64 = 0.55;
     const LINE_HEIGHT_RATIO: f64 = 1.2;
 
+    /// Wraps `text` at `max_width` pixels, estimating character width from
+    /// `char_width`. Returns a `Vec` of line strings.
     #[must_use]
     pub fn wrap_text(text: &str, max_width: f32, char_width: f32) -> Vec<String> {
         let mut lines = Vec::new();
@@ -58,6 +61,8 @@ impl TextWrapper {
         }
     }
 
+    /// Wraps a sequence of styled segments at `max_width` pixels, estimated
+    /// from `font_size`. Returns lines, each a `Vec<StyledSegment>`.
     #[must_use]
     pub fn wrap_rich_text(
         segments: Vec<StyledSegment>,

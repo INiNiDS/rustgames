@@ -1,22 +1,22 @@
-use crate::error::TextError;
+use crate::translation::generate_id_from_name;
 use std::collections::HashMap;
 use std::ops::{Add, AddAssign};
-use crate::translation::generate_id_from_name;
 
+/// A single fallback text entry keyed by a stable numeric ID.
 pub struct Dictionary {
     id: u32,
     text: String,
 }
 
 impl Dictionary {
-
-    /// # Errors
-    /// Returns [`TextError::HashIdOverflow`] if the hash of `text` exceeds `u32::MAX`.
-    pub fn new(text: &str) -> Result<Self, TextError> {
-        Ok(Self {
+    /// Creates a new [`Dictionary`] entry. The numeric `id` is derived from
+    /// `text` via [`generate_id_from_name`].
+    #[must_use]
+    pub fn new(text: &str) -> Self {
+        Self {
             id: generate_id_from_name(text),
             text: text.to_string(),
-        })
+        }
     }
 
     pub(crate) fn get_text(&self) -> &str {
@@ -36,30 +36,34 @@ pub struct DictionarySystem {
 }
 
 impl DictionarySystem {
-    #[must_use] 
+    /// Creates a new, empty [`DictionarySystem`].
+    #[must_use]
     pub fn new() -> Self {
         Self {
             dictionaries: HashMap::new(),
         }
     }
 
-    /// # Errors
-    /// Returns [`TextError::HashIdOverflow`] if the hash of `text` exceeds `u32::MAX`.
-    pub fn add_dictionary(&mut self, text: &str) -> Result<(), TextError> {
-        let d = Dictionary::new(text)?;
+    /// Adds a fallback entry whose ID is derived from `text` via
+    /// [`generate_id_from_name`].
+    pub fn add_dictionary(&mut self, text: &str) {
+        let d = Dictionary::new(text);
         self.dictionaries.insert(d.id, d);
-        Ok(())
     }
 
+    /// Adds a fallback entry with an explicit numeric `id`.
     pub fn add_dictionary_entry(&mut self, id: u32, text: &str) {
         self.dictionaries.insert(id, Dictionary { id, text: text.to_string() });
     }
 
+    /// Returns an iterator over all stored [`Dictionary`] entries.
     pub fn get_dictionaries(&self) -> impl Iterator<Item = &Dictionary> {
         self.dictionaries.values()
     }
 
-    #[must_use] 
+    /// Looks up the fallback entry for `text_id`.
+    /// Returns `None` when no entry exists.
+    #[must_use]
     pub fn get_dictionary(&self, text_id: u32) -> Option<&Dictionary> {
         self.dictionaries.get(&text_id)
     }

@@ -19,6 +19,9 @@ pub struct Sprite {
 }
 
 impl Sprite {
+    /// Creates a new [`Sprite`] whose size matches the texture dimensions.
+    /// Defaults: position `(0,0)`, no rotation, scale `(1,1)`, white tint,
+    /// centred anchor, no flip.
     #[must_use]
     pub fn new(texture: Arc<wgpu::Texture>) -> Self {
         let size = texture.size();
@@ -38,58 +41,70 @@ impl Sprite {
         }
     }
 
+    /// Builder: sets the world-space position of the sprite.
     #[must_use]
     pub const fn with_position(mut self, x: f32, y: f32) -> Self {
         self.position = Vec2::new(x, y);
         self
     }
 
+    /// Mutates the world-space position of the sprite.
     pub const fn set_position(&mut self, x: f32, y: f32) {
         self.position = Vec2::new(x, y);
     }
 
+    /// Builder: sets the rotation angle in radians (counter-clockwise).
     #[must_use]
     pub const fn with_rotation(mut self, angle: f32) -> Self {
         self.rotation = angle;
         self
     }
 
+    /// Mutates the rotation angle in radians.
     pub const fn set_rotation(&mut self, angle: f32) {
         self.rotation = angle;
     }
 
+    /// Builder: sets independent `x` / `y` scale factors.
     #[must_use]
     pub const fn with_scale(mut self, x: f32, y: f32) -> Self {
         self.scale = Vec2::new(x, y);
         self
     }
 
+    /// Mutates the `x` / `y` scale factors.
     pub const fn set_scale(&mut self, x: f32, y: f32) {
         self.scale = Vec2::new(x, y);
     }
 
+    /// Builder: applies the same `scale` on both axes.
     #[must_use]
     pub const fn with_uniform_scale(mut self, scale: f32) -> Self {
         self.scale = Vec2::splat(scale);
         self
     }
 
+    /// Builder: sets the RGBA color tint applied to the texture.
     #[must_use]
     pub const fn with_color(mut self, color: Color) -> Self {
         self.color = color;
         self
     }
 
+    /// Mutates the RGBA color tint.
     pub const fn set_color(&mut self, color: Color) {
         self.color = color;
     }
 
+    /// Builder: sets the normalized anchor point used for rotation and
+    /// positioning. `(0.5, 0.5)` is the center; `(0.0, 0.0)` is top-left.
     #[must_use]
     pub const fn with_anchor(mut self, x: f32, y: f32) -> Self {
         self.anchor = Vec2::new(x, y);
         self
     }
 
+    /// Builder: flips the sprite horizontally and/or vertically.
     #[must_use]
     pub const fn with_flip(mut self, flip_x: bool, flip_y: bool) -> Self {
         self.flip_x = flip_x;
@@ -98,6 +113,7 @@ impl Sprite {
     }
 }
 
+/// A single vertex of a textured quad: 3D position and UV texture coordinates.
 #[repr(C)]
 #[derive(Copy, Clone, bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
@@ -109,9 +125,10 @@ impl Vertex {
     pub const ATTRIBS: [wgpu::VertexAttribute; 2] =
         wgpu::vertex_attr_array![0 => Float32x3, 1 => Float32x2];
 
+    /// Returns the wgpu [`VertexBufferLayout`] for a [`Vertex`].
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        utils::render_utils::desc(&Self::ATTRIBS, size_of::<Self>() as BufferAddress)
+        utils::render_utils::desc(&Self::ATTRIBS, size_of::<Self>() as BufferAddress, wgpu::VertexStepMode::Vertex)
     }
 }
 

@@ -8,6 +8,8 @@ use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::{Add, AddAssign};
 
+/// A single translated string: a text ID, a language ID, and the translated
+/// content.
 pub struct Translation {
     text_id: u32,
     language_id: u32,
@@ -15,6 +17,13 @@ pub struct Translation {
 }
 
 impl Translation {
+    /// Creates a new [`Translation`] entry.
+    ///
+    /// * `text_id` — stable key ID (derived from the source key via
+    ///   [`generate_id_from_name`]).
+    /// * `language_id` — language ID (derived from the locale code via
+    ///   [`generate_id_from_name`]).
+    /// * `text` — the translated string for this locale.
     #[must_use]
     pub const fn new(text_id: u32, language_id: u32, text: String) -> Self {
         Self {
@@ -35,6 +44,7 @@ pub struct TranslationSystem {
 }
 
 impl TranslationSystem {
+    /// Creates a new, empty [`TranslationSystem`].
     #[must_use]
     pub fn new() -> Self {
         Self {
@@ -42,14 +52,19 @@ impl TranslationSystem {
         }
     }
 
+    /// Inserts a [`Translation`] entry, keyed by `(text_id, language_id)`.
+    /// Overwrites any existing entry for the same key pair.
     pub fn add_translation(&mut self, translation: Translation) {
         self.translations.insert((translation.text_id, translation.language_id), translation);
     }
 
+    /// Returns an iterator over all stored [`Translation`] entries.
     pub fn get_translations(&self) -> impl Iterator<Item = &Translation> {
         self.translations.values()
     }
 
+    /// Looks up the translation for `(text_id, language_id)`.
+    /// Returns `None` when no entry exists for the pair.
     #[must_use]
     pub fn get_translation(&self, text_id: u32, language_id: u32) -> Option<&Translation> {
         self.translations.get(&(text_id, language_id))

@@ -56,12 +56,19 @@ pub enum GameError {
 ///   = note: DefaultBackend error: ...
 /// ```
 pub struct Diagnostic<'a> {
+    /// Short error code, e.g. `"A001"`.
     pub code: &'a str,
+    /// One-line human-readable title of the error.
     pub title: &'a str,
+    /// Source location where the error originates, e.g. `"AudioSystem::new()"`.
     pub location: &'a str,
+    /// Description of what went wrong.
     pub what: &'a str,
+    /// Root cause explanation.
     pub why: &'a str,
+    /// Suggested remediation steps.
     pub fix: &'a str,
+    /// Optional extra context, e.g. the underlying OS error message.
     pub note: Option<String>,
 }
 
@@ -81,7 +88,9 @@ impl fmt::Display for Diagnostic<'_> {
     }
 }
 
+/// Implemented by error types that can render a full [`Diagnostic`] string.
 pub trait IntoDiagnostic {
+    /// Formats the error as a rich, color-coded diagnostic string.
     fn diagnostic(&self) -> String;
 }
 

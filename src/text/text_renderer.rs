@@ -2,12 +2,17 @@ use crate::graphics::color::Color;
 use crate::text::{FontWeight, TextAttributes};
 use std::str::FromStr;
 
+/// A contiguous run of text that shares a single set of [`TextAttributes`].
 #[derive(Debug, Clone)]
 pub struct StyledSegment {
+    /// The raw text of this segment.
     pub text: String,
+    /// Style attributes (weight, italic, color, etc.) for this segment.
     pub attrs: TextAttributes,
 }
 
+/// Parses a rich-text string containing `[b]`, `[i]`, `[color=…]` tags into
+/// a flat list of [`StyledSegment`] values.
 pub struct RichTextParser;
 
 struct ParseState {
@@ -82,6 +87,10 @@ impl ParseState {
 }
 
 impl RichTextParser {
+    /// Parses `text` and returns a list of [`StyledSegment`] values.
+    ///
+    /// Recognised tags: `[b]`, `[/b]`, `[i]`, `[/i]`, `[m]`, `[sb]`,
+    /// `[color=<name|hex>]`, `[/color]`.  Unrecognised tags are left as-is.
     #[must_use]
     pub fn parse(text: &str) -> Vec<StyledSegment> {
         let mut state = ParseState::new();

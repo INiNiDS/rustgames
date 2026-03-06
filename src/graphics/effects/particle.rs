@@ -13,6 +13,8 @@ pub struct Particle {
 }
 
 impl Particle {
+    /// Creates a new [`Particle`] with explicit position, velocity, lifetime,
+    /// color, and pixel size.
     #[inline]
     #[must_use]
     pub const fn new(
@@ -31,6 +33,8 @@ impl Particle {
         }
     }
 
+    /// Advances the particle by `delta_time` seconds: applies gravity,
+    /// integrates velocity, and decrements remaining lifetime.
     #[inline]
     pub fn update(&mut self, delta_time: f32, gravity: Vec2) {
         self.velocity += gravity * delta_time;
@@ -38,12 +42,15 @@ impl Particle {
         self.lifetime -= delta_time;
     }
 
+    /// Returns `true` while the particle still has remaining lifetime.
     #[inline]
     #[must_use]
     pub fn is_alive(&self) -> bool {
         self.lifetime > 0.0
     }
 
+    /// Returns the current alpha (0.0–1.0) for this particle, linearly
+    /// interpolated from the original color alpha based on remaining lifetime.
     #[inline]
     #[must_use]
     pub fn alpha(&self, total_lifetime: f32) -> f32 {
