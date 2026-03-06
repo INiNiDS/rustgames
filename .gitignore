@@ -5,7 +5,7 @@
 
 # Cargo.lock for libraries (keep for applications)
 # Cargo.lock
-
+Cargo.lock
 # IDE and editor files
 .vscode/
 .idea/
@@ -45,3 +45,37 @@ TODO/.obsidian
 # CodeQL database and results
 codeql-db
 results.sarif
+
+# Rust / Cargo
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# IDEs and editors
+/.idea/
+.project
+.classpath
+.settings/
+/.vscode/
+rust-toolchain
+rust-toolchain.toml
+
+# Game Engine Specific
+# It is best practice to ignore massive, uncompressed source art files.
+# Keep your exported .png / .ogg files in an tracked /assets folder,
+# but keep the raw project files out of git.
+*.psd
+*.blend
+*.blend1
+*.xcf
+*.kra
+*.aup3
+
+# Crash logs and profiling data
+callgrind.out.*
+flamegraph.svg
