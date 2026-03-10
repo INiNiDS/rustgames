@@ -38,3 +38,4 @@ jobs:
           upload-result: false
           # quick-fixes available in Ultimate and Ultimate Plus plans
           push-fixes: 'none'
+          args: --image,jetbrains/qodana-rust:2025.3
