@@ -1,9 +1,9 @@
+use wgpu::naga::FastHashSet;
 use winit::event::{
     ElementState, MouseButton as WinitMouseButton, WindowEvent as WinitWindowEvent,
 };
 pub use winit::keyboard::KeyCode;
 use winit::keyboard::PhysicalKey;
-use wgpu::naga::FastHashSet;
 
 /// A mouse button identifier.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -204,14 +204,11 @@ fn convert_mouse_button_event(state: ElementState, button: WinitMouseButton) -> 
     }
 }
 
-
 #[allow(clippy::cast_possible_truncation)]
 fn convert_mouse_wheel_event(delta: &winit::event::MouseScrollDelta) -> Event {
     let delta_y = match delta {
         winit::event::MouseScrollDelta::LineDelta(_, y) => *y,
-        winit::event::MouseScrollDelta::PixelDelta(pos) => {
-            (pos.y / 100.0) as f32
-        },
+        winit::event::MouseScrollDelta::PixelDelta(pos) => (pos.y / 100.0) as f32,
     };
     Event::MouseWheel(delta_y)
 }

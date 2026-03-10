@@ -79,7 +79,11 @@ impl Font {
         let name = name.into();
         let font_arc = FontArc::try_from_vec(data.clone())
             .map_err(|_| TextError::InvalidFontData(name.clone()))?;
-        Ok(Self { name, data, font_arc })
+        Ok(Self {
+            name,
+            data,
+            font_arc,
+        })
     }
 
     /// Returns a cloned [`FontArc`] handle suitable for use with `wgpu_text`.

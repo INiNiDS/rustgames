@@ -1,10 +1,10 @@
+use crate::error::GraphicsError;
 use crate::graphics::Camera;
 use crate::graphics::render::instance::SpriteInstance;
 use crate::graphics::render::pipeline;
 use crate::graphics::render::texture::Texture;
 use crate::graphics::sprite::{QUAD_INDICES, QUAD_VERTICES};
 use wgpu::util::{BufferInitDescriptor, DeviceExt};
-use crate::error::GraphicsError;
 
 /// Instanced sprite renderer using WGPU. Manages the render pipeline, vertex
 /// and instance buffers, and camera/texture bind groups.
@@ -164,16 +164,25 @@ impl SpriteRenderer {
             contents: bytemuck::cast_slice(QUAD_INDICES),
             usage: wgpu::BufferUsages::INDEX,
         });
-        (vb, ib, u32::try_from(QUAD_INDICES.len())
-            .unwrap_or_else(|_| panic!("{}", GraphicsError::InstanceCountOverflow(QUAD_INDICES.len()))))
+        (
+            vb,
+            ib,
+            u32::try_from(QUAD_INDICES.len()).unwrap_or_else(|_| {
+                panic!(
+                    "{}",
+                    GraphicsError::InstanceCountOverflow(QUAD_INDICES.len())
+                )
+            }),
+        )
     }
-
 
     fn create_culling_buffer(device: &wgpu::Device) -> wgpu::Buffer {
         device.create_buffer(&wgpu::BufferDescriptor {
             label: Some("Indirect Draw Args"),
             size: size_of::<[u32; 5]>() as u64,
-            usage: wgpu::BufferUsages::INDIRECT | wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            usage: wgpu::BufferUsages::INDIRECT
+                | wgpu::BufferUsages::STORAGE
+                | wgpu::BufferUsages::COPY_DST,
             mapped_at_creation: false,
         })
     }

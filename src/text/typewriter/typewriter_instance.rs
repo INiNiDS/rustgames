@@ -52,8 +52,7 @@ impl TypewriterInstance {
         style: TextStyle,
         punctuation_config: PunctuationConfig,
     ) -> usize {
-        let effect =
-            TypewriterEffect::new(text, speed,  x, y, style, punctuation_config);
+        let effect = TypewriterEffect::new(text, speed, x, y, style, punctuation_config);
         self.typewriter_effects.push(effect);
         self.next_id += 1;
         self.next_id - 1
@@ -65,10 +64,7 @@ impl TypewriterInstance {
         &mut self,
         typewriter_builder: TypewriterBuilder,
     ) -> usize {
-        let effect = TypewriterEffect::new_with_id(
-            typewriter_builder,
-            self.next_id,
-        );
+        let effect = TypewriterEffect::new_with_id(typewriter_builder, self.next_id);
         self.typewriter_effects.push(effect);
         self.next_id += 1;
         self.next_id - 1

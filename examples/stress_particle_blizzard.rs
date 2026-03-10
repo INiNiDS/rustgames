@@ -64,16 +64,20 @@ impl BlizzardSoA {
             (rng.random::<f32>() - 0.5) * 80.0 - 20.0,
         ));
 
-        self.sizes.push(MIN_SIZE + rng.random::<f32>() * (MAX_SIZE - MIN_SIZE));
+        self.sizes
+            .push(MIN_SIZE + rng.random::<f32>() * (MAX_SIZE - MIN_SIZE));
 
         self.anims.push(SpriteAnimation::from_grid(
-            2, 2, 4,
+            2,
+            2,
+            4,
             4.0 + rng.random::<f32>() * 8.0,
             AnimationMode::Loop,
         ));
 
         self.spins.push((rng.random::<f32>() - 0.5) * 4.0);
-        self.angles.push(rng.random::<f32>() * std::f32::consts::TAU);
+        self.angles
+            .push(rng.random::<f32>() * std::f32::consts::TAU);
     }
 
     fn truncate(&mut self, new_len: usize) {
@@ -141,7 +145,10 @@ impl ParticleBlizzard {
     fn update_particles(&mut self, dt: f32) {
         // Pass 1: Physics and Transforms
         // We only zip exactly the arrays needed for physics.
-        let physics_iter = self.soa.positions.iter_mut()
+        let physics_iter = self
+            .soa
+            .positions
+            .iter_mut()
             .zip(self.soa.velocities.iter_mut())
             .zip(self.soa.angles.iter_mut())
             .zip(self.soa.spins.iter());
@@ -179,7 +186,10 @@ impl ParticleBlizzard {
     fn render_particles(&self, engine: &mut Engine) {
         let tc = engine.get_texture_controller();
 
-        let render_iter = self.soa.positions.iter()
+        let render_iter = self
+            .soa
+            .positions
+            .iter()
             .zip(self.soa.sizes.iter())
             .zip(self.soa.angles.iter())
             .zip(self.soa.colors.iter())
@@ -200,8 +210,15 @@ impl ParticleBlizzard {
                 self.text_timer = 0.0;
                 let mut rng = rand::rng();
                 let messages = [
-                    "Blizzard!", "Data Oriented!", "Stress test!", "FPS?", "SoA Fast!",
-                    "Engine go brr", "Cache hit!", "More particles!", "Render everything",
+                    "Blizzard!",
+                    "Data Oriented!",
+                    "Stress test!",
+                    "FPS?",
+                    "SoA Fast!",
+                    "Engine go brr",
+                    "Cache hit!",
+                    "More particles!",
+                    "Render everything",
                 ];
                 let msg = messages[rng.random_range(0..messages.len())];
                 let x = (rng.random::<f32>() - 0.5) * 800.0 + 400.0;
@@ -288,10 +305,10 @@ impl Game for ParticleBlizzard {
         println!("║  ESC   – quit                                        ║");
         println!("╚══════════════════════════════════════════════════════╝");
 
-        if let Err(e) = engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "blizzard")
-        {
+        if let Err(e) = engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "blizzard",
+        ) {
             eprintln!("Texture load error: {e}");
         }
 
@@ -312,7 +329,10 @@ impl Game for ParticleBlizzard {
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Escape) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Escape)
+        {
             println!("\n=== Final Stats ===");
             println!("Particles: {}", self.soa.len());
             println!("Avg FPS:   {:.1}", self.fps_counter.fps());
@@ -321,7 +341,10 @@ impl Game for ParticleBlizzard {
             std::process::exit(0);
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowUp)
+        {
             let mut rng = rand::rng();
             for _ in 0..10_000 {
                 self.soa.push(&mut rng);
@@ -329,20 +352,29 @@ impl Game for ParticleBlizzard {
             println!("Particles: {}", self.soa.len());
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowDown)
+        {
             let new_len = self.soa.len().saturating_sub(10_000);
             self.soa.truncate(new_len);
             println!("Particles: {}", self.soa.len());
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Space) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Space)
+        {
             engine.get_camera().add_trauma(1.0);
             self.text_timer = 0.5;
         }
 
         if engine.get_event_queue().was_key_just_pressed(KeyCode::KeyT) {
             self.text_enabled = !self.text_enabled;
-            println!("Text spam: {}", if self.text_enabled { "ON" } else { "OFF" });
+            println!(
+                "Text spam: {}",
+                if self.text_enabled { "ON" } else { "OFF" }
+            );
         }
 
         if engine.get_event_queue().was_key_just_pressed(KeyCode::KeyF) {

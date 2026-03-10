@@ -54,7 +54,13 @@ impl DictionarySystem {
 
     /// Adds a fallback entry with an explicit numeric `id`.
     pub fn add_dictionary_entry(&mut self, id: u32, text: &str) {
-        self.dictionaries.insert(id, Dictionary { id, text: text.to_string() });
+        self.dictionaries.insert(
+            id,
+            Dictionary {
+                id,
+                text: text.to_string(),
+            },
+        );
     }
 
     /// Returns an iterator over all stored [`Dictionary`] entries.

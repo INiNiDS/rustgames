@@ -1,8 +1,8 @@
 //! Graphics-related errors for [`crate::graphics::render::RenderSettings`] and [`crate::graphics::render::TextureSystem`].
 
+use super::Diagnostic;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use super::Diagnostic;
 
 /// Errors [`crate::graphics::render::RenderSettings`] и [`crate::graphics::render::TextureSystem`].
 #[derive(Debug, Error)]
@@ -39,9 +39,9 @@ impl GraphicsError {
             title: "Failed to create wgpu surface",
             location: "RenderSettings::init_graphics()",
             what: "wgpu could not create a rendering surface from the window handle",
-            why:  "the window was destroyed before the surface was created, \
+            why: "the window was destroyed before the surface was created, \
                    or the window system is not supported by wgpu on this platform",
-            fix:  "ensure the winit window is fully initialised before calling Engine::new(); \
+            fix: "ensure the winit window is fully initialised before calling Engine::new(); \
                    check that the required wgpu backend feature (Vulkan/Metal/DX12) is enabled",
             note: Some(format!("{source}")),
         }
@@ -68,8 +68,8 @@ impl GraphicsError {
             title: "Failed to create wgpu device",
             location: "RenderSettings::init_graphics()",
             what: "wgpu could not open the logical device on the selected adapter",
-            why:  "the requested features or limits exceed what the hardware supports",
-            fix:  "use `wgpu::DeviceDescriptor::default()` to request no extra features; \
+            why: "the requested features or limits exceed what the hardware supports",
+            fix: "use `wgpu::DeviceDescriptor::default()` to request no extra features; \
                    consult `adapter.features()` to check available capabilities",
             note: Some(format!("{source}")),
         }
@@ -118,8 +118,8 @@ impl GraphicsError {
             title: "Failed to load texture",
             location: "TextureSystem::load_texture()",
             what: &format!("could not create a GPU texture for `{label}`"),
-            why:  "the byte slice is not a valid PNG/JPEG/BMP/WebP image, or it is empty",
-            fix:  "verify the bytes come from a supported image format; \
+            why: "the byte slice is not a valid PNG/JPEG/BMP/WebP image, or it is empty",
+            fix: "verify the bytes come from a supported image format; \
                    use `image::load_from_memory` to pre-validate before passing to the engine",
             note: Some(format!("{source}")),
         }
@@ -133,8 +133,8 @@ impl GraphicsError {
             title: "Failed to read texture file",
             location: "TextureSystem::load_texture_dir()",
             what: &format!("could not read file `{p}`"),
-            why:  "the file does not exist or the process lacks read permission",
-            fix:  "check the path and ensure the asset files are shipped with the binary",
+            why: "the file does not exist or the process lacks read permission",
+            fix: "check the path and ensure the asset files are shipped with the binary",
             note: Some(format!("{source}")),
         }
         .to_string()

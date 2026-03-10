@@ -1,11 +1,11 @@
 //! Audio-related errors with detailed diagnostics for troubleshooting and user guidance.
 
+use super::Diagnostic;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use super::Diagnostic;
 
-type KiraSetupError   = Box<dyn std::error::Error + Send + Sync + 'static>;
-type KiraPlayError    = Box<dyn std::error::Error + Send + Sync + 'static>;
+type KiraSetupError = Box<dyn std::error::Error + Send + Sync + 'static>;
+type KiraPlayError = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 /// Errors [`crate::audio::AudioSystem`].
 #[derive(Debug, Error)]
@@ -65,8 +65,8 @@ impl AudioError {
             title: "Failed to load sound file",
             location: "AudioSystem::load_sound()",
             what: &format!("could not decode the audio file `{p}`"),
-            why:  "the file does not exist, is not readable, or is not a valid WAV/OGG/MP3",
-            fix:  "verify the path is correct and the file is an uncompressed WAV, \
+            why: "the file does not exist, is not readable, or is not a valid WAV/OGG/MP3",
+            fix: "verify the path is correct and the file is an uncompressed WAV, \
                    Vorbis OGG, or MPEG Layer-3 MP3",
             note: Some(format!("{source}")),
         }
@@ -80,8 +80,8 @@ impl AudioError {
             title: "Failed to read sound directory",
             location: "AudioSystem::load_sound_dir()",
             what: &format!("could not open directory `{p}`"),
-            why:  "the directory does not exist or the process lacks read permission",
-            fix:  "check the path exists and the user has `r-x` permissions on the directory",
+            why: "the directory does not exist or the process lacks read permission",
+            fix: "check the path exists and the user has `r-x` permissions on the directory",
             note: Some(format!("{source}")),
         }
         .to_string()
@@ -93,8 +93,8 @@ impl AudioError {
             title: "Failed to read directory entry",
             location: "AudioSystem::load_sound_dir()",
             what: "a filesystem entry inside the sound directory could not be read",
-            why:  "the entry was deleted between listing and reading, or permissions changed",
-            fix:  "ensure no other process modifies the directory while loading assets",
+            why: "the entry was deleted between listing and reading, or permissions changed",
+            fix: "ensure no other process modifies the directory while loading assets",
             note: Some(format!("{source}")),
         }
         .to_string()
@@ -106,8 +106,8 @@ impl AudioError {
             title: "Failed to play sound",
             location: "AudioSystem::play()",
             what: &format!("Kira could not start playback of `{name}`"),
-            why:  "the audio backend may have been shut down or reached the sound limit",
-            fix:  "call `stop_all()` to free handles before playing new sounds, \
+            why: "the audio backend may have been shut down or reached the sound limit",
+            fix: "call `stop_all()` to free handles before playing new sounds, \
                    or increase `AudioManagerSettings::num_sounds`",
             note: Some(format!("{source}")),
         }

@@ -194,13 +194,11 @@ impl FromStr for Color {
         let trimmed = s.trim();
 
         if trimmed.starts_with('(') && trimmed.ends_with(')') {
-            return Self::parse_tuple(trimmed)
-                .ok_or_else(|| format!("Unknown color name: '{s}'"));
+            return Self::parse_tuple(trimmed).ok_or_else(|| format!("Unknown color name: '{s}'"));
         }
 
         if trimmed.contains(',') {
-            return Self::parse_tuple(trimmed)
-                .ok_or_else(|| format!("Unknown color name: '{s}'"));
+            return Self::parse_tuple(trimmed).ok_or_else(|| format!("Unknown color name: '{s}'"));
         }
 
         if trimmed.starts_with('#') || trimmed.chars().all(|c| c.is_ascii_hexdigit()) {

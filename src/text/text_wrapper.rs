@@ -95,7 +95,7 @@ impl TextWrapper {
 
         lines
     }
-    
+
     // Medium Complexity
     fn fit_rich_word_into_line(
         word: &str,
@@ -115,7 +115,9 @@ impl TextWrapper {
 
         *current_width += word_width;
 
-        if let Some(last_seg) = current_line.last_mut() && last_seg.attrs == segment.attrs {
+        if let Some(last_seg) = current_line.last_mut()
+            && last_seg.attrs == segment.attrs
+        {
             last_seg.text.push_str(word);
             return;
         }

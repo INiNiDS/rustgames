@@ -20,6 +20,8 @@ pub use crate::text::{
 
 pub use crate::audio::AudioSystem;
 
-pub use crate::translation::{Language, LanguageSystem, TranslationSystem, Translation, DictionarySystem, Dictionary};
+pub use crate::translation::{
+    Dictionary, DictionarySystem, Language, LanguageSystem, Translation, TranslationSystem,
+};
 
 pub use crate::error::{AudioError, GameError, GraphicsError, TextError};

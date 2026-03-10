@@ -1,8 +1,8 @@
+use super::TextData;
 use crate::prelude::{TextSpeed, TextStyle, TypewriterEffect};
+use crate::text::typewriter::TypewriterBuilder;
 use crate::text::{PunctuationConfig, TextSystem};
 use std::slice::Iter;
-use crate::text::typewriter::TypewriterBuilder;
-use super::TextData;
 
 impl TextSystem {
     /// Creates a new [`TypewriterEffect`] at `(x, y)` and returns its ID.
@@ -22,22 +22,17 @@ impl TextSystem {
     /// Add a typewriter effect resolved at render time via translation system.
     /// `text` is the fallback shown when no translation is found.
     /// `text_id` is generated via `Dictionary::generate_id_from_name(key)`.
-    pub fn add_text_by_id(
-        &mut self,
-        text_data: TextData
-    ) -> usize {
+    pub fn add_text_by_id(&mut self, text_data: TextData) -> usize {
         self.typewriter_instance
-            .add_typewriter_effect_with_id(
-                TypewriterBuilder {
-                    text: text_data.text,
-                    text_id: Some(text_data.text_id),
-                    speed: text_data.speed,
-                    x: text_data.x,
-                    y: text_data.y,
-                    style: text_data.style,
-                    punctuation_config: text_data.punctuation_config,
-                }
-            )
+            .add_typewriter_effect_with_id(TypewriterBuilder {
+                text: text_data.text,
+                text_id: Some(text_data.text_id),
+                speed: text_data.speed,
+                x: text_data.x,
+                y: text_data.y,
+                style: text_data.style,
+                punctuation_config: text_data.punctuation_config,
+            })
     }
 
     /// Removes the typewriter effect with the given `id`.
@@ -97,8 +92,14 @@ impl TextSystem {
         style: TextStyle,
         punctuation_config: PunctuationConfig,
     ) -> bool {
-        self.typewriter_instance
-            .set_text_with_id(id, text, text_id, speed, style, punctuation_config)
+        self.typewriter_instance.set_text_with_id(
+            id,
+            text,
+            text_id,
+            speed,
+            style,
+            punctuation_config,
+        )
     }
 
     /// Sets the reveal progress of the effect with `id` to `progress`

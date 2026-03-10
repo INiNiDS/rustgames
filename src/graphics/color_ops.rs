@@ -65,7 +65,7 @@ impl Color {
         if self.a == 0.0 && self.r == 0.0 && self.g == 0.0 && self.b == 0.0 {
             return Some("Transparent");
         }
-        
+
         NAMED_COLORS.iter().find_map(
             |(color, name)| {
                 if *self == *color { Some(*name) } else { None }

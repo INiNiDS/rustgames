@@ -27,7 +27,10 @@ fn color_partial_eq_ignores_alpha_massive() {
         let b = ((i * 7) % 256) as f32 / 255.0;
         let a = Color::new(r, g, b, alpha1);
         let b_color = Color::new(r, g, b, alpha2);
-        assert_eq!(a, b_color, "iteration {i}: RGB-equal colors should be PartialEq");
+        assert_eq!(
+            a, b_color,
+            "iteration {i}: RGB-equal colors should be PartialEq"
+        );
     }
 }
 
@@ -77,7 +80,10 @@ fn color_lerp_monotonicity_stress() {
 fn color_lerp_clamps_outside_range_stress() {
     for exp in [2.0_f32, 5.0, 10.0, 100.0, -1.0, -50.0] {
         let result = Color::BLACK.lerp(Color::WHITE, exp);
-        assert!(result.r <= 1.0 && result.r >= 0.0, "r out of range for t={exp}");
+        assert!(
+            result.r <= 1.0 && result.r >= 0.0,
+            "r out of range for t={exp}"
+        );
         assert!(result.g <= 1.0 && result.g >= 0.0);
         assert!(result.b <= 1.0 && result.b >= 0.0);
         assert!(result.a <= 1.0 && result.a >= 0.0);
@@ -145,10 +151,7 @@ fn fps_counter_rolling_window_stability_stress() {
         counter.update(1.0 / 60.0);
     }
     let fps = counter.fps();
-    assert!(
-        (fps - 60.0).abs() < 0.5,
-        "expected ≈60 fps, got {fps}"
-    );
+    assert!((fps - 60.0).abs() < 0.5, "expected ≈60 fps, got {fps}");
 }
 
 #[test]
@@ -189,7 +192,10 @@ fn fps_counter_frame_time_matches_inverse_fps() {
     let ft_ms = counter.frame_time_ms();
     if fps > 0.0 {
         let expected_ms = 1000.0 / fps;
-        assert!((ft_ms - expected_ms).abs() < 0.5, "ft={ft_ms} expected≈{expected_ms}");
+        assert!(
+            (ft_ms - expected_ms).abs() < 0.5,
+            "ft={ft_ms} expected≈{expected_ms}"
+        );
     }
 }
 
@@ -236,7 +242,14 @@ fn sprite_animation_play_once_finishes_and_freezes_stress() {
 fn sprite_animation_ping_pong_bounded_stress() {
     let frame_count = 6;
     let frames: Vec<Vec4> = (0..frame_count)
-        .map(|i| Vec4::new(i as f32 / frame_count as f32, 0.0, 1.0 / frame_count as f32, 1.0))
+        .map(|i| {
+            Vec4::new(
+                i as f32 / frame_count as f32,
+                0.0,
+                1.0 / frame_count as f32,
+                1.0,
+            )
+        })
         .collect();
     let mut anim = SpriteAnimation::new(frames, 10.0, AnimationMode::PingPong);
     for _ in 0..10_000 {
@@ -301,19 +314,23 @@ fn anim_effect_offset_accumulates_stress() {
         effect = effect.combine(AnimEffect::with_offset(step));
     }
     // offset_add should have accumulated to 1000 * step
-    assert!((effect.offset_add.x - 1000.0).abs() < 0.01, "x={}", effect.offset_add.x);
-    assert!((effect.offset_add.y - 2000.0).abs() < 0.01, "y={}", effect.offset_add.y);
+    assert!(
+        (effect.offset_add.x - 1000.0).abs() < 0.01,
+        "x={}",
+        effect.offset_add.x
+    );
+    assert!(
+        (effect.offset_add.y - 2000.0).abs() < 0.01,
+        "y={}",
+        effect.offset_add.y
+    );
 }
 
 #[test]
 fn active_animation_many_updates_do_not_overshoot_stress() {
     for dur in [0.1_f32, 0.5, 1.0, 2.0, 10.0] {
-        let mut inst = ActiveAnimation::new(
-            0,
-            Animation::FadeIn { duration: dur },
-            Easing::Linear,
-            0.0,
-        );
+        let mut inst =
+            ActiveAnimation::new(0, Animation::FadeIn { duration: dur }, Easing::Linear, 0.0);
         // Feed 10 000 tiny increments whose sum vastly exceeds `dur`
         for _ in 0..10_000 {
             inst.update(dur * 2.0 / 10_000.0);
@@ -407,12 +424,7 @@ fn event_queue_high_volume_push_drain() {
 #[test]
 fn event_queue_key_state_consistency_stress() {
     let mut queue = EventQueue::new();
-    let keys = [
-        KeyCode::KeyA,
-        KeyCode::KeyB,
-        KeyCode::Space,
-        KeyCode::Enter,
-    ];
+    let keys = [KeyCode::KeyA, KeyCode::KeyB, KeyCode::Space, KeyCode::Enter];
     for _ in 0..1_000 {
         for &k in &keys {
             queue.push(Event::KeyPressed(k));
@@ -457,4 +469,3 @@ fn event_queue_mixed_events_order_preserved() {
     let drained = queue.drain();
     assert_eq!(drained.len(), expected.len());
 }
-

@@ -1,13 +1,14 @@
 use crate::error::TextError;
 use crate::prelude::{Font, TextStyle};
-use crate::text::font::{FontConfig, DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT};
+use crate::text::font::{
+    DEFAULT_BOLD_FONT, DEFAULT_MEDIUM_FONT, DEFAULT_NORMAL_FONT, DEFAULT_SEMIBOLD_FONT, FontConfig,
+};
 use crate::text::text_section::{QueuedSection, map_h_alignment, map_v_alignment, resolve_font_id};
 use crate::text::text_style::TextWrapMode;
 use crate::text::{RichTextParser, TypewriterInstance};
 use wgpu::{Device, Queue, RenderPass, SurfaceConfiguration};
 use wgpu_text::glyph_brush::ab_glyph::FontArc;
 use wgpu_text::glyph_brush::{BuiltInLineBreaker, FontId, Layout, Section, Text};
-
 
 /// Manages text rendering including typewriter effects, font loading, and
 /// styled text queueing for GPU draw calls.
@@ -32,14 +33,18 @@ impl TextSystem {
                     eprintln!("{}", TextError::FontLoadFailed(path.to_string(), e));
                     Font::default().to_font_arc()
                 },
-                |f| f.to_font_arc()
+                |f| f.to_font_arc(),
             )
         }
 
         let italic_path = fc.italic.as_deref().unwrap_or(DEFAULT_NORMAL_FONT);
 
         let fonts = vec![
-            load_font(if fc.normal.is_empty() { DEFAULT_NORMAL_FONT } else { &fc.normal }),
+            load_font(if fc.normal.is_empty() {
+                DEFAULT_NORMAL_FONT
+            } else {
+                &fc.normal
+            }),
             load_font(fc.bold.as_deref().unwrap_or(DEFAULT_BOLD_FONT)),
             load_font(italic_path),
             load_font(fc.medium.as_deref().unwrap_or(DEFAULT_MEDIUM_FONT)),
@@ -92,7 +97,6 @@ impl TextSystem {
         max_h: f32,
         style: &TextStyle,
     ) {
-
         let formatted_segments = RichTextParser::parse(raw_text)
             .into_iter()
             .map(|seg| {
@@ -127,7 +131,8 @@ impl TextSystem {
         for q in &self.queued_sections {
             Self::build_section_pair(&mut all_sections, q);
         }
-        self.brush.queue(device, queue, all_sections)
+        self.brush
+            .queue(device, queue, all_sections)
             .unwrap_or_else(|e| {
                 eprintln!("{}", TextError::GpuQueueFailed(e.to_string()));
             });

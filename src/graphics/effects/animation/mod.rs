@@ -25,13 +25,9 @@ pub use visual::{AnimEffect, CustomCombinedMode, VisualState};
 #[derive(Debug, Clone)]
 pub enum Animation {
     /// Fade opacity from 0 to 1 over `duration` seconds.
-    FadeIn {
-        duration: f32,
-    },
+    FadeIn { duration: f32 },
     /// Fade opacity from 1 to 0 over `duration` seconds.
-    FadeOut {
-        duration: f32,
-    },
+    FadeOut { duration: f32 },
     /// Slide the element into view from `from` by `distance` pixels over
     /// `duration` seconds.
     SlideIn {
@@ -47,23 +43,12 @@ pub enum Animation {
         duration: f32,
     },
     /// Animate scale from `from` to `to` over `duration` seconds.
-    Scale {
-        from: f32,
-        to: f32,
-        duration: f32,
-    },
+    Scale { from: f32, to: f32, duration: f32 },
     /// Animate rotation from `from` to `to` radians over `duration` seconds.
-    Rotate {
-        from: f32,
-        to: f32,
-        duration: f32,
-    },
+    Rotate { from: f32, to: f32, duration: f32 },
     /// Apply a random positional shake of `intensity` pixels for `duration`
     /// seconds.
-    Shake {
-        intensity: f32,
-        duration: f32,
-    },
+    Shake { intensity: f32, duration: f32 },
 }
 
 /// A group of animation IDs returned from sequence/parallel/timeline starts.

@@ -39,7 +39,7 @@ impl Camera {
             viewport_height: height as f32,
         }
     }
-    
+
     /// Updates the aspect ratio and viewport height when the window is resized.
     #[allow(clippy::cast_precision_loss)]
     pub fn resize(&mut self, width: u32, height: u32) {

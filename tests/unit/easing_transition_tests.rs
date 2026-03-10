@@ -2,9 +2,9 @@
 //! types with [`TransitionState`].  Includes boundary checks, monotonicity
 //! probes, and stress sweeps.
 
+use rustgames::graphics::Direction;
 use rustgames::graphics::effects::animation::easing::Easing;
 use rustgames::graphics::effects::animation::transition::{Transition, TransitionState};
-use rustgames::graphics::Direction;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Easing – boundary invariants (every variant must map 0→0 and 1→1)
@@ -286,14 +286,22 @@ fn transition_state_progress_monotone_through_update() {
     for _ in 0..20 {
         state.update(0.05);
         let p = state.progress();
-        assert!(p >= prev - f32::EPSILON, "progress not monotone: {p} < {prev}");
+        assert!(
+            p >= prev - f32::EPSILON,
+            "progress not monotone: {p} < {prev}"
+        );
         prev = p;
     }
 }
 
 #[test]
 fn transition_state_wipe_all_directions() {
-    for dir in [Direction::Left, Direction::Right, Direction::Top, Direction::Bottom] {
+    for dir in [
+        Direction::Left,
+        Direction::Right,
+        Direction::Top,
+        Direction::Bottom,
+    ] {
         let mut state = TransitionState::new(Transition::Wipe {
             direction: dir,
             duration: 1.0,
@@ -317,7 +325,9 @@ fn transition_state_many_small_updates_equals_one_big() {
     state_big.update(1.1);
 
     assert!((state_small.progress() - state_big.progress()).abs() < 0.001);
-    assert!(state_small.is_finished(), "small-step state should be finished");
+    assert!(
+        state_small.is_finished(),
+        "small-step state should be finished"
+    );
     assert!(state_big.is_finished(), "big-step state should be finished");
 }
-

@@ -34,7 +34,9 @@ impl Game for StressDemo {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "stress_sprite",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);
@@ -46,7 +48,9 @@ impl Game for StressDemo {
         if let Err(e) = engine.get_audio_system().load_sound(
             "perdej",
             "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
     }
     fn update(&mut self, engine: &mut Engine) {
         let delta = engine.delta_time();
@@ -136,13 +140,7 @@ impl StressDemo {
 
         for (anim, pos) in self.animations.iter().zip(self.positions.iter()) {
             let uv = anim.current_uv();
-            let instance = SpriteInstance::new(
-                *pos,
-                Vec2::new(20.0, 20.0),
-                0.0,
-                uv,
-                Vec4::ONE,
-            );
+            let instance = SpriteInstance::new(*pos, Vec2::new(20.0, 20.0), 0.0, uv, Vec4::ONE);
             texture_controller.add_instance("stress_sprite", instance);
         }
     }

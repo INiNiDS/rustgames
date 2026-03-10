@@ -223,8 +223,8 @@ fn stress_vfx_system_emitter_throughput() {
     }
 
     use glam::Vec2;
-    use rustgames::graphics::effects::{EmitterConfig, VfxEffect};
     use rustgames::graphics::effects::system::VfxSystem;
+    use rustgames::graphics::effects::{EmitterConfig, VfxEffect};
 
     const EMITTERS: u32 = 500;
     const TICKS: usize = 120;
@@ -365,7 +365,7 @@ fn stress_translation_lookup_one_million() {
         return;
     }
 
-    use rustgames::translation::{generate_id_from_name, TranslationSystem};
+    use rustgames::translation::{TranslationSystem, generate_id_from_name};
 
     const ENTRIES: u32 = 10_000;
     const QUERIES: u32 = 1_000_000;
@@ -460,9 +460,9 @@ fn stress_animation_system_massive_concurrent() {
         return;
     }
 
+    use rustgames::graphics::Animation;
     use rustgames::graphics::effects::animation::animation_system::AnimationSystem;
     use rustgames::graphics::effects::animation::easing::Easing;
-    use rustgames::graphics::Animation;
 
     const ANIMATIONS: usize = 10_000;
     const TICKS: usize = 1_000;
@@ -472,11 +472,7 @@ fn stress_animation_system_massive_concurrent() {
 
     // warm-up: 100 animations × 50 ticks
     for _ in 0..100 {
-        sys.start(
-            Animation::FadeIn { duration: 0.5 },
-            Easing::EaseInOut,
-            0.0,
-        );
+        sys.start(Animation::FadeIn { duration: 0.5 }, Easing::EaseInOut, 0.0);
     }
     for _ in 0..50 {
         sys.update(1.0 / 60.0);
@@ -498,8 +494,16 @@ fn stress_animation_system_massive_concurrent() {
         let anim = match i % 4 {
             0 => Animation::FadeIn { duration },
             1 => Animation::FadeOut { duration },
-            2 => Animation::Scale { from: 0.5, to: 2.0, duration },
-            _ => Animation::Rotate { from: 0.0, to: std::f32::consts::TAU, duration },
+            2 => Animation::Scale {
+                from: 0.5,
+                to: 2.0,
+                duration,
+            },
+            _ => Animation::Rotate {
+                from: 0.0,
+                to: std::f32::consts::TAU,
+                duration,
+            },
         };
         sys.start(anim, easing, 0.0);
     }
@@ -586,7 +590,12 @@ fn stress_render_sprite_instance_construction() {
     for i in 0u32..5_000 {
         let pos = Vec2::new((i % 800) as f32, (i % 600) as f32);
         let size = Vec2::new(32.0 + (i % 64) as f32, 32.0 + (i % 64) as f32);
-        black_box(SpriteInstance::simple(pos, size, (i % 360) as f32 * 0.01745, 1.0));
+        black_box(SpriteInstance::simple(
+            pos,
+            size,
+            (i % 360) as f32 * 0.01745,
+            1.0,
+        ));
     }
 
     let start = Instant::now();
@@ -645,15 +654,22 @@ fn stress_render_batch_assembly() {
         .collect();
 
     // Pre-allocate buckets and flat output once — cleared each frame.
-    let mut buckets: Vec<Vec<(f32, SpriteInstance)>> =
-        (0..BUCKETS).map(|_| Vec::with_capacity(SPRITES / BUCKETS + 1)).collect();
+    let mut buckets: Vec<Vec<(f32, SpriteInstance)>> = (0..BUCKETS)
+        .map(|_| Vec::with_capacity(SPRITES / BUCKETS + 1))
+        .collect();
     let mut flat: Vec<SpriteInstance> = Vec::with_capacity(SPRITES);
 
     // warm-up: 5 frames
     for _ in 0..5 {
-        for b in &mut buckets { b.clear(); }
-        for &(bucket, z, inst) in &sprites { buckets[bucket].push((z, inst)); }
-        for b in &mut buckets { b.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap()); }
+        for b in &mut buckets {
+            b.clear();
+        }
+        for &(bucket, z, inst) in &sprites {
+            buckets[bucket].push((z, inst));
+        }
+        for b in &mut buckets {
+            b.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        }
         flat.clear();
         flat.extend(buckets.iter().flat_map(|b| b.iter().map(|&(_, i)| i)));
         black_box(flat.len());
@@ -662,9 +678,15 @@ fn stress_render_batch_assembly() {
     let start = Instant::now();
 
     for _ in 0..FRAMES {
-        for b in &mut buckets { b.clear(); }
-        for &(bucket, z, inst) in &sprites { buckets[bucket].push((z, inst)); }
-        for b in &mut buckets { b.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap()); }
+        for b in &mut buckets {
+            b.clear();
+        }
+        for &(bucket, z, inst) in &sprites {
+            buckets[bucket].push((z, inst));
+        }
+        for b in &mut buckets {
+            b.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+        }
         flat.clear();
         flat.extend(buckets.iter().flat_map(|b| b.iter().map(|&(_, i)| i)));
         black_box(flat.len());
@@ -810,12 +832,14 @@ fn stress_render_instance_buffer_cast() {
 
     // Build instance buffer once — we re-cast it every frame.
     let instances: Vec<SpriteInstance> = (0..INSTANCES)
-        .map(|i| SpriteInstance::simple(
-            Vec2::new((i % 1920) as f32, (i % 1080) as f32),
-            Vec2::splat(32.0),
-            (i % 628) as f32 * 0.01,
-            1.0,
-        ))
+        .map(|i| {
+            SpriteInstance::simple(
+                Vec2::new((i % 1920) as f32, (i % 1080) as f32),
+                Vec2::splat(32.0),
+                (i % 628) as f32 * 0.01,
+                1.0,
+            )
+        })
         .collect();
 
     // warm-up: 5 frames

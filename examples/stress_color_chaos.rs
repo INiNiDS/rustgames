@@ -169,10 +169,10 @@ impl Game for ColorChaos {
         println!("  C     - Randomize palette");
         println!("  ESC   - Exit");
 
-        if let Err(e) = engine
-            .get_texture_controller()
-            .load_texture(include_bytes!("../src/static/textures/mistral.png"), "sprite")
-        {
+        if let Err(e) = engine.get_texture_controller().load_texture(
+            include_bytes!("../src/static/textures/mistral.png"),
+            "sprite",
+        ) {
             eprintln!("Texture load error: {e}");
         }
 
@@ -190,15 +190,24 @@ impl Game for ColorChaos {
     }
 
     fn handle_update(&mut self, engine: &mut Engine) {
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Escape) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Escape)
+        {
             std::process::exit(0);
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::Space) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::Space)
+        {
             engine.get_camera().add_trauma(0.9);
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowUp) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowUp)
+        {
             let mut rng = rand::rng();
             for _ in 0..5_000 {
                 self.sprites.push(Self::random_sprite(&mut rng));
@@ -206,7 +215,10 @@ impl Game for ColorChaos {
             println!("Sprites: {}", self.sprites.len());
         }
 
-        if engine.get_event_queue().was_key_just_pressed(KeyCode::ArrowDown) {
+        if engine
+            .get_event_queue()
+            .was_key_just_pressed(KeyCode::ArrowDown)
+        {
             let new_len = self.sprites.len().saturating_sub(5_000);
             self.sprites.truncate(new_len);
             println!("Sprites: {}", self.sprites.len());
@@ -232,4 +244,3 @@ fn main() {
     };
     app::run(config, Box::new(ColorChaos::new())).expect("Color chaos failed");
 }
-

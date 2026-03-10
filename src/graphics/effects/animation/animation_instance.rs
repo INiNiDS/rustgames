@@ -163,12 +163,8 @@ impl ActiveAnimation {
         #[allow(clippy::cast_precision_loss)]
         let seed = (self.id & 0x7F_FFFF) as f32;
 
-        let shake_x = seed
-            .mul_add(SHAKE_FREQUENCY_X, self.elapsed)
-            .sin();
-        let shake_y = seed
-            .mul_add(SHAKE_FREQUENCY_Y, self.elapsed)
-            .cos();
+        let shake_x = seed.mul_add(SHAKE_FREQUENCY_X, self.elapsed).sin();
+        let shake_y = seed.mul_add(SHAKE_FREQUENCY_Y, self.elapsed).cos();
 
         let offset = Vec2::new(shake_x, shake_y) * intensity * decay;
         AnimEffect::with_offset(offset)

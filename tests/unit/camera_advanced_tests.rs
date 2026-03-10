@@ -89,7 +89,10 @@ fn camera_smooth_zoom_starts_at_original_zoom() {
     // Before any update the zoom must remain at 1.0
     assert!((cam.zoom - 1.0).abs() < f32::EPSILON);
     cam.set_zoom_smooth(2.0, 5.0);
-    assert!((cam.zoom - 1.0).abs() < f32::EPSILON, "zoom should not jump instantly");
+    assert!(
+        (cam.zoom - 1.0).abs() < f32::EPSILON,
+        "zoom should not jump instantly"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -179,7 +182,10 @@ fn screen_top_left_is_negative_world_coords() {
     let top_left = Vec2::new(0.0, 0.0);
     let world = cam.screen_to_world(top_left, screen_size);
     assert!(world.x < 0.0, "top-left x should be negative world coord");
-    assert!(world.y > 0.0, "top-left y should be positive world coord (y-up)");
+    assert!(
+        world.y > 0.0,
+        "top-left y should be positive world coord (y-up)"
+    );
 }
 
 #[test]
@@ -214,7 +220,10 @@ fn view_projection_is_finite_and_non_zero() {
     let m = cam.build_view_projection_matrix();
     for col in 0..4 {
         for row in 0..4 {
-            assert!(m.col(col)[row].is_finite(), "matrix element [{col}][{row}] is not finite");
+            assert!(
+                m.col(col)[row].is_finite(),
+                "matrix element [{col}][{row}] is not finite"
+            );
         }
     }
     // At least one diagonal element should be non-zero
@@ -231,7 +240,11 @@ fn view_projection_changes_with_zoom() {
     cam2.set_zoom(2.0);
     let m2 = cam2.build_view_projection_matrix();
 
-    assert_ne!(m1.col(0).x, m2.col(0).x, "different zooms should yield different matrices");
+    assert_ne!(
+        m1.col(0).x,
+        m2.col(0).x,
+        "different zooms should yield different matrices"
+    );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -282,4 +295,3 @@ fn camera_stop_follow_freezes_position() {
         "position should not change after stop_follow"
     );
 }
-

@@ -113,8 +113,12 @@ impl FpsCounter {
         let mut min_dt = f32::MAX;
         let mut max_dt = 0.0_f32;
         for &dt in &self.samples[..self.len] {
-            if dt < min_dt { min_dt = dt; }
-            if dt > max_dt { max_dt = dt; }
+            if dt < min_dt {
+                min_dt = dt;
+            }
+            if dt > max_dt {
+                max_dt = dt;
+            }
         }
         self.running_min_dt = if self.len == 0 { 0.0 } else { min_dt };
         self.running_max_dt = if self.len == 0 { 0.0 } else { max_dt };
@@ -123,17 +127,33 @@ impl FpsCounter {
     /// Returns the lowest FPS recorded within the current sample window.
     #[must_use]
     pub fn min_fps(&mut self) -> f32 {
-        if self.len == 0 { return 0.0; }
-        if self.running_max_dt.is_nan() { self.refresh_minmax(); }
-        if self.running_max_dt > 0.0 { 1.0 / self.running_max_dt } else { 0.0 }
+        if self.len == 0 {
+            return 0.0;
+        }
+        if self.running_max_dt.is_nan() {
+            self.refresh_minmax();
+        }
+        if self.running_max_dt > 0.0 {
+            1.0 / self.running_max_dt
+        } else {
+            0.0
+        }
     }
 
     /// Returns the highest FPS recorded within the current sample window.
     #[must_use]
     pub fn max_fps(&mut self) -> f32 {
-        if self.len == 0 { return 0.0; }
-        if self.running_min_dt.is_nan() { self.refresh_minmax(); }
-        if self.running_min_dt > 0.0 { 1.0 / self.running_min_dt } else { 0.0 }
+        if self.len == 0 {
+            return 0.0;
+        }
+        if self.running_min_dt.is_nan() {
+            self.refresh_minmax();
+        }
+        if self.running_min_dt > 0.0 {
+            1.0 / self.running_min_dt
+        } else {
+            0.0
+        }
     }
 }
 
@@ -176,7 +196,7 @@ mod tests {
     #[test]
     fn min_max_are_cached_correctly() {
         let mut counter = FpsCounter::new();
-        counter.update(1.0 / 30.0);  // slow frame → low fps
+        counter.update(1.0 / 30.0); // slow frame → low fps
         counter.update(1.0 / 120.0); // fast frame → high fps
         assert!(counter.min_fps() < counter.max_fps());
     }

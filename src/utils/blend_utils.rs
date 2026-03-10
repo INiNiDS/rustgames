@@ -40,4 +40,3 @@ const fn resolve_mode(mode: CombinedMode, default_mode: CombinedMode) -> Combine
         other => other,
     }
 }
-

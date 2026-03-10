@@ -30,12 +30,16 @@ impl Game for EffectsDemo {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/OIP-475081084.jpg"),
             "background",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "sprite",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         engine.get_camera().set_zoom(1.0);
 
@@ -95,14 +99,30 @@ impl EffectsDemo {
         let enter = eq.was_key_just_pressed(KeyCode::Enter);
         let esc = eq.was_key_just_pressed(KeyCode::Escape);
 
-        if k1 { self.on_flash(engine); }
-        if k2 { self.on_shake(engine); }
-        if k3 { self.on_sparkles(engine); }
-        if k4 { self.on_overlay_toggle(engine); }
-        if k5 { self.on_explosion(engine); }
-        if space { self.on_clear(engine); }
-        if enter { self.on_pulse(engine); }
-        if esc { std::process::exit(0); }
+        if k1 {
+            self.on_flash(engine);
+        }
+        if k2 {
+            self.on_shake(engine);
+        }
+        if k3 {
+            self.on_sparkles(engine);
+        }
+        if k4 {
+            self.on_overlay_toggle(engine);
+        }
+        if k5 {
+            self.on_explosion(engine);
+        }
+        if space {
+            self.on_clear(engine);
+        }
+        if enter {
+            self.on_pulse(engine);
+        }
+        if esc {
+            std::process::exit(0);
+        }
     }
 
     fn on_flash(&mut self, _engine: &mut Engine) {

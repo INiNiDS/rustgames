@@ -23,12 +23,16 @@ impl Game for SingleDemo {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "demo_sprite",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/OIP-475081084.jpg"),
             "background",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         let camera = engine.get_camera();
         camera.set_zoom(1.0);

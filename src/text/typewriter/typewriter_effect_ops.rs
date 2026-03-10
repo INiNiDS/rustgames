@@ -67,7 +67,7 @@ impl TypewriterEffect {
             self.complete = true;
             return false;
         }
-        
+
         self.visible_chars = Self::calculate_visible(total_chars, progress);
         self.complete = self.visible_chars >= total_chars;
         if self.complete {

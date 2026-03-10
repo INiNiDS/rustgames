@@ -14,9 +14,7 @@ pub struct Language {
     pub full_name: String,
 }
 
-
 impl Language {
-
     /// Resolves a [`Language`] by looking up `name` in the translation file.
     ///
     /// If `name` contains an underscore it is treated as a locale code
@@ -109,7 +107,6 @@ impl LanguageSystem {
         self.current_language_id = id;
     }
 
-
     /// Returns a reference to the currently active [`Language`], or `None`
     /// if no language has been set.
     #[must_use]
@@ -132,14 +129,18 @@ impl LanguageSystem {
     /// matches `small_name`, or `None` if not found.
     #[must_use]
     pub fn get_language_by_small_name(&self, small_name: &str) -> Option<&Language> {
-        self.languages.values().find(|lang| lang.small_name == small_name)
+        self.languages
+            .values()
+            .find(|lang| lang.small_name == small_name)
     }
 
     /// Returns a reference to the [`Language`] whose [`Language::full_name`]
     /// matches `full_name`, or `None` if not found.
     #[must_use]
     pub fn get_language_by_full_name(&self, full_name: &str) -> Option<&Language> {
-        self.languages.values().find(|lang| lang.full_name == full_name)
+        self.languages
+            .values()
+            .find(|lang| lang.full_name == full_name)
     }
 }
 

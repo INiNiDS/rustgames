@@ -3,8 +3,8 @@
 //! and [`generate_id_from_name`].
 
 use rustgames::translation::{
-    generate_id_from_name, Dictionary, DictionarySystem, Language, LanguageSystem,
-    TranslationSystem,
+    Dictionary, DictionarySystem, Language, LanguageSystem, TranslationSystem,
+    generate_id_from_name,
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,7 +22,10 @@ fn generate_id_same_string_returns_same_id() {
 fn generate_id_different_strings_different_ids() {
     let id_en = generate_id_from_name("en_us");
     let id_ru = generate_id_from_name("ru_ru");
-    assert_ne!(id_en, id_ru, "different locales should produce different IDs");
+    assert_ne!(
+        id_en, id_ru,
+        "different locales should produce different IDs"
+    );
 }
 
 #[test]
@@ -62,13 +65,19 @@ fn translation_system_starts_empty() {
 fn translation_system_add_and_lookup() {
     let mut sys = TranslationSystem::new();
     sys.add_translation_by_name("greeting", "en_us", "Hello".to_string());
-    assert!(sys.get_translation_by_name("greeting", "en_us").is_some(), "should find entry");
+    assert!(
+        sys.get_translation_by_name("greeting", "en_us").is_some(),
+        "should find entry"
+    );
 }
 
 #[test]
 fn translation_system_lookup_missing_returns_none() {
     let sys = TranslationSystem::new();
-    assert!(sys.get_translation_by_name("nonexistent", "xx_xx").is_none());
+    assert!(
+        sys.get_translation_by_name("nonexistent", "xx_xx")
+            .is_none()
+    );
 }
 
 #[test]
@@ -77,7 +86,11 @@ fn translation_system_overwrite_entry() {
     sys.add_translation_by_name("key", "en_us", "First".to_string());
     // Overwrite with new text — count must stay 1
     sys.add_translation_by_name("key", "en_us", "Second".to_string());
-    assert_eq!(sys.get_translations().count(), 1, "overwrite should not add a duplicate entry");
+    assert_eq!(
+        sys.get_translations().count(),
+        1,
+        "overwrite should not add a duplicate entry"
+    );
     assert!(sys.get_translation_by_name("key", "en_us").is_some());
 }
 
@@ -123,12 +136,17 @@ fn translation_system_default_equals_new() {
 fn translation_system_stress_100_entries() {
     let mut sys = TranslationSystem::new();
     for i in 0u32..100 {
-        sys.add_translation_by_name(&format!("key_{i}"), &format!("lang_{i}"), format!("text_{i}"));
+        sys.add_translation_by_name(
+            &format!("key_{i}"),
+            &format!("lang_{i}"),
+            format!("text_{i}"),
+        );
     }
     assert_eq!(sys.get_translations().count(), 100);
     for i in 0u32..100 {
         assert!(
-            sys.get_translation_by_name(&format!("key_{i}"), &format!("lang_{i}")).is_some(),
+            sys.get_translation_by_name(&format!("key_{i}"), &format!("lang_{i}"))
+                .is_some(),
             "missing entry {i}"
         );
     }
@@ -187,7 +205,9 @@ fn language_system_set_current_language() {
     let id = lang.id;
     sys.add_language(lang);
     sys.set_current_language(id);
-    let current = sys.get_current_language().expect("should have current language");
+    let current = sys
+        .get_current_language()
+        .expect("should have current language");
     assert_eq!(current.small_name, "fr_fr");
 }
 
@@ -196,7 +216,9 @@ fn language_system_set_current_language_by_name() {
     let mut sys = LanguageSystem::new();
     sys.add_language(make_language("de_de", "German"));
     sys.set_current_language_by_name("de_de");
-    let current = sys.get_current_language().expect("should have current language");
+    let current = sys
+        .get_current_language()
+        .expect("should have current language");
     assert_eq!(current.full_name, "German");
 }
 
@@ -213,7 +235,9 @@ fn language_system_no_current_when_id_zero() {
 fn language_system_lookup_by_small_name() {
     let mut sys = LanguageSystem::new();
     sys.add_language(make_language("zh_cn", "Chinese"));
-    let found = sys.get_language_by_small_name("zh_cn").expect("should find");
+    let found = sys
+        .get_language_by_small_name("zh_cn")
+        .expect("should find");
     assert_eq!(found.full_name, "Chinese");
 }
 
@@ -221,7 +245,9 @@ fn language_system_lookup_by_small_name() {
 fn language_system_lookup_by_full_name() {
     let mut sys = LanguageSystem::new();
     sys.add_language(make_language("es_es", "Spanish"));
-    let found = sys.get_language_by_full_name("Spanish").expect("should find");
+    let found = sys
+        .get_language_by_full_name("Spanish")
+        .expect("should find");
     assert_eq!(found.small_name, "es_es");
 }
 
@@ -295,14 +321,20 @@ fn dictionary_system_add_and_lookup() {
     let text = "Continue";
     let expected_id = generate_id_from_name(text);
     sys.add_dictionary(text);
-    assert!(sys.get_dictionary(expected_id).is_some(), "should find entry");
+    assert!(
+        sys.get_dictionary(expected_id).is_some(),
+        "should find entry"
+    );
 }
 
 #[test]
 fn dictionary_system_add_explicit_entry() {
     let mut sys = DictionarySystem::new();
     sys.add_dictionary_entry(42, "Custom");
-    assert!(sys.get_dictionary(42).is_some(), "should find entry by explicit id");
+    assert!(
+        sys.get_dictionary(42).is_some(),
+        "should find entry by explicit id"
+    );
 }
 
 #[test]
@@ -361,10 +393,6 @@ fn dictionary_system_stress_1000_entries() {
     for i in 0u32..1000 {
         let text = format!("entry_{i}");
         let id = generate_id_from_name(&text);
-        assert!(
-            sys.get_dictionary(id).is_some(),
-            "missing entry {i}"
-        );
+        assert!(sys.get_dictionary(id).is_some(), "missing entry {i}");
     }
 }
-

@@ -90,6 +90,10 @@ impl SpriteInstance {
     /// data layout to the GPU pipeline.
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        utils::render_utils::desc(&Self::INSTANCE_ATTRIBUTES, size_of::<Self>() as BufferAddress, wgpu::VertexStepMode::Instance)
+        utils::render_utils::desc(
+            &Self::INSTANCE_ATTRIBUTES,
+            size_of::<Self>() as BufferAddress,
+            wgpu::VertexStepMode::Instance,
+        )
     }
 }

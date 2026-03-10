@@ -5,8 +5,8 @@ use glam::Vec2;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
-use wgpu::{Device, Queue};
 use wgpu::naga::FastHashMap;
+use wgpu::{Device, Queue};
 
 /// Manages GPU textures and per-frame sprite instance batching. Supports
 /// loading from files, bytes, and directories.

@@ -24,7 +24,13 @@ impl TestSoA {
     fn push(&mut self, pos: Vec2, vel: Vec2) {
         self.positions.push(pos);
         self.velocities.push(vel);
-        self.anims.push(SpriteAnimation::from_grid(2, 2, 4, 8.0, AnimationMode::Loop));
+        self.anims.push(SpriteAnimation::from_grid(
+            2,
+            2,
+            4,
+            8.0,
+            AnimationMode::Loop,
+        ));
     }
 
     fn len(&self) -> usize {
@@ -63,7 +69,10 @@ fn particle_falls_due_to_gravity() {
     soa.push(Vec2::ZERO, Vec2::ZERO);
     let y_before = soa.positions[0].y;
     soa.step(1.0);
-    assert!(soa.positions[0].y > y_before, "particle should fall with gravity");
+    assert!(
+        soa.positions[0].y > y_before,
+        "particle should fall with gravity"
+    );
 }
 
 #[test]
@@ -79,7 +88,10 @@ fn particle_bounces_off_right_wall() {
     let mut soa = TestSoA::with_capacity(1);
     soa.push(Vec2::new(BOUNDS, 0.0), Vec2::new(200.0, 0.0));
     soa.step(0.016);
-    assert!(soa.velocities[0].x <= 0.0, "x vel should reverse at right wall");
+    assert!(
+        soa.velocities[0].x <= 0.0,
+        "x vel should reverse at right wall"
+    );
     assert!(soa.positions[0].x <= BOUNDS, "x pos must not exceed BOUNDS");
 }
 
@@ -88,7 +100,10 @@ fn particle_bounces_off_left_wall() {
     let mut soa = TestSoA::with_capacity(1);
     soa.push(Vec2::new(-BOUNDS, 0.0), Vec2::new(-200.0, 0.0));
     soa.step(0.016);
-    assert!(soa.velocities[0].x >= 0.0, "x vel should reverse at left wall");
+    assert!(
+        soa.velocities[0].x >= 0.0,
+        "x vel should reverse at left wall"
+    );
     assert!(soa.positions[0].x >= -BOUNDS);
 }
 
@@ -97,7 +112,10 @@ fn particle_bounces_off_top_wall() {
     let mut soa = TestSoA::with_capacity(1);
     soa.push(Vec2::new(0.0, -BOUNDS), Vec2::new(0.0, -200.0));
     soa.step(0.016);
-    assert!(soa.velocities[0].y >= 0.0, "y vel should reverse at top wall");
+    assert!(
+        soa.velocities[0].y >= 0.0,
+        "y vel should reverse at top wall"
+    );
     assert!(soa.positions[0].y >= -BOUNDS);
 }
 
@@ -106,7 +124,10 @@ fn particle_bounces_off_bottom_wall() {
     let mut soa = TestSoA::with_capacity(1);
     soa.push(Vec2::new(0.0, BOUNDS), Vec2::new(0.0, 200.0));
     soa.step(0.016);
-    assert!(soa.velocities[0].y <= 0.0, "y vel should reverse at bottom wall");
+    assert!(
+        soa.velocities[0].y <= 0.0,
+        "y vel should reverse at bottom wall"
+    );
     assert!(soa.positions[0].y <= BOUNDS);
 }
 
@@ -116,10 +137,16 @@ fn particle_stays_within_bounds_long_sim() {
     soa.push(Vec2::ZERO, Vec2::new(300.0, -300.0));
     for _ in 0..10_000 {
         soa.step(0.016);
-        assert!(soa.positions[0].x.abs() <= BOUNDS + 1e-3,
-            "x out of bounds: {}", soa.positions[0].x);
-        assert!(soa.positions[0].y.abs() <= BOUNDS + 1e-3,
-            "y out of bounds: {}", soa.positions[0].y);
+        assert!(
+            soa.positions[0].x.abs() <= BOUNDS + 1e-3,
+            "x out of bounds: {}",
+            soa.positions[0].x
+        );
+        assert!(
+            soa.positions[0].y.abs() <= BOUNDS + 1e-3,
+            "y out of bounds: {}",
+            soa.positions[0].y
+        );
     }
 }
 
@@ -131,7 +158,10 @@ fn velocity_decays_due_to_damping() {
     for _ in 0..100 {
         soa.step(0.016);
     }
-    assert!(soa.velocities[0].x < initial_vx, "velocity should decay from damping");
+    assert!(
+        soa.velocities[0].x < initial_vx,
+        "velocity should decay from damping"
+    );
 }
 
 #[test]
@@ -139,7 +169,10 @@ fn particle_at_origin_zero_velocity_only_falls() {
     let mut soa = TestSoA::with_capacity(1);
     soa.push(Vec2::ZERO, Vec2::ZERO);
     soa.step(0.1);
-    assert!(soa.positions[0].x.abs() < 1e-5, "no horizontal drift expected");
+    assert!(
+        soa.positions[0].x.abs() < 1e-5,
+        "no horizontal drift expected"
+    );
     assert!(soa.positions[0].y > 0.0, "particle should fall");
 }
 
@@ -183,8 +216,10 @@ fn soa_stress_50_000_particles_step() {
     soa.step(1.0 / 60.0);
     soa.step(1.0 / 60.0);
     for (i, pos) in soa.positions.iter().enumerate() {
-        assert!(pos.x.abs() <= BOUNDS + 1e-3 && pos.y.abs() <= BOUNDS + 1e-3,
-            "particle {i} out of bounds: {pos}");
+        assert!(
+            pos.x.abs() <= BOUNDS + 1e-3 && pos.y.abs() <= BOUNDS + 1e-3,
+            "particle {i} out of bounds: {pos}"
+        );
     }
 }
 
@@ -196,7 +231,10 @@ fn anim_inside_soa_advances_frame() {
     // 4 frames at 8fps → one frame = 0.125 s; step slightly more
     soa.step(0.13);
     let frame_after = soa.anims[0].current_frame_index();
-    assert_ne!(frame_before, frame_after, "animation should advance inside SoA step");
+    assert_ne!(
+        frame_before, frame_after,
+        "animation should advance inside SoA step"
+    );
 }
 
 #[test]
@@ -210,7 +248,11 @@ fn anim_inside_soa_stays_in_bounds() {
         soa.step(0.016);
     }
     for (i, anim) in soa.anims.iter().enumerate() {
-        assert!(anim.current_frame_index() < 4, "anim {i} frame index out of range: {}", anim.current_frame_index());
+        assert!(
+            anim.current_frame_index() < 4,
+            "anim {i} frame index out of range: {}",
+            anim.current_frame_index()
+        );
     }
 }
 
@@ -221,7 +263,10 @@ fn anim_loop_never_finishes_inside_soa() {
     for _ in 0..500 {
         soa.step(0.1);
     }
-    assert!(!soa.anims[0].is_finished(), "loop animation must never finish");
+    assert!(
+        !soa.anims[0].is_finished(),
+        "loop animation must never finish"
+    );
 }
 
 #[test]
@@ -234,7 +279,10 @@ fn gravity_accumulates_with_multiple_steps() {
     // After step 2 velocity should be larger (gravity keeps adding)
     soa.step(0.1);
     let vy_after_2 = soa.velocities[0].y;
-    assert!(vy_after_2 > vy_after_1, "gravity should accumulate each step");
+    assert!(
+        vy_after_2 > vy_after_1,
+        "gravity should accumulate each step"
+    );
 }
 
 #[test]
@@ -249,10 +297,15 @@ fn soa_positions_are_finite_after_stress_run() {
         soa.step(0.016);
     }
     for (i, pos) in soa.positions.iter().enumerate() {
-        assert!(pos.x.is_finite() && pos.y.is_finite(), "particle {i} position is non-finite");
+        assert!(
+            pos.x.is_finite() && pos.y.is_finite(),
+            "particle {i} position is non-finite"
+        );
     }
     for (i, vel) in soa.velocities.iter().enumerate() {
-        assert!(vel.x.is_finite() && vel.y.is_finite(), "particle {i} velocity is non-finite");
+        assert!(
+            vel.x.is_finite() && vel.y.is_finite(),
+            "particle {i} velocity is non-finite"
+        );
     }
 }
-

@@ -43,7 +43,6 @@ pub enum GameError {
     Io(#[from] std::io::Error),
 }
 
-
 ///
 /// ```text
 /// error[E001]: Failed to initialize audio backend
@@ -74,8 +73,12 @@ pub struct Diagnostic<'a> {
 
 impl fmt::Display for Diagnostic<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        writeln!(f, "\x1b[1;31merror[{code}]\x1b[0m\x1b[1m: {title}\x1b[0m",
-            code = self.code, title = self.title)?;
+        writeln!(
+            f,
+            "\x1b[1;31merror[{code}]\x1b[0m\x1b[1m: {title}\x1b[0m",
+            code = self.code,
+            title = self.title
+        )?;
         writeln!(f, " \x1b[1;34m-->\x1b[0m {}", self.location)?;
         writeln!(f, "  \x1b[1;34m|\x1b[0m")?;
         writeln!(f, "  \x1b[1;34m=\x1b[0m \x1b[1mwhat\x1b[0m: {}", self.what)?;
@@ -93,4 +96,3 @@ pub trait IntoDiagnostic {
     /// Formats the error as a rich, color-coded diagnostic string.
     fn diagnostic(&self) -> String;
 }
-

@@ -138,11 +138,15 @@ impl Game for SpaceChicken {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "chicken",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/OIP-475081084.jpg"),
             "bg",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         engine.get_camera().set_zoom(1.0);
         self.show_dialogue(engine, "Cluck cluck! I am Captain Feathers!");

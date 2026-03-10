@@ -85,7 +85,9 @@ impl Game for CatCafe {
         if let Err(e) = engine
             .get_texture_controller()
             .load_texture(include_bytes!("../src/static/textures/women.png"), "bg")
-        { eprintln!("{e}"); }
+        {
+            eprintln!("{e}");
+        }
         engine.get_camera().set_zoom(1.0);
         self.show(engine, 0);
     }

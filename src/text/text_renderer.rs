@@ -41,7 +41,11 @@ impl ParseState {
         self.segments.push(StyledSegment {
             text: std::mem::take(&mut self.current_text),
             attrs: TextAttributes {
-                weight: self.weight_stack.last().copied().unwrap_or(FontWeight::Normal),
+                weight: self
+                    .weight_stack
+                    .last()
+                    .copied()
+                    .unwrap_or(FontWeight::Normal),
                 italic: self.italic_stack.last().copied().unwrap_or(false),
                 underline: false,
                 strikethrough: false,

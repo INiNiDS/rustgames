@@ -1,11 +1,11 @@
 pub mod events;
 
 use crate::graphics::Color;
+use crate::translation::language::Language;
 pub use events::*;
 use std::sync::Arc;
 use winit::dpi::LogicalSize;
 use winit::window::Window as WinitWindow;
-use crate::translation::language::Language;
 
 /// Configuration used to create and customize the application window.
 #[derive(Debug, Clone)]
@@ -25,7 +25,7 @@ pub struct WindowConfig {
     /// Color used to clear the render target at the start of each frame.
     pub background_color: Color,
     /// Initial active language used by the translation system.
-    pub language: Language
+    pub language: Language,
 }
 
 impl Default for WindowConfig {
@@ -38,8 +38,7 @@ impl Default for WindowConfig {
             fullscreen: false,
             vsync: true,
             background_color: Color::WHITE,
-            language: Language::resolve("en_us")
-                .unwrap(),
+            language: Language::resolve("en_us").unwrap(),
         }
     }
 }

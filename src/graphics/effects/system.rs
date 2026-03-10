@@ -1,5 +1,5 @@
-pub use crate::graphics::effects::{EmitterConfig, VfxEffect};
 pub use crate::graphics::Particle;
+pub use crate::graphics::effects::{EmitterConfig, VfxEffect};
 use glam::Vec2;
 use rand::RngExt;
 

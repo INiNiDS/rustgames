@@ -1,7 +1,7 @@
 use crate::error::AudioError;
+use kira::AudioManagerSettings;
 use kira::backend::DefaultBackend;
 use kira::sound::static_sound::{StaticSoundData, StaticSoundHandle};
-use kira::AudioManagerSettings;
 use kira::{AudioManager, Tween};
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -82,7 +82,6 @@ impl AudioSystem {
         }
         Ok(())
     }
-
 
     /// Plays a previously loaded sound by name.
     ///

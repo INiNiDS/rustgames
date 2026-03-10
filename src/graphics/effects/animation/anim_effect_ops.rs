@@ -1,7 +1,7 @@
 use glam::Vec2;
 
-use crate::utils::blend_utils::{blend_val, blend_vec2};
 use super::visual::{AnimEffect, CombinedMode, CustomCombinedMode, VisualState};
+use crate::utils::blend_utils::{blend_val, blend_vec2};
 
 impl AnimEffect {
     #[must_use]
@@ -66,10 +66,25 @@ impl AnimEffect {
     #[must_use]
     pub fn apply_to_config(&self, state: VisualState, config: CustomCombinedMode) -> VisualState {
         VisualState {
-            opacity: blend_val(state.opacity, self.opacity_mul, config.opacity, CombinedMode::Mul),
-            position: blend_vec2(state.position, self.offset_add, config.position, CombinedMode::Add),
+            opacity: blend_val(
+                state.opacity,
+                self.opacity_mul,
+                config.opacity,
+                CombinedMode::Mul,
+            ),
+            position: blend_vec2(
+                state.position,
+                self.offset_add,
+                config.position,
+                CombinedMode::Add,
+            ),
             scale: blend_vec2(state.scale, self.scale_mul, config.scale, CombinedMode::Mul),
-            rotation: blend_val(state.rotation, self.rotation_add, config.rotation, CombinedMode::Add),
+            rotation: blend_val(
+                state.rotation,
+                self.rotation_add,
+                config.rotation,
+                CombinedMode::Add,
+            ),
             anchor: state.anchor,
         }
     }

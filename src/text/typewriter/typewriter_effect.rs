@@ -1,6 +1,6 @@
 use crate::text::PunctuationConfig;
-pub use crate::text::{TextSpeed, TextStyle};
 use crate::text::typewriter::TypewriterBuilder;
+pub use crate::text::{TextSpeed, TextStyle};
 
 /// A character-by-character text reveal with configurable speed and automatic
 /// punctuation pauses.
@@ -54,10 +54,7 @@ impl TypewriterEffect {
     /// # Panics
     /// Panics if `text_id` is `None` in the builder, since a translation key is required.
     #[must_use]
-    pub fn new_with_id(
-        tb: TypewriterBuilder,
-        id: usize,
-    ) -> Self {
+    pub fn new_with_id(tb: TypewriterBuilder, id: usize) -> Self {
         let (chars, visible_indices) = Self::parse_tags(&tb.text);
         let chars_per_second = tb.speed.chars_per_second();
         let complete = chars_per_second.is_infinite();
@@ -203,7 +200,7 @@ impl TypewriterEffect {
     /// Lookahead-collects the text inside `[...]` without advancing `iter`.
     fn collect_tag_content<I>(iter: &std::iter::Peekable<I>) -> String
     where
-        I: Iterator<Item=(usize, char)> + Clone,
+        I: Iterator<Item = (usize, char)> + Clone,
     {
         let mut tag_content = String::new();
         for (_, tc) in iter.clone() {
@@ -218,7 +215,7 @@ impl TypewriterEffect {
     /// Advances `iter` past `tag_len` characters plus the closing `]`.
     fn skip_tag_chars<I>(iter: &mut std::iter::Peekable<I>, tag_len: usize)
     where
-        I: Iterator<Item=(usize, char)>,
+        I: Iterator<Item = (usize, char)>,
     {
         for _ in 0..=tag_len {
             iter.next();

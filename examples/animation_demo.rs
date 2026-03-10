@@ -60,7 +60,9 @@ impl Game for AnimationDemo {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "animation_sheet",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         engine.get_camera().set_zoom(300.0);
 
@@ -73,7 +75,9 @@ impl Game for AnimationDemo {
         if let Err(e) = engine.get_audio_system().load_sound(
             "perdej",
             "/home/ininids/RustroverProjects/rsgames/src/sound_03850.mp3",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
     }
 
     fn update(&mut self, engine: &mut Engine) {
@@ -126,12 +130,24 @@ impl AnimationDemo {
         let space = eq.was_key_just_pressed(KeyCode::Space);
         let esc = eq.was_key_just_pressed(KeyCode::Escape);
 
-        if k1 { self.switch_mode(AnimationModeDemo::Loop); }
-        if k2 { self.switch_mode(AnimationModeDemo::PlayOnce); }
-        if k3 { self.switch_mode(AnimationModeDemo::PingPong); }
-        if kr { self.reset_animation(); }
-        if space { self.toggle_pause(); }
-        if esc { self.on_exit(); }
+        if k1 {
+            self.switch_mode(AnimationModeDemo::Loop);
+        }
+        if k2 {
+            self.switch_mode(AnimationModeDemo::PlayOnce);
+        }
+        if k3 {
+            self.switch_mode(AnimationModeDemo::PingPong);
+        }
+        if kr {
+            self.reset_animation();
+        }
+        if space {
+            self.toggle_pause();
+        }
+        if esc {
+            self.on_exit();
+        }
     }
 
     fn reset_animation(&mut self) {

@@ -12,7 +12,9 @@ use glam::Vec2;
 use rustgames::core::app;
 use rustgames::prelude::*;
 use rustgames::text::TextData;
-use rustgames::translation::{generate_id_from_name, DictionarySystem, Translation, TranslationSystem};
+use rustgames::translation::{
+    DictionarySystem, Translation, TranslationSystem, generate_id_from_name,
+};
 
 // ── screen size ──────────────────────────────────────────────────────────────
 const W: f32 = 2560.0;
@@ -201,10 +203,18 @@ impl RunnerI18n {
 
     fn keyboard_input(&mut self, engine: &mut Engine, vel: &mut Vec2) {
         let eq = engine.get_event_queue();
-        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) { vel.x -= 1.0; }
-        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) { vel.x += 1.0; }
-        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) { vel.y += 1.0; }
-        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) { vel.y -= 1.0; }
+        if eq.is_key_down(KeyCode::ArrowLeft) || eq.is_key_down(KeyCode::KeyA) {
+            vel.x -= 1.0;
+        }
+        if eq.is_key_down(KeyCode::ArrowRight) || eq.is_key_down(KeyCode::KeyD) {
+            vel.x += 1.0;
+        }
+        if eq.is_key_down(KeyCode::ArrowUp) || eq.is_key_down(KeyCode::KeyW) {
+            vel.y += 1.0;
+        }
+        if eq.is_key_down(KeyCode::ArrowDown) || eq.is_key_down(KeyCode::KeyS) {
+            vel.y -= 1.0;
+        }
     }
 
     // ── language toggle ──────────────────────────────────────────────────────
@@ -242,11 +252,15 @@ impl Game for RunnerI18n {
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/mistral.png"),
             "player",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
         if let Err(e) = engine.get_texture_controller().load_texture(
             include_bytes!("../src/static/textures/OIP-475081084.jpg"),
             "bg",
-        ) { eprintln!("{e}"); }
+        ) {
+            eprintln!("{e}");
+        }
 
         // Register languages
         engine.add_language(Language::new(LANG_EN.to_string(), "English".to_string()));
@@ -299,7 +313,7 @@ impl Game for RunnerI18n {
             let eq = engine.get_event_queue();
             (
                 eq.was_key_just_pressed(KeyCode::KeyL),
-                eq.was_key_just_pressed(KeyCode::Escape)
+                eq.was_key_just_pressed(KeyCode::Escape),
             )
         };
 

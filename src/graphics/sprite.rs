@@ -1,8 +1,8 @@
 use crate::graphics::color::Color;
+use crate::utils;
 use glam::Vec2;
 use std::sync::Arc;
 use wgpu::{BufferAddress, VertexBufferLayout};
-use crate::utils;
 
 /// A textured 2D sprite with position, size, rotation, color tint, anchor
 /// point, and per-axis flip support.
@@ -128,7 +128,11 @@ impl Vertex {
     /// Returns the wgpu [`VertexBufferLayout`] for a [`Vertex`].
     #[must_use]
     pub const fn desc() -> VertexBufferLayout<'static> {
-        utils::render_utils::desc(&Self::ATTRIBS, size_of::<Self>() as BufferAddress, wgpu::VertexStepMode::Vertex)
+        utils::render_utils::desc(
+            &Self::ATTRIBS,
+            size_of::<Self>() as BufferAddress,
+            wgpu::VertexStepMode::Vertex,
+        )
     }
 }
 

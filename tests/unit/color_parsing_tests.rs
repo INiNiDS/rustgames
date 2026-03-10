@@ -263,4 +263,3 @@ fn color_to_array_matches_fields() {
     assert_eq!(arr[2], c.b);
     assert_eq!(arr[3], c.a);
 }
-

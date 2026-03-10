@@ -105,7 +105,10 @@ impl Game for ErrorDemo {
 // ─────────────────────────────────────────────────────────────────────────────
 
 fn main() {
-    let game = ErrorDemo { step: 0, timer: 0.0 };
+    let game = ErrorDemo {
+        step: 0,
+        timer: 0.0,
+    };
 
     let window_config = WindowConfig {
         title: "RsGames — Error Diagnostics Demo".to_string(),
@@ -121,4 +124,3 @@ fn main() {
 
     app::run(window_config, Box::new(game)).expect("Failed to run error demo");
 }
-

@@ -68,7 +68,8 @@ impl TranslationSystem {
     /// Inserts a pre-built [`Translation`] entry, keyed by `(text_id, language_id)`.
     /// Overwrites any existing entry for the same key pair.
     pub fn add_translation(&mut self, translation: Translation) {
-        self.translations.insert((translation.text_id, translation.language_id), translation);
+        self.translations
+            .insert((translation.text_id, translation.language_id), translation);
     }
 
     /// Returns an iterator over all stored [`Translation`] entries.
@@ -79,7 +80,11 @@ impl TranslationSystem {
     /// Looks up the translation by name keys.
     /// Returns `None` when no entry exists for the pair.
     #[must_use]
-    pub fn get_translation_by_name(&self, text_key: &str, language_key: &str) -> Option<&Translation> {
+    pub fn get_translation_by_name(
+        &self,
+        text_key: &str,
+        language_key: &str,
+    ) -> Option<&Translation> {
         let text_id = generate_id_from_name(text_key);
         let language_id = generate_id_from_name(language_key);
         self.translations.get(&(text_id, language_id))
@@ -92,7 +97,6 @@ impl TranslationSystem {
         self.translations.get(&(text_id, language_id))
     }
 }
-
 
 impl Default for TranslationSystem {
     fn default() -> Self {

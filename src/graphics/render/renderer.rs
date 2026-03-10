@@ -107,8 +107,9 @@ impl Renderer {
         let mut start_instance_index = 0;
 
         for (texture, instances) in batches {
-            let count = u32::try_from(instances.len())
-                .unwrap_or_else(|_| panic!("{}", GraphicsError::InstanceCountOverflow(instances.len())));
+            let count = u32::try_from(instances.len()).unwrap_or_else(|_| {
+                panic!("{}", GraphicsError::InstanceCountOverflow(instances.len()))
+            });
             if count > 0 {
                 sprites.render(pass, device, texture, count, start_instance_index);
                 start_instance_index += count;
