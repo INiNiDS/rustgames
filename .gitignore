@@ -45,3 +45,5 @@ TODO/.obsidian
 # CodeQL database and results
 codeql-db
 results.sarif
+
+stress_test

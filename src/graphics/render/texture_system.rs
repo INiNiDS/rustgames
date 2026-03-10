@@ -2,19 +2,19 @@ use crate::error::GraphicsError;
 use crate::graphics::SpriteInstance;
 use crate::graphics::Texture;
 use glam::Vec2;
-use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::sync::Arc;
 use wgpu::{Device, Queue};
+use wgpu::naga::FastHashMap;
 
 /// Manages GPU textures and per-frame sprite instance batching. Supports
 /// loading from files, bytes, and directories.
 pub struct TextureSystem {
-    textures: HashMap<String, Texture>,
+    textures: FastHashMap<String, Texture>,
     device: Arc<Device>,
     queue: Arc<Queue>,
-    instances_per_texture: HashMap<String, Vec<SpriteInstance>>,
+    instances_per_texture: FastHashMap<String, Vec<SpriteInstance>>,
     frame_draw_order: Vec<String>,
 }
 
@@ -24,10 +24,10 @@ impl TextureSystem {
     #[must_use]
     pub fn new(device: Arc<Device>, queue: Arc<Queue>) -> Self {
         Self {
-            textures: HashMap::new(),
+            textures: FastHashMap::default(),
             device,
             queue,
-            instances_per_texture: HashMap::new(),
+            instances_per_texture: FastHashMap::default(),
             frame_draw_order: Vec::new(),
         }
     }

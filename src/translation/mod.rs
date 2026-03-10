@@ -4,12 +4,13 @@ pub mod language;
 pub use dictionary::{Dictionary, DictionarySystem};
 pub use language::{Language, LanguageSystem};
 
-use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::ops::{Add, AddAssign};
+use wgpu::naga::FastHashMap;
 
 /// A single translated string: a text ID, a language ID, and the translated
 /// content.
+#[derive(Debug, Clone)]
 pub struct Translation {
     text_id: u32,
     language_id: u32,
@@ -40,7 +41,7 @@ impl Translation {
 
 /// Stores translations indexed by (`text_id`, `language_id`) for O(1) lookup.
 pub struct TranslationSystem {
-    translations: HashMap<(u32, u32), Translation>,
+    translations: FastHashMap<(u32, u32), Translation>,
 }
 
 impl TranslationSystem {
@@ -48,11 +49,23 @@ impl TranslationSystem {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            translations: HashMap::new(),
+            translations: FastHashMap::default(),
         }
     }
 
-    /// Inserts a [`Translation`] entry, keyed by `(text_id, language_id)`.
+    /// Inserts a [`Translation`] entry by name keys.
+    /// The IDs are derived automatically via [`generate_id_from_name`].
+    /// Overwrites any existing entry for the same key pair.
+    pub fn add_translation_by_name(&mut self, text_key: &str, language_key: &str, text: String) {
+        let text_id = generate_id_from_name(text_key);
+        let language_id = generate_id_from_name(language_key);
+        self.translations.insert(
+            (text_id, language_id),
+            Translation::new(text_id, language_id, text),
+        );
+    }
+
+    /// Inserts a pre-built [`Translation`] entry, keyed by `(text_id, language_id)`.
     /// Overwrites any existing entry for the same key pair.
     pub fn add_translation(&mut self, translation: Translation) {
         self.translations.insert((translation.text_id, translation.language_id), translation);
@@ -61,6 +74,15 @@ impl TranslationSystem {
     /// Returns an iterator over all stored [`Translation`] entries.
     pub fn get_translations(&self) -> impl Iterator<Item = &Translation> {
         self.translations.values()
+    }
+
+    /// Looks up the translation by name keys.
+    /// Returns `None` when no entry exists for the pair.
+    #[must_use]
+    pub fn get_translation_by_name(&self, text_key: &str, language_key: &str) -> Option<&Translation> {
+        let text_id = generate_id_from_name(text_key);
+        let language_id = generate_id_from_name(language_key);
+        self.translations.get(&(text_id, language_id))
     }
 
     /// Looks up the translation for `(text_id, language_id)`.

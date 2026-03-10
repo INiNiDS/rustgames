@@ -1,6 +1,6 @@
 use crate::graphics::Color;
 use crate::utils;
-use glam::{Mat4, Vec2, Vec4};
+use glam::{Mat4, Quat, Vec2, Vec3, Vec4};
 use wgpu::{BufferAddress, VertexBufferLayout, VertexFormat};
 
 /// GPU-side representation of a sprite instance for instanced rendering.
@@ -17,18 +17,20 @@ pub struct SpriteInstance {
 impl SpriteInstance {
     /// Creates a [`SpriteInstance`] from explicit transformation components.
     ///
-    /// * `position` — world-space centre of the sprite.
+    /// * `position` — world-space center of the sprite.
     /// * `size` — pixel dimensions of the sprite quad.
     /// * `rotation` — counter-clockwise rotation in radians.
     /// * `uv_rect` — UV sub-rectangle `(u, v, w, h)` into the texture atlas.
     /// * `color` — RGBA tint applied during shading.
     #[must_use]
     pub fn new(position: Vec2, size: Vec2, rotation: f32, uv_rect: Vec4, color: Vec4) -> Self {
-        let translation = Mat4::from_translation(position.extend(0.0));
-        let rotation_mat = Mat4::from_rotation_z(rotation);
-        let scale = Mat4::from_scale(size.extend(1.0));
-
-        let model = translation * rotation_mat * scale;
+        // Single combined TRS matrix — avoids 3 separate Mat4 constructions
+        // and 2 matrix multiplies compared to the naive T * R * S approach.
+        let model = Mat4::from_scale_rotation_translation(
+            Vec3::new(size.x, size.y, 1.0),
+            Quat::from_rotation_z(rotation),
+            Vec3::new(position.x, position.y, 0.0),
+        );
 
         Self {
             model: model.to_cols_array_2d(),

@@ -1,7 +1,7 @@
 pub mod animation;
 pub mod particle;
 pub mod renderer;
-pub(crate) mod system;
+pub mod system;
 pub mod trauma_shake;
 pub mod types;
 

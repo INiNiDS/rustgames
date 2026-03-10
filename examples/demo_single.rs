@@ -176,7 +176,7 @@ impl Game for SingleDemo {
 }
 
 impl SingleDemo {
-    fn print_final_stats(&self) {
+    fn print_final_stats(&mut self) {
         println!();
         println!("=== Final Statistics ===");
         println!("Average FPS: {:.1}", self.fps_counter.fps());

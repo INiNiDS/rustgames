@@ -168,6 +168,16 @@ impl SpriteRenderer {
             .unwrap_or_else(|_| panic!("{}", GraphicsError::InstanceCountOverflow(QUAD_INDICES.len()))))
     }
 
+
+    fn create_culling_buffer(device: &wgpu::Device) -> wgpu::Buffer {
+        device.create_buffer(&wgpu::BufferDescriptor {
+            label: Some("Indirect Draw Args"),
+            size: size_of::<[u32; 5]>() as u64,
+            usage: wgpu::BufferUsages::INDIRECT | wgpu::BufferUsages::STORAGE | wgpu::BufferUsages::COPY_DST,
+            mapped_at_creation: false,
+        })
+    }
+
     fn create_texture_bind_group(
         &self,
         device: &wgpu::Device,

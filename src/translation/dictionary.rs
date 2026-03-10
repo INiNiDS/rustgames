@@ -1,8 +1,9 @@
 use crate::translation::generate_id_from_name;
-use std::collections::HashMap;
 use std::ops::{Add, AddAssign};
+use wgpu::naga::FastHashMap;
 
 /// A single fallback text entry keyed by a stable numeric ID.
+#[derive(Debug, Clone)]
 pub struct Dictionary {
     id: u32,
     text: String,
@@ -32,7 +33,7 @@ impl PartialEq for Dictionary {
 
 /// Stores fallback display texts indexed by their id for O(1) lookup.
 pub struct DictionarySystem {
-    dictionaries: HashMap<u32, Dictionary>,
+    dictionaries: FastHashMap<u32, Dictionary>,
 }
 
 impl DictionarySystem {
@@ -40,7 +41,7 @@ impl DictionarySystem {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            dictionaries: HashMap::new(),
+            dictionaries: FastHashMap::default(),
         }
     }
 
@@ -66,6 +67,15 @@ impl DictionarySystem {
     #[must_use]
     pub fn get_dictionary(&self, text_id: u32) -> Option<&Dictionary> {
         self.dictionaries.get(&text_id)
+    }
+
+    /// Looks up the fallback entry by name.
+    /// The ID is derived automatically via [`generate_id_from_name`].
+    /// Returns `None` when no entry exists.
+    #[must_use]
+    pub fn get_dictionary_by_name(&self, text: &str) -> Option<&Dictionary> {
+        let id = generate_id_from_name(text);
+        self.dictionaries.get(&id)
     }
 }
 

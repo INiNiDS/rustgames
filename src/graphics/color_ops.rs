@@ -30,6 +30,15 @@ impl Color {
         Self { a: alpha, ..self }
     }
 
+    /// Returns `true` if **all four** components (r, g, b, a) are equal.
+    ///
+    /// Use this when you need an exact comparison including transparency,
+    /// because [`PartialEq`] ignores the alpha channel.
+    #[must_use]
+    pub fn eq_rgba(&self, other: &Self) -> bool {
+        self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
+    }
+
     #[must_use]
     pub fn lerp(self, other: Self, t: f32) -> Self {
         let t = t.clamp(0.0, 1.0);
@@ -130,8 +139,13 @@ impl Color {
 }
 
 impl PartialEq for Color {
+    /// Compares only the RGB components; **alpha is intentionally ignored**.
+    ///
+    /// Two colors are considered equal if they share the same hue regardless of
+    /// transparency.  Use [`Color::eq_rgba`] when you need an exact
+    /// four-component comparison.
     fn eq(&self, other: &Self) -> bool {
-        self.r == other.r && self.g == other.g && self.b == other.b && self.a == other.a
+        self.r == other.r && self.g == other.g && self.b == other.b
     }
 }
 impl From<(f32, f32, f32)> for Color {

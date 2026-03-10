@@ -115,26 +115,29 @@ impl StressDemo {
 
     fn update_physics(&mut self, delta: f32) {
         const BOUNDS: f32 = 300.0;
-        for i in 0..self.positions.len() {
-            self.positions[i] += self.velocities[i] * delta;
 
-            if self.positions[i].x.abs() > BOUNDS {
-                self.velocities[i].x *= -1.0;
-                self.positions[i].x = self.positions[i].x.clamp(-BOUNDS, BOUNDS);
+        for (pos, vel) in self.positions.iter_mut().zip(self.velocities.iter_mut()) {
+            *pos += *vel * delta;
+
+            if pos.x.abs() > BOUNDS {
+                vel.x = -vel.x;
+                pos.x = pos.x.clamp(-BOUNDS, BOUNDS);
             }
-            if self.positions[i].y.abs() > BOUNDS {
-                self.velocities[i].y *= -1.0;
-                self.positions[i].y = self.positions[i].y.clamp(-BOUNDS, BOUNDS);
+
+            if pos.y.abs() > BOUNDS {
+                vel.y = -vel.y;
+                pos.y = pos.y.clamp(-BOUNDS, BOUNDS);
             }
         }
     }
 
     fn render_sprites(&mut self, engine: &mut Engine) {
         let texture_controller = engine.get_texture_controller();
-        for i in 0..self.entity_count {
-            let uv = self.animations[i].current_uv();
+
+        for (anim, pos) in self.animations.iter().zip(self.positions.iter()) {
+            let uv = anim.current_uv();
             let instance = SpriteInstance::new(
-                self.positions[i],
+                *pos,
                 Vec2::new(20.0, 20.0),
                 0.0,
                 uv,
@@ -161,6 +164,10 @@ impl StressDemo {
 
     fn spawn_entities(&mut self, count: usize) {
         let mut rng = rand::rng();
+
+        self.animations.reserve(count);
+        self.positions.reserve(count);
+        self.velocities.reserve(count);
 
         for _ in 0..count {
             let anim = SpriteAnimation::from_grid(
@@ -189,18 +196,20 @@ impl StressDemo {
     }
 
     fn remove_entities(&mut self, count: usize) {
-        let remove = count.min(self.animations.len());
-
-        for _ in 0..remove {
-            self.animations.pop();
-            self.positions.pop();
-            self.velocities.pop();
+        if self.entity_count > count {
+            let new_len = self.entity_count - count;
+            self.animations.truncate(new_len);
+            self.positions.truncate(new_len);
+            self.velocities.truncate(new_len);
+        } else {
+            self.animations.clear();
+            self.positions.clear();
+            self.velocities.clear();
         }
-
         self.entity_count = self.animations.len();
     }
 
-    fn print_final_stats(&self) {
+    fn print_final_stats(&mut self) {
         println!();
         println!("=== Final Statistics ===");
         println!("Total entities: {}", self.entity_count);

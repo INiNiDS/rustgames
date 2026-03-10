@@ -3,6 +3,7 @@ use winit::event::{
 };
 pub use winit::keyboard::KeyCode;
 use winit::keyboard::PhysicalKey;
+use wgpu::naga::FastHashSet;
 
 /// A mouse button identifier.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -78,7 +79,7 @@ pub trait EventHandler {
 /// Buffers events for the current frame and tracks held-down keys.
 pub struct EventQueue {
     events: Vec<Event>,
-    pressed_keys: std::collections::HashSet<KeyCode>,
+    pressed_keys: FastHashSet<KeyCode>,
 }
 
 impl EventQueue {
@@ -87,7 +88,7 @@ impl EventQueue {
     pub fn new() -> Self {
         Self {
             events: Vec::new(),
-            pressed_keys: std::collections::HashSet::new(),
+            pressed_keys: FastHashSet::default(),
         }
     }
 

@@ -1,7 +1,7 @@
 use crate::translation::generate_id_from_name;
 use aam_rs::aaml::AAML;
-use std::collections::HashMap;
 use std::ops::{Add, AddAssign};
+use wgpu::naga::FastHashMap;
 
 /// Represents a language with a unique identifier, a short locale code, and a full display name.
 #[derive(Debug, Clone)]
@@ -69,7 +69,7 @@ impl PartialEq for Language {
 /// Manages a collection of [`Language`] entries and tracks the currently active language.
 pub struct LanguageSystem {
     /// Keyed by language id for O(1) lookup
-    languages: HashMap<u32, Language>,
+    languages: FastHashMap<u32, Language>,
     /// Currently active language id (0 = none set)
     current_language_id: u32,
 }
@@ -79,7 +79,7 @@ impl LanguageSystem {
     #[must_use]
     pub fn new() -> Self {
         Self {
-            languages: HashMap::new(),
+            languages: FastHashMap::default(),
             current_language_id: 0,
         }
     }
@@ -91,21 +91,24 @@ impl LanguageSystem {
         self.languages.insert(language.id, language);
     }
 
-    /// Sets the currently active language by its numeric `id`.
+    /// Sets the currently active language by its short locale code (e.g. `"en_us"`).
     ///
-    /// Pass `0` to clear the active language.
-    pub const fn set_current_language(&mut self, id: u32) {
-        self.current_language_id = id;
-    }
-
-    /// Sets the currently active language by its short locale code.
-    ///
-    /// Does nothing if no language with `small_name` is registered.
+    /// Does nothing if no language with that name is registered.
+    /// Use this instead of [`set_current_language`] to avoid dealing with raw IDs.
     pub fn set_current_language_by_name(&mut self, small_name: &str) {
         if let Some(lang) = self.get_language_by_small_name(small_name) {
             self.current_language_id = lang.id;
         }
     }
+
+    /// Sets the currently active language by its numeric `id`.
+    ///
+    /// Prefer [`set_current_language_by_name`] unless you already hold the id.
+    /// Pass `0` to clear the active language.
+    pub const fn set_current_language(&mut self, id: u32) {
+        self.current_language_id = id;
+    }
+
 
     /// Returns a reference to the currently active [`Language`], or `None`
     /// if no language has been set.

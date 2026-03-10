@@ -1,18 +1,18 @@
 use crate::error::AudioError;
-use kira::AudioManagerSettings;
 use kira::backend::DefaultBackend;
 use kira::sound::static_sound::{StaticSoundData, StaticSoundHandle};
+use kira::AudioManagerSettings;
 use kira::{AudioManager, Tween};
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
+use wgpu::naga::FastHashMap;
 
 /// Manages audio playback using the Kira audio engine. Sounds are loaded as
 /// named assets and can be played, stopped, or faded out.
 pub struct AudioSystem {
     manager: AudioManager,
-    sound_assets: HashMap<String, StaticSoundData>,
-    active_sounds: HashMap<String, Arc<StaticSoundHandle>>,
+    sound_assets: FastHashMap<String, StaticSoundData>,
+    active_sounds: FastHashMap<String, Arc<StaticSoundHandle>>,
 }
 
 impl AudioSystem {
@@ -25,8 +25,8 @@ impl AudioSystem {
             .map_err(|e| AudioError::InitFailed(Box::new(e)))?;
         Ok(Self {
             manager,
-            sound_assets: HashMap::new(),
-            active_sounds: HashMap::new(),
+            sound_assets: FastHashMap::default(),
+            active_sounds: FastHashMap::default(),
         })
     }
 
